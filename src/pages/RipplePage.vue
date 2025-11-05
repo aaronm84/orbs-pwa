@@ -53,12 +53,6 @@
       </div>
     </div>
 
-    <!-- Taps Remaining Indicator -->
-    <div v-if="tapsRemaining > 0 && !showTapHint" class="taps-indicator">
-      <q-icon name="touch_app" color="white" size="md" />
-      <span class="text-white text-h6">{{ tapsRemaining }}</span>
-    </div>
-
     <!-- Full Screen Canvas -->
     <canvas
       ref="gameCanvas"
@@ -181,6 +175,7 @@ const tapsUsed = ref(0)
 const clicksRemaining = ref(1)
 const gameStarted = ref(false)
 const showTapHint = ref(true)
+const hasShownInitialHint = ref(false)
 
 // Scoring
 const totalScore = ref(0)
@@ -211,6 +206,16 @@ let ripples = []
 // Audio
 let splashSounds = []
 let lastAudioPlayTime = 0
+
+// Asset images
+let loadedImages = {
+  flowers: [],
+  lilyPads: [],
+  rocks: [],
+  reeds: [],
+  fish: []
+}
+let imagesLoaded = false
 
 // Tap tracking for strength detection
 let touchStartTime = 0
@@ -257,6 +262,9 @@ onMounted(async () => {
 
   ctx = gameCanvas.value.getContext('2d')
 
+  // Load assets
+  await loadAssets()
+
   // Load splash sounds
   try {
     const splashFiles = [
@@ -287,6 +295,15 @@ onMounted(async () => {
   // Initialize first level
   initLevel()
 
+  // Show tap hint only on first load, then auto-hide after 2 seconds
+  if (!hasShownInitialHint.value) {
+    showTapHint.value = true
+    hasShownInitialHint.value = true
+    setTimeout(() => {
+      showTapHint.value = false
+    }, 2000)
+  }
+
   // Start game loop
   startGameLoop()
 
@@ -296,6 +313,72 @@ onMounted(async () => {
     stopGameLoop()
   })
 })
+
+async function loadAssets() {
+  // Import all assets explicitly - Vite requires this for proper bundling
+  const assetImports = {
+    flowers: [
+      new URL('../assets/images/ripple/flower-1.svg', import.meta.url).href,
+      new URL('../assets/images/ripple/flower-2.svg', import.meta.url).href,
+      new URL('../assets/images/ripple/flower-3.svg', import.meta.url).href,
+      new URL('../assets/images/ripple/flower-4.svg', import.meta.url).href
+    ],
+    lilyPads: [
+      new URL('../assets/images/ripple/lily-pad-1.svg', import.meta.url).href,
+      new URL('../assets/images/ripple/lily-pad-2.svg', import.meta.url).href,
+      new URL('../assets/images/ripple/lily-pad-3.svg', import.meta.url).href,
+      new URL('../assets/images/ripple/lily-pad-4.svg', import.meta.url).href,
+      new URL('../assets/images/ripple/lily-pad-5.svg', import.meta.url).href,
+      new URL('../assets/images/ripple/lily-pad-6.svg', import.meta.url).href
+    ],
+    rocks: [
+      new URL('../assets/images/ripple/rock-1.svg', import.meta.url).href,
+      new URL('../assets/images/ripple/rock-2.svg', import.meta.url).href,
+      new URL('../assets/images/ripple/rock-3.svg', import.meta.url).href,
+      new URL('../assets/images/ripple/rock-4.svg', import.meta.url).href
+    ],
+    reeds: [
+      new URL('../assets/images/ripple/reed-1.svg', import.meta.url).href,
+      new URL('../assets/images/ripple/reed-2.svg', import.meta.url).href,
+      new URL('../assets/images/ripple/reed-3.svg', import.meta.url).href
+    ],
+    fish: [
+      new URL('../assets/images/ripple/fish-1.svg', import.meta.url).href,
+      new URL('../assets/images/ripple/fish-2.svg', import.meta.url).href,
+      new URL('../assets/images/ripple/fish-3.svg', import.meta.url).href
+    ]
+  }
+
+  const loadPromises = []
+
+  for (const [type, paths] of Object.entries(assetImports)) {
+    for (const path of paths) {
+      const img = new Image()
+      img.src = path
+
+      const loadPromise = new Promise((resolve) => {
+        img.onload = () => {
+          console.log(`Loaded: ${path}`)
+          resolve()
+        }
+        img.onerror = () => {
+          console.warn(`Failed to load ${path}`)
+          resolve() // Resolve anyway to not block other images
+        }
+        // Timeout after 5 seconds
+        setTimeout(() => resolve(), 5000)
+      })
+
+      loadPromises.push(loadPromise)
+      loadedImages[type].push(img)
+    }
+  }
+
+  // Wait for all images to load
+  await Promise.all(loadPromises)
+  imagesLoaded = true
+  console.log('All assets loaded:', loadedImages)
+}
 
 function initLevel() {
   generateLevel(currentLevel.value)
@@ -326,18 +409,21 @@ function generateLevel(levelNum) {
   // Calculate level difficulty
   const lotusCount = Math.min(2 + Math.floor(levelNum / 3), 6)
   const stoneCount = Math.min(Math.floor(levelNum / 2), 4)
-  const lilypadCount = Math.min(Math.floor(levelNum / 3), 3)
-  const leafCount = levelNum >= 5 ? Math.min(Math.floor((levelNum - 4) / 2), 2) : 0
+  const extraLilypadGroupCount = Math.min(Math.floor(levelNum / 3), 2) // Groups of decorative lily pads
+  const leafCount = 0 // Disabled - leaves were using lily pad images and causing confusion
 
   // Tighter tap allowance - typically just 1-2 taps per lotus
   level.value.tapsAllowed = Math.max(2, Math.ceil(lotusCount * 0.6) + Math.floor(levelNum / 8))
   level.value.optimalTaps = Math.max(1, Math.ceil(lotusCount * 0.5))
 
-  // Generate lotus flowers
+  // Generate obstacles first (we'll add lily pads for flowers later)
+  level.value.obstacles = []
   level.value.lotusFlowers = []
   const minSpacing = 120
   const margin = 80
+  const topMargin = 140 // Extra margin at top for header
 
+  // Generate lotus flowers WITH lily pads underneath
   for (let i = 0; i < lotusCount; i++) {
     let attempts = 0
     let position
@@ -345,33 +431,52 @@ function generateLevel(levelNum) {
     while (attempts < 50) {
       position = {
         x: margin + rng() * (width - 2 * margin),
-        y: margin + rng() * (height - 2 * margin)
+        y: topMargin + rng() * (height - topMargin - margin)
       }
 
-      // Check spacing from other lotus flowers
-      const tooClose = level.value.lotusFlowers.some(
+      // Check spacing from other lotus flowers and obstacles
+      const tooCloseToLotus = level.value.lotusFlowers.some(
         lotus => distance(position, lotus.position) < minSpacing
       )
+      const tooCloseToObstacle = level.value.obstacles.some(
+        obs => distance(position, obs.position) < 80
+      )
 
-      if (!tooClose) break
+      if (!tooCloseToLotus && !tooCloseToObstacle) break
       attempts++
     }
 
+    // First create the lily pad base (doesn't block waves)
+    const lilyPadIndex = loadedImages.lilyPads.length > 0 ? Math.floor(rng() * loadedImages.lilyPads.length) : 0
+    const lilyPadRotation = rng() * Math.PI * 2
+    const lilyPadScale = 1.2 + rng() * 0.4 // Larger: 1.2-1.6
+
+    level.value.obstacles.push({
+      id: `lilypad_lotus_${i}`,
+      type: 'lilypad-base', // Special type that doesn't block waves
+      position,
+      radius: 50, // Bigger radius so lily pad is larger
+      imageIndex: lilyPadIndex,
+      rotation: lilyPadRotation,
+      scale: lilyPadScale
+    })
+
+    // Then create the lotus flower on top
     level.value.lotusFlowers.push({
       id: `lotus_${i}`,
       position,
-      activationThreshold: 0.65 + rng() * 0.15, // 0.65-0.8
+      activationThreshold: 0.65 + rng() * 0.15,
       protectedRadius: 50,
       isActivated: false,
       glowIntensity: 0.3,
-      currentPower: 0
+      currentPower: 0,
+      imageIndex: loadedImages.flowers.length > 0 ? Math.floor(rng() * loadedImages.flowers.length) : 0,
+      rotation: rng() * Math.PI * 2,
+      scale: 0.6 + rng() * 0.3 // Smaller flower: 0.6-0.9
     })
   }
 
-  // Generate obstacles
-  level.value.obstacles = []
-
-  // Stones
+  // Stones (block waves)
   for (let i = 0; i < stoneCount; i++) {
     let attempts = 0
     let position
@@ -379,11 +484,10 @@ function generateLevel(levelNum) {
     while (attempts < 50) {
       position = {
         x: margin + rng() * (width - 2 * margin),
-        y: margin + rng() * (height - 2 * margin)
+        y: topMargin + rng() * (height - topMargin - margin)
       }
 
-      // Check spacing from lotus flowers and other obstacles
-      const minDistToLotus = 80
+      const minDistToLotus = 100
       const minDistToObstacle = 60
 
       const tooCloseToLotus = level.value.lotusFlowers.some(
@@ -401,53 +505,108 @@ function generateLevel(levelNum) {
       id: `stone_${i}`,
       type: 'stone',
       position,
-      radius: 25 + rng() * 10 // 25-35
+      radius: 25 + rng() * 10,
+      imageIndex: loadedImages.rocks.length > 0 ? Math.floor(rng() * loadedImages.rocks.length) : 0,
+      rotation: rng() * Math.PI * 2,
+      scale: 0.8 + rng() * 0.4
     })
   }
 
-  // Lily pads
-  for (let i = 0; i < lilypadCount; i++) {
+  // Decorative lily pad groups (block waves)
+  for (let g = 0; g < extraLilypadGroupCount; g++) {
+    // Pick a random spot for the group
+    let groupCenter
     let attempts = 0
-    let position
 
     while (attempts < 50) {
-      position = {
+      groupCenter = {
         x: margin + rng() * (width - 2 * margin),
-        y: margin + rng() * (height - 2 * margin)
+        y: topMargin + rng() * (height - topMargin - margin)
       }
 
-      const minDistToLotus = 80
-      const minDistToObstacle = 50
+      const minDistToLotus = 100
+      const minDistToObstacle = 80
 
       const tooCloseToLotus = level.value.lotusFlowers.some(
-        lotus => distance(position, lotus.position) < minDistToLotus
+        lotus => distance(groupCenter, lotus.position) < minDistToLotus
       )
       const tooCloseToObstacle = level.value.obstacles.some(
-        obs => distance(position, obs.position) < minDistToObstacle
+        obs => obs.type !== 'lilypad-base' && distance(groupCenter, obs.position) < minDistToObstacle
       )
 
       if (!tooCloseToLotus && !tooCloseToObstacle) break
       attempts++
     }
 
-    level.value.obstacles.push({
-      id: `lilypad_${i}`,
-      type: 'lilypad',
-      position,
-      radius: 20 + rng() * 8 // 20-28
+    // Create 2-4 lily pads in a cluster
+    const groupSize = 2 + Math.floor(rng() * 3)
+    const boundsSize = 100 + rng() * 100 // Movement area for lily pads
+
+    // Calculate bounds that avoid static lily pads
+    let boundsCenterX = groupCenter.x
+    let boundsCenterY = groupCenter.y
+
+    // Check if bounds would overlap any static lily pad bases and adjust if needed
+    const staticLilyPads = level.value.obstacles.filter(obs => obs.type === 'lilypad-base')
+    staticLilyPads.forEach(staticPad => {
+      const dx = staticPad.position.x - groupCenter.x
+      const dy = staticPad.position.y - groupCenter.y
+      const dist = Math.sqrt(dx * dx + dy * dy)
+
+      // If static lily pad is too close, shift bounds center away from it
+      if (dist < boundsSize + 80) {
+        const pushDist = boundsSize + 80 - dist
+        const angle = Math.atan2(dy, dx)
+        boundsCenterX -= Math.cos(angle) * pushDist * 0.5
+        boundsCenterY -= Math.sin(angle) * pushDist * 0.5
+      }
     })
+
+    for (let i = 0; i < groupSize; i++) {
+      const angle = (i / groupSize) * Math.PI * 2 + rng() * 0.5
+      const dist = 30 + rng() * 40
+      const position = {
+        x: groupCenter.x + Math.cos(angle) * dist,
+        y: groupCenter.y + Math.sin(angle) * dist
+      }
+
+      // Create velocity for moving lily pads (very slow drift)
+      const velocity = {
+        x: (rng() - 0.5) * 0.01,
+        y: (rng() - 0.5) * 0.01
+      }
+
+      level.value.obstacles.push({
+        id: `lilypad_group_${g}_${i}`,
+        type: 'lilypad',
+        position,
+        radius: 40 + rng() * 15, // Increased from 20-28 to 40-55
+        imageIndex: loadedImages.lilyPads.length > 0 ? Math.floor(rng() * loadedImages.lilyPads.length) : 0,
+        rotation: rng() * Math.PI * 2,
+        targetRotation: rng() * Math.PI * 2,
+        scale: 1.0 + rng() * 0.5, // Increased from 0.7-1.1 to 1.0-1.5
+        rotationSpeed: (rng() - 0.5) * 0.015, // Slow passive rotation
+        velocity,
+        bounds: {
+          minX: boundsCenterX - boundsSize,
+          maxX: boundsCenterX + boundsSize,
+          minY: boundsCenterY - boundsSize,
+          maxY: boundsCenterY + boundsSize
+        }
+      })
+    }
   }
 
-  // Floating leaves (moving obstacles)
+  // Floating leaves (moving obstacles, block waves)
   for (let i = 0; i < leafCount; i++) {
     const position = {
       x: margin + rng() * (width - 2 * margin),
-      y: margin + rng() * (height - 2 * margin)
+      y: topMargin + rng() * (height - topMargin - margin)
     }
 
-    const boundsSize = 80 + rng() * 80 // 80-160 (smaller range)
+    const boundsSize = 80 + rng() * 80
     const velocity = {
-      x: (rng() - 0.5) * 0.5, // Much slower: 0.5 instead of 1.5
+      x: (rng() - 0.5) * 0.5,
       y: (rng() - 0.5) * 0.5
     }
 
@@ -455,14 +614,163 @@ function generateLevel(levelNum) {
       id: `leaf_${i}`,
       type: 'leaf',
       position,
-      radius: 18 + rng() * 6, // 18-24
+      radius: 18 + rng() * 6,
       velocity,
       bounds: {
         minX: Math.max(margin, position.x - boundsSize / 2),
         maxX: Math.min(width - margin, position.x + boundsSize / 2),
-        minY: Math.max(margin, position.y - boundsSize / 2),
+        minY: Math.max(margin, position.y - boundsSize / 2), // Can move into top area
         maxY: Math.min(height - margin, position.y + boundsSize / 2)
+      },
+      imageIndex: loadedImages.lilyPads.length > 0 ? Math.floor(rng() * loadedImages.lilyPads.length) : 0,
+      rotation: rng() * Math.PI * 2,
+      scale: 0.6 + rng() * 0.3
+    })
+  }
+
+  // Add decorative reeds and fish
+  addDecorativeElements(rng, width, height, margin, topMargin)
+}
+
+function addDecorativeElements(rng, width, height, margin, topMargin) {
+  level.value.decorations = []
+
+  // Get all lily pad positions (including bases and groups)
+  const lilyPadPositions = level.value.obstacles
+    .filter(obs => obs.type === 'lilypad' || obs.type === 'lilypad-base')
+    .map(obs => obs.position)
+
+  console.log('Found lily pads for reed placement:', lilyPadPositions.length)
+
+  // Add reeds near lily pads (2-3 reeds per lily pad)
+  // Get all lily pad obstacles (both moving and static bases)
+  const lilyPadObstacles = level.value.obstacles.filter(obs =>
+    obs.type === 'lilypad' || obs.type === 'lilypad-base'
+  )
+
+  if (lilyPadPositions.length > 0) {
+    const reedsPerPad = 2 + Math.floor(rng() * 2) // 2-3 reeds per lily pad
+    const reedCount = Math.min(lilyPadPositions.length * reedsPerPad, 15) // Cap at 15 reeds
+
+    for (let i = 0; i < reedCount; i++) {
+      let position
+      let attempts = 0
+      const maxAttempts = 50
+
+      // Try to find a position that doesn't overlap with lily pad bounds
+      while (attempts < maxAttempts) {
+        // Pick a random lily pad to place reed near
+        const nearLilyPad = lilyPadPositions[Math.floor(rng() * lilyPadPositions.length)]
+
+        // Place reed near this lily pad
+        const angle = rng() * Math.PI * 2
+        const dist = 50 + rng() * 70 // 50-120 pixels from lily pad
+        position = {
+          x: nearLilyPad.x + Math.cos(angle) * dist,
+          y: nearLilyPad.y + Math.sin(angle) * dist
+        }
+
+        // Keep within bounds (with extra top margin for header)
+        position.x = Math.max(margin, Math.min(width - margin, position.x))
+        position.y = Math.max(topMargin, Math.min(height - margin, position.y))
+
+        // Check if the bottom 50% of the reed overlaps with any lily pad
+        const reedSize = 120
+        const reedHalfSize = reedSize / 2
+
+        const overlapsBounds = lilyPadObstacles.some(lilyPad => {
+          // For moving lily pads with bounds
+          if (lilyPad.bounds) {
+            // Check if the bottom 50% of the reed overlaps with lily pad bounds
+            const reedLeft = position.x - reedHalfSize
+            const reedRight = position.x + reedHalfSize
+            const reedBottom50Top = position.y // Start of bottom 50% (center)
+            const reedBottom50Bottom = position.y + reedHalfSize // End of bottom 50%
+
+            // Rectangle overlap check for bottom 50% only
+            return !(reedRight < lilyPad.bounds.minX ||
+                     reedLeft > lilyPad.bounds.maxX ||
+                     reedBottom50Bottom < lilyPad.bounds.minY ||
+                     reedBottom50Top > lilyPad.bounds.maxY)
+          }
+
+          // For static lily pad bases (circular collision with bottom 50% of reed)
+          if (lilyPad.type === 'lilypad-base' && lilyPad.radius) {
+            // Check if lily pad circle overlaps with bottom 50% rectangle of reed
+            const reedLeft = position.x - reedHalfSize
+            const reedRight = position.x + reedHalfSize
+            const reedBottom50Top = position.y // Start of bottom 50% (center)
+            const reedBottom50Bottom = position.y + reedHalfSize // End of bottom 50%
+
+            // Find closest point on the rectangle to the circle center
+            const closestX = Math.max(reedLeft, Math.min(lilyPad.position.x, reedRight))
+            const closestY = Math.max(reedBottom50Top, Math.min(lilyPad.position.y, reedBottom50Bottom))
+
+            // Calculate distance from closest point to circle center
+            const distX = lilyPad.position.x - closestX
+            const distY = lilyPad.position.y - closestY
+            const distanceSquared = distX * distX + distY * distY
+
+            // Check if distance is less than radius (collision)
+            return distanceSquared < (lilyPad.radius * lilyPad.radius)
+          }
+
+          return false
+        })
+
+        if (!overlapsBounds) break
+        attempts++
       }
+
+      // Only add the reed if we found a valid position
+      if (attempts < maxAttempts) {
+        level.value.decorations.push({
+          id: `reed_${i}`,
+          type: 'reed',
+          position,
+          imageIndex: loadedImages.reeds.length > 0 ? Math.floor(rng() * loadedImages.reeds.length) : 0,
+          rotation: (rng() - 0.5) * 0.4,
+          scale: 0.7 + rng() * 0.5
+        })
+      }
+    }
+  }
+
+  // Add swimming fish
+  const fishCount = 1 + Math.floor(rng() * 2) // 1-2 fish
+
+  for (let i = 0; i < fishCount; i++) {
+    const position = {
+      x: margin + rng() * (width - 2 * margin),
+      y: topMargin + rng() * (height - topMargin - margin)
+    }
+
+    const velocity = {
+      x: (rng() - 0.5) * 0.3,
+      y: (rng() - 0.5) * 0.3
+    }
+
+    level.value.decorations.push({
+      id: `fish_${i}`,
+      type: 'fish',
+      position,
+      imageIndex: loadedImages.fish.length > 0 ? Math.floor(rng() * loadedImages.fish.length) : 0,
+      rotation: Math.atan2(velocity.y, velocity.x) + Math.PI, // Flip 180 degrees so fish faces forward
+      scale: 0.6 + rng() * 0.3,
+      velocity,
+      bounds: {
+        minX: margin,
+        maxX: width - margin,
+        minY: margin, // Fish can swim into top area
+        maxY: height - margin
+      },
+      // Fish behavior properties
+      baseSpeed: Math.sqrt(velocity.x ** 2 + velocity.y ** 2),
+      speedMultiplier: 1,
+      behaviorState: 'swimming', // swimming, hiding, scurrying
+      behaviorTimer: 0,
+      opacity: 0.85,
+      targetOpacity: 0.85
     })
   }
 }
@@ -528,7 +836,6 @@ function handleTouchEnd(event) {
   tapsRemaining.value--
   tapsUsed.value++
   gameStarted.value = true
-  showTapHint.value = false
 
   // Reset flag after a short delay to allow next tap
   setTimeout(() => {
@@ -593,7 +900,6 @@ function handleMouseUp(event) {
   tapsRemaining.value--
   tapsUsed.value++
   gameStarted.value = true
-  showTapHint.value = false
 
   // Reset flag after a short delay to allow next tap
   setTimeout(() => {
@@ -603,6 +909,8 @@ function handleMouseUp(event) {
 
 function createRipple(x, y, strength = 'medium') {
   const config = TAP_CONFIGS[strength]
+
+  console.log('Creating ripple at', x, y, 'with strength', strength)
 
   // Play random splash sound with debounce
   const now = Date.now()
@@ -621,20 +929,27 @@ function createRipple(x, y, strength = 'medium') {
     }
   }
 
-  ripples.push({
+  const newRipple = {
     id: `ripple_${Date.now()}`,
     origin: { x, y },
     radius: 0,
     maxRadius: config.maxRadius,
-    speed: config.speed,
+    speed: config.speed * (0.9 + Math.random() * 0.2), // Vary speed slightly
     peakRadius: config.peakRadius,
     peakPower: config.peakPower,
     lineWidth: config.lineWidth,
     glowIntensity: config.glowIntensity,
     isActive: true,
-    createdAt: Date.now(),
-    strength
-  })
+    absorbedBy: [], // Track which obstacles have absorbed this ripple
+    // Dynamic properties for varied ripple appearance
+    wobbleFreq: 3 + Math.random() * 4, // Random wobble frequency (3-7)
+    wobbleAmp: 1 + Math.random() * 2.5, // Random wobble amplitude (1-3.5)
+    phaseOffset: Math.random() * Math.PI * 2, // Random phase offset
+    ringSpacing: 12 + Math.random() * 8 // Vary ring spacing (12-20)
+  }
+
+  ripples.push(newRipple)
+  console.log('Ripple created, total ripples:', ripples.length)
 }
 
 function startGameLoop() {
@@ -651,6 +966,9 @@ function startGameLoop() {
 
     // Check lotus activations
     checkLotusActivations()
+
+    // Update sinking animations (must run every frame, not just when ripples exist)
+    updateSinkingAnimations()
 
     // Check win/lose
     checkGameState()
@@ -673,6 +991,154 @@ function stopGameLoop() {
 
 function updateObstacles() {
   level.value.obstacles.forEach(obstacle => {
+    // Update lily pads - float naturally like inanimate objects
+    if (obstacle.type === 'lilypad' && obstacle.velocity) {
+      // Apply ripple forces to lily pads (pushed by waves)
+      ripples.forEach(ripple => {
+        const dist = distance(ripple.origin, obstacle.position)
+
+        // Check if ripple is near this lily pad
+        if (dist < ripple.radius + 80 && dist > ripple.radius - 80) {
+          const power = calculateRipplePower(ripple.radius, ripple.peakRadius, ripple.peakPower)
+          const angle = Math.atan2(obstacle.position.y - ripple.origin.y, obstacle.position.x - ripple.origin.x)
+
+          const distFromEdge = Math.abs(dist - ripple.radius)
+          const proximityFactor = 1 - (distFromEdge / 80)
+
+          // Push lily pad with wave force
+          const pushForce = power * proximityFactor * 0.5
+          obstacle.velocity.x += Math.cos(angle) * pushForce * 0.08
+          obstacle.velocity.y += Math.sin(angle) * pushForce * 0.08
+
+          // Also rotate slightly from wave impact
+          if (obstacle.rotationSpeed !== undefined) {
+            obstacle.rotationSpeed += (Math.random() - 0.5) * pushForce * 0.003
+          }
+        }
+      })
+
+      // Cap maximum velocity to prevent them from moving too fast
+      const maxVelocity = 0.3
+      const currentSpeed = Math.sqrt(obstacle.velocity.x ** 2 + obstacle.velocity.y ** 2)
+
+      if (currentSpeed > maxVelocity) {
+        // If moving too fast (from wave impacts), scale down
+        const scale = maxVelocity / currentSpeed
+        obstacle.velocity.x *= scale
+        obstacle.velocity.y *= scale
+      } else if (currentSpeed > 0.05) {
+        // Only apply dampening if moving faster than base drift speed
+        // This prevents the slow drift from stopping while still slowing down wave impacts
+        obstacle.velocity.x *= 0.97
+        obstacle.velocity.y *= 0.97
+      }
+
+      // Update position
+      obstacle.position.x += obstacle.velocity.x
+      obstacle.position.y += obstacle.velocity.y
+
+      // Very slow passive rotation (like floating on water)
+      if (obstacle.rotationSpeed) {
+        obstacle.rotation += obstacle.rotationSpeed * 0.1 // Much slower rotation
+        // Very gentle dampening of rotation
+        obstacle.rotationSpeed *= 0.998
+      }
+
+      // Bounce off bounds - gentle reflection like water current
+      if (obstacle.position.x <= obstacle.bounds.minX || obstacle.position.x >= obstacle.bounds.maxX) {
+        obstacle.velocity.x *= -1
+        // Add slight randomness to make it more natural
+        obstacle.velocity.x += (Math.random() - 0.5) * 0.02
+        obstacle.velocity.y += (Math.random() - 0.5) * 0.02
+      }
+      if (obstacle.position.y <= obstacle.bounds.minY || obstacle.position.y >= obstacle.bounds.maxY) {
+        obstacle.velocity.y *= -1
+        // Add slight randomness to make it more natural
+        obstacle.velocity.x += (Math.random() - 0.5) * 0.02
+        obstacle.velocity.y += (Math.random() - 0.5) * 0.02
+      }
+
+      // Check collision with other lily pads and stones to prevent overlap
+      level.value.obstacles.forEach(other => {
+        if (other.type === 'lilypad' && other.id !== obstacle.id) {
+          const dx = other.position.x - obstacle.position.x
+          const dy = other.position.y - obstacle.position.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          const minDist = obstacle.radius + other.radius
+
+          if (dist < minDist && dist > 0) {
+            // Push apart gently
+            const pushX = (dx / dist) * (minDist - dist) * 0.5
+            const pushY = (dy / dist) * (minDist - dist) * 0.5
+
+            obstacle.position.x -= pushX
+            obstacle.position.y -= pushY
+            other.position.x += pushX
+            other.position.y += pushY
+
+            // Slightly alter velocities to prevent sticking
+            obstacle.velocity.x -= pushX * 0.01
+            obstacle.velocity.y -= pushY * 0.01
+            other.velocity.x += pushX * 0.01
+            other.velocity.y += pushY * 0.01
+          }
+        }
+
+        // Collision with stones - lily pads bounce off
+        if (other.type === 'stone') {
+          const dx = other.position.x - obstacle.position.x
+          const dy = other.position.y - obstacle.position.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          const minDist = obstacle.radius + other.radius
+
+          if (dist < minDist && dist > 0) {
+            // Push lily pad away from stone
+            const pushX = (dx / dist) * (minDist - dist)
+            const pushY = (dy / dist) * (minDist - dist)
+
+            obstacle.position.x -= pushX
+            obstacle.position.y -= pushY
+
+            // Bounce velocity away from stone
+            const dotProduct = obstacle.velocity.x * dx + obstacle.velocity.y * dy
+            obstacle.velocity.x -= 2 * dotProduct * dx / (dist * dist)
+            obstacle.velocity.y -= 2 * dotProduct * dy / (dist * dist)
+
+            // Add slight randomness
+            obstacle.velocity.x += (Math.random() - 0.5) * 0.02
+            obstacle.velocity.y += (Math.random() - 0.5) * 0.02
+          }
+        }
+
+        // Collision with static lily pad bases - lily pads bounce off
+        if (other.type === 'lilypad-base') {
+          const dx = other.position.x - obstacle.position.x
+          const dy = other.position.y - obstacle.position.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          const minDist = obstacle.radius + other.radius
+
+          if (dist < minDist && dist > 0) {
+            // Push lily pad away from static lily pad
+            const pushX = (dx / dist) * (minDist - dist)
+            const pushY = (dy / dist) * (minDist - dist)
+
+            obstacle.position.x -= pushX
+            obstacle.position.y -= pushY
+
+            // Bounce velocity away from static lily pad
+            const dotProduct = obstacle.velocity.x * dx + obstacle.velocity.y * dy
+            obstacle.velocity.x -= 2 * dotProduct * dx / (dist * dist)
+            obstacle.velocity.y -= 2 * dotProduct * dy / (dist * dist)
+
+            // Add slight randomness
+            obstacle.velocity.x += (Math.random() - 0.5) * 0.02
+            obstacle.velocity.y += (Math.random() - 0.5) * 0.02
+          }
+        }
+      })
+    }
+
+    // Update leaves
     if (obstacle.type === 'leaf' && obstacle.velocity) {
       // Update position
       obstacle.position.x += obstacle.velocity.x
@@ -681,12 +1147,133 @@ function updateObstacles() {
       // Bounce off bounds
       if (obstacle.position.x <= obstacle.bounds.minX || obstacle.position.x >= obstacle.bounds.maxX) {
         obstacle.velocity.x *= -1
+        obstacle.rotation = Math.atan2(obstacle.velocity.y, obstacle.velocity.x)
       }
       if (obstacle.position.y <= obstacle.bounds.minY || obstacle.position.y >= obstacle.bounds.maxY) {
         obstacle.velocity.y *= -1
+        obstacle.rotation = Math.atan2(obstacle.velocity.y, obstacle.velocity.x)
       }
     }
   })
+
+  // Update decorative fish movement with dynamic behavior
+  if (level.value.decorations) {
+    level.value.decorations.forEach(decoration => {
+      if (decoration.type === 'fish' && decoration.velocity) {
+        // Update behavior timer
+        decoration.behaviorTimer++
+
+        // Check for ripples nearby - fish get scared and scurry
+        let scaredByWave = false
+        ripples.forEach(ripple => {
+          const dist = distance(ripple.origin, decoration.position)
+          if (dist < ripple.radius + 100 && dist > ripple.radius - 100) {
+            scaredByWave = true
+          }
+        })
+
+        // Behavior state machine
+        if (scaredByWave && decoration.behaviorState !== 'scurrying') {
+          // Fish gets scared - scurry away!
+          decoration.behaviorState = 'scurrying'
+          decoration.speedMultiplier = 3.5
+          decoration.targetOpacity = 0.95
+          decoration.behaviorTimer = 0
+        } else if (decoration.behaviorState === 'scurrying' && decoration.behaviorTimer > 60) {
+          // Done scurrying, go back to swimming
+          decoration.behaviorState = 'swimming'
+          decoration.speedMultiplier = 1
+          decoration.targetOpacity = 0.85
+          decoration.behaviorTimer = 0
+        } else if (decoration.behaviorState === 'swimming') {
+          // Random behavior changes
+          if (Math.random() < 0.005) {
+            // Occasionally speed up
+            decoration.behaviorState = 'fast'
+            decoration.speedMultiplier = 2
+            decoration.targetOpacity = 0.9
+            decoration.behaviorTimer = 0
+          } else if (Math.random() < 0.008) {
+            // Occasionally slow down
+            decoration.behaviorState = 'slow'
+            decoration.speedMultiplier = 0.4
+            decoration.targetOpacity = 0.75
+            decoration.behaviorTimer = 0
+          }
+        } else if (decoration.behaviorState === 'slow' && decoration.behaviorTimer > 50) {
+          // Speed back up to normal
+          decoration.behaviorState = 'swimming'
+          decoration.speedMultiplier = 1
+          decoration.targetOpacity = 0.85
+          decoration.behaviorTimer = 0
+        } else if (decoration.behaviorState === 'fast' && decoration.behaviorTimer > 40) {
+          // Slow down to normal
+          decoration.behaviorState = 'swimming'
+          decoration.speedMultiplier = 1
+          decoration.targetOpacity = 0.85
+          decoration.behaviorTimer = 0
+        }
+
+        // Gradually transition speed and opacity
+        const currentSpeed = Math.sqrt(decoration.velocity.x ** 2 + decoration.velocity.y ** 2)
+        const targetSpeed = decoration.baseSpeed * decoration.speedMultiplier
+        if (currentSpeed < targetSpeed) {
+          const speedIncrease = 1.05
+          decoration.velocity.x *= speedIncrease
+          decoration.velocity.y *= speedIncrease
+        } else if (currentSpeed > targetSpeed) {
+          const speedDecrease = 0.95
+          decoration.velocity.x *= speedDecrease
+          decoration.velocity.y *= speedDecrease
+        }
+
+        // Smooth opacity transition
+        decoration.opacity += (decoration.targetOpacity - decoration.opacity) * 0.05
+
+        // Check collision with stones - fish avoid swimming under them
+        level.value.obstacles.forEach(obstacle => {
+          if (obstacle.type === 'stone') {
+            const dx = obstacle.position.x - decoration.position.x
+            const dy = obstacle.position.y - decoration.position.y
+            const dist = Math.sqrt(dx * dx + dy * dy)
+            const fishRadius = 30 // Approximate fish size
+            const minDist = obstacle.radius + fishRadius
+
+            if (dist < minDist && dist > 0) {
+              // Push fish away from stone
+              const pushX = (dx / dist) * (minDist - dist)
+              const pushY = (dy / dist) * (minDist - dist)
+
+              decoration.position.x -= pushX
+              decoration.position.y -= pushY
+
+              // Redirect velocity away from stone
+              const dotProduct = decoration.velocity.x * dx + decoration.velocity.y * dy
+              decoration.velocity.x -= 2 * dotProduct * dx / (dist * dist)
+              decoration.velocity.y -= 2 * dotProduct * dy / (dist * dist)
+
+              // Update rotation to face new direction
+              decoration.rotation = Math.atan2(decoration.velocity.y, decoration.velocity.x) + Math.PI
+            }
+          }
+        })
+
+        // Update position
+        decoration.position.x += decoration.velocity.x
+        decoration.position.y += decoration.velocity.y
+
+        // Bounce off bounds
+        if (decoration.position.x <= decoration.bounds.minX || decoration.position.x >= decoration.bounds.maxX) {
+          decoration.velocity.x *= -1
+          decoration.rotation = Math.atan2(decoration.velocity.y, decoration.velocity.x) + Math.PI
+        }
+        if (decoration.position.y <= decoration.bounds.minY || decoration.position.y >= decoration.bounds.maxY) {
+          decoration.velocity.y *= -1
+          decoration.rotation = Math.atan2(decoration.velocity.y, decoration.velocity.x) + Math.PI
+        }
+      }
+    })
+  }
 }
 
 function updateRipples() {
@@ -709,6 +1296,9 @@ function handleObstacleCollisions() {
     if (!ripple.isActive) return
 
     level.value.obstacles.forEach(obstacle => {
+      // Skip lily-pad-base (they don't block waves, only hold flowers)
+      if (obstacle.type === 'lilypad-base') return
+
       const dist = distance(ripple.origin, obstacle.position)
 
       // Check if ripple is touching obstacle
@@ -794,10 +1384,12 @@ function checkLotusActivations() {
     }
 
     // Check if combined power activates the lotus
-    if (combinedPower >= lotus.activationThreshold) {
+    if (combinedPower >= lotus.activationThreshold && !lotus.isActivated) {
       lotus.isActivated = true
       lotus.activatedAt = Date.now()
       lotus.glowIntensity = 1.0
+      lotus.sinkProgress = 0 // Start sinking animation
+      console.log('Lotus activated! Starting sink animation', lotus.id)
       haptics.success()
     }
 
@@ -808,6 +1400,18 @@ function checkLotusActivations() {
       // Decay current power smoothly
       lotus.currentPower = (lotus.currentPower || 0) * 0.85
       if (lotus.currentPower < 0.01) lotus.currentPower = 0
+    }
+  })
+}
+
+function updateSinkingAnimations() {
+  // Update sinking progress for all activated flowers
+  level.value.lotusFlowers.forEach(lotus => {
+    if (lotus.isActivated && lotus.sinkProgress !== undefined && lotus.sinkProgress < 1) {
+      lotus.sinkProgress += 0.008 // Sink over ~125 frames (about 2 seconds)
+      if (Math.random() < 0.05) { // Log occasionally
+        console.log('Sinking progress:', lotus.id, lotus.sinkProgress.toFixed(3))
+      }
     }
   })
 }
@@ -935,10 +1539,84 @@ function render() {
   // Add subtle water surface texture
   drawWaterSurface(ctx, width, height)
 
-  // Draw obstacles
+  // Draw fish in background (underwater)
+  if (level.value.decorations && imagesLoaded) {
+    level.value.decorations.forEach(decoration => {
+      if (decoration.type === 'fish') {
+        drawDecoration(ctx, decoration)
+      }
+    })
+  }
+
+  // Draw BOTTOM HALF of reeds (can be covered by lily pads)
+  if (level.value.decorations && imagesLoaded) {
+    level.value.decorations.forEach(decoration => {
+      if (decoration.type === 'reed') {
+        drawDecorationClipped(ctx, decoration, 'bottom')
+      }
+    })
+  }
+
+  // Draw moving lily pads (before flowers and stones)
   level.value.obstacles.forEach(obstacle => {
-    drawObstacle(ctx, obstacle)
+    if (obstacle.type === 'lilypad') {
+      if (imagesLoaded) {
+        drawObstacleImageWithDisplacement(ctx, obstacle)
+      } else {
+        drawObstacle(ctx, obstacle)
+      }
+    }
   })
+
+  // Draw lotus flowers WITH their lily pad bases (combined sinking effect)
+  level.value.lotusFlowers.forEach(lotus => {
+    // Find corresponding lily pad base
+    const lilyPadBase = level.value.obstacles.find(obs =>
+      obs.type === 'lilypad-base' &&
+      obs.position.x === lotus.position.x &&
+      obs.position.y === lotus.position.y
+    )
+
+    // Only draw if not fully sunk
+    if (!lotus.isActivated || (lotus.sinkProgress || 0) < 1) {
+      if (imagesLoaded) {
+        drawLotusWithLilyPadSinking(ctx, lotus, lilyPadBase)
+      } else {
+        drawLotus(ctx, lotus)
+      }
+    }
+  })
+
+  // Draw stones (on top of moving lily pads, under leaves)
+  level.value.obstacles.forEach(obstacle => {
+    if (obstacle.type === 'stone') {
+      if (imagesLoaded) {
+        drawObstacleImageWithDisplacement(ctx, obstacle)
+      } else {
+        drawObstacle(ctx, obstacle)
+      }
+    }
+  })
+
+  // Draw leaves (on top of everything except reeds)
+  level.value.obstacles.forEach(obstacle => {
+    if (obstacle.type === 'leaf') {
+      if (imagesLoaded) {
+        drawObstacleImageWithDisplacement(ctx, obstacle)
+      } else {
+        drawObstacle(ctx, obstacle)
+      }
+    }
+  })
+
+  // Draw TOP HALF of reeds last (always on top of everything)
+  if (level.value.decorations && imagesLoaded) {
+    level.value.decorations.forEach(decoration => {
+      if (decoration.type === 'reed') {
+        drawDecorationClipped(ctx, decoration, 'top')
+      }
+    })
+  }
 
   // Draw protected zones (subtle)
   level.value.lotusFlowers.forEach(lotus => {
@@ -956,11 +1634,6 @@ function render() {
   // Draw ripples with multiple rings and distortion
   ripples.forEach(ripple => {
     drawRipple(ctx, ripple)
-  })
-
-  // Draw lotus flowers
-  level.value.lotusFlowers.forEach(lotus => {
-    drawLotus(ctx, lotus)
   })
 }
 
@@ -994,11 +1667,12 @@ function drawWaterSurface(ctx, width, height) {
 function drawRipple(ctx, ripple) {
   const color = getRippleColor(ripple.radius)
 
-  // Draw multiple concentric rings for more liquid feel
-  const ringCount = 3
+  // Draw multiple concentric rings with dynamic spacing
+  const ringCount = 3 + Math.floor(Math.random() * 2) // 3-4 rings
 
   for (let ring = 0; ring < ringCount; ring++) {
-    const ringOffset = ring * 15
+    // Use ripple's unique ring spacing
+    const ringOffset = ring * ripple.ringSpacing
     const currentRadius = ripple.radius - ringOffset
 
     if (currentRadius <= 0) continue
@@ -1008,18 +1682,26 @@ function drawRipple(ctx, ripple) {
 
     if (ringAlpha <= 0.05) continue
 
-    // Add slight distortion for organic feel
+    // Add dynamic distortion unique to each ripple
     ctx.save()
     ctx.beginPath()
 
     const segments = 32
     for (let i = 0; i <= segments; i++) {
       const angle = (i / segments) * Math.PI * 2
-      const wobble = Math.sin(angle * 4 + animationTime * 3) * 2
-      const distortedRadius = currentRadius + wobble
 
-      const x = ripple.origin.x + Math.cos(angle) * distortedRadius
-      const y = ripple.origin.y + Math.sin(angle) * distortedRadius
+      // Use ripple's unique wobble properties
+      const wobble1 = Math.sin(angle * ripple.wobbleFreq + animationTime * 3 + ripple.phaseOffset) * ripple.wobbleAmp
+      const wobble2 = Math.cos(angle * (ripple.wobbleFreq * 0.7) + animationTime * 2.5) * (ripple.wobbleAmp * 0.6)
+
+      // Combine wobbles for more organic distortion
+      const distortedRadius = currentRadius + wobble1 + wobble2
+
+      // Add slight asymmetry
+      const asymmetry = Math.sin(angle * 2 + ripple.phaseOffset) * (ripple.wobbleAmp * 0.3)
+
+      const x = ripple.origin.x + Math.cos(angle) * (distortedRadius + asymmetry)
+      const y = ripple.origin.y + Math.sin(angle) * (distortedRadius + asymmetry)
 
       if (i === 0) {
         ctx.moveTo(x, y)
@@ -1030,14 +1712,16 @@ function drawRipple(ctx, ripple) {
 
     ctx.closePath()
 
-    // Glow effect
-    ctx.shadowBlur = ripple.glowIntensity * ringPower
+    // Dynamic glow effect - varies per ring
+    const glowVariation = 0.8 + Math.sin(animationTime * 2 + ring + ripple.phaseOffset) * 0.2
+    ctx.shadowBlur = ripple.glowIntensity * ringPower * glowVariation
     ctx.shadowColor = color
 
-    // Stroke with fade
+    // Stroke with fade and slight variation
     const rgbaColor = color.replace(')', `, ${ringAlpha})`)
     ctx.strokeStyle = rgbaColor
-    ctx.lineWidth = ripple.lineWidth * (1 - ring / ringCount * 0.5)
+    const lineWidthVariation = 0.9 + Math.sin(animationTime + ring * 0.5) * 0.1
+    ctx.lineWidth = ripple.lineWidth * (1 - ring / ringCount * 0.5) * lineWidthVariation
     ctx.stroke()
 
     ctx.shadowBlur = 0
@@ -1160,6 +1844,371 @@ function drawLotus(ctx, lotus) {
   ctx.fill()
 
   ctx.shadowBlur = 0
+}
+
+function drawObstacleImage(ctx, obstacle) {
+  const { x, y } = obstacle.position
+  let img
+
+  if (obstacle.type === 'stone') {
+    img = loadedImages.rocks[obstacle.imageIndex]
+  } else if (obstacle.type === 'lilypad' || obstacle.type === 'lilypad-base') {
+    img = loadedImages.lilyPads[obstacle.imageIndex]
+  } else if (obstacle.type === 'leaf') {
+    // Use lily pads for leaves too (smaller ones)
+    img = loadedImages.lilyPads[obstacle.imageIndex]
+  }
+
+  if (!img || !img.complete) {
+    // Fallback to geometric shapes if image not loaded
+    drawObstacle(ctx, obstacle)
+    return
+  }
+
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.rotate(obstacle.rotation)
+  ctx.scale(obstacle.scale, obstacle.scale)
+
+  // Scale image to fit the obstacle size
+  const imgSize = obstacle.radius * 2
+  ctx.drawImage(img, -imgSize / 2, -imgSize / 2, imgSize, imgSize)
+
+  ctx.restore()
+}
+
+function drawObstacleImageWithDisplacement(ctx, obstacle) {
+  // Stones don't move with waves
+  if (obstacle.type === 'stone') {
+    drawObstacleImage(ctx, obstacle)
+    return
+  }
+
+  // Calculate smooth wave displacement with circular motion
+  let displacement = { x: 0, y: 0 }
+  let totalRotation = 0
+
+  ripples.forEach(ripple => {
+    const dist = distance(ripple.origin, obstacle.position)
+
+    // Larger tolerance for smoother effect
+    if (dist < ripple.radius + 80 && dist > ripple.radius - 80) {
+      const power = calculateRipplePower(ripple.radius, ripple.peakRadius, ripple.peakPower)
+      const angle = Math.atan2(obstacle.position.y - ripple.origin.y, obstacle.position.x - ripple.origin.x)
+
+      // Distance from ripple edge (negative when inside, positive when outside)
+      const distFromEdge = Math.abs(dist - ripple.radius)
+      const proximityFactor = 1 - (distFromEdge / 80) // Smoother falloff
+
+      // Circular motion: up and down as wave passes
+      const wavePhase = (dist - ripple.radius) / 20 // Creates wave pattern
+      const verticalMove = Math.sin(wavePhase) * power * proximityFactor * 4
+      const horizontalMove = Math.cos(wavePhase) * power * proximityFactor * 2
+
+      // Move in radial direction with smooth easing
+      const moveAmount = power * proximityFactor * (obstacle.type === 'lilypad-base' ? 2 : 1.5)
+      displacement.x += Math.cos(angle) * moveAmount + horizontalMove
+      displacement.y += Math.sin(angle) * moveAmount + verticalMove
+
+      // Gentle rotation based on wave
+      totalRotation += Math.sin(wavePhase) * power * proximityFactor * 0.05
+    }
+  })
+
+  const { x, y } = obstacle.position
+  let img
+
+  if (obstacle.type === 'lilypad' || obstacle.type === 'lilypad-base') {
+    img = loadedImages.lilyPads[obstacle.imageIndex]
+  } else if (obstacle.type === 'leaf') {
+    img = loadedImages.lilyPads[obstacle.imageIndex]
+  }
+
+  if (!img || !img.complete) {
+    drawObstacle(ctx, obstacle)
+    return
+  }
+
+  ctx.save()
+  ctx.translate(x + displacement.x, y + displacement.y)
+  ctx.rotate(obstacle.rotation + totalRotation) // Add wave-induced rotation
+  ctx.scale(obstacle.scale, obstacle.scale)
+
+  const imgSize = obstacle.radius * 2
+  ctx.drawImage(img, -imgSize / 2, -imgSize / 2, imgSize, imgSize)
+
+  ctx.restore()
+}
+
+function drawLotusWithLilyPadSinking(ctx, lotus, lilyPadBase) {
+  const { x, y } = lotus.position
+  const flowerImg = loadedImages.flowers[lotus.imageIndex]
+  const lilyPadImg = lilyPadBase && loadedImages.lilyPads[lilyPadBase.imageIndex]
+
+  if (!flowerImg || !flowerImg.complete) {
+    drawLotus(ctx, lotus)
+    return
+  }
+
+  const sinkProgress = lotus.sinkProgress || 0
+
+  // Calculate wave displacement (only if not sinking)
+  let displacement = { x: 0, y: 0 }
+  let totalRotation = 0
+
+  // Only move with waves if not activated or just starting to sink
+  if (!lotus.isActivated || sinkProgress < 0.1) {
+    ripples.forEach(ripple => {
+      const dist = distance(ripple.origin, lotus.position)
+
+      if (dist < ripple.radius + 80 && dist > ripple.radius - 80) {
+        const power = calculateRipplePower(ripple.radius, ripple.peakRadius, ripple.peakPower)
+        const angle = Math.atan2(lotus.position.y - ripple.origin.y, lotus.position.x - ripple.origin.x)
+
+        const distFromEdge = Math.abs(dist - ripple.radius)
+        const proximityFactor = 1 - (distFromEdge / 80)
+
+        const wavePhase = (dist - ripple.radius) / 20
+        const verticalMove = Math.sin(wavePhase) * power * proximityFactor * 3
+        const horizontalMove = Math.cos(wavePhase) * power * proximityFactor * 1.5
+
+        const moveAmount = power * proximityFactor * 1.5
+
+        // Reduce displacement as sinking progresses
+        const displacementFactor = lotus.isActivated ? (1 - sinkProgress * 10) : 1
+        displacement.x += (Math.cos(angle) * moveAmount + horizontalMove) * displacementFactor
+        displacement.y += (Math.sin(angle) * moveAmount + verticalMove) * displacementFactor
+
+        totalRotation += Math.sin(wavePhase) * power * proximityFactor * 0.08 * displacementFactor
+      }
+    })
+  }
+
+  // Show power level with glow (only when not activated)
+  if (!lotus.isActivated && lotus.currentPower > 0) {
+    const glowIntensity = Math.min(lotus.currentPower / lotus.activationThreshold, 1)
+    ctx.shadowBlur = 20 * glowIntensity
+    ctx.shadowColor = `rgba(100, 200, 255, ${glowIntensity * 0.6})`
+  }
+
+  // Draw splash ripples when first activated
+  if (lotus.isActivated && sinkProgress < 0.3) {
+    ctx.save()
+    const splashAlpha = 0.8 * (1 - sinkProgress / 0.3)
+    ctx.strokeStyle = `rgba(100, 200, 255, ${splashAlpha})`
+    ctx.lineWidth = 3
+    const splashRadius = 40 + sinkProgress * 60
+    ctx.beginPath()
+    ctx.arc(x, y, splashRadius, 0, Math.PI * 2)
+    ctx.stroke()
+
+    // Inner splash ring
+    ctx.strokeStyle = `rgba(150, 220, 255, ${splashAlpha * 0.6})`
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.arc(x, y, splashRadius * 0.6, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.restore()
+  }
+
+  // Debug logging
+  if (lotus.isActivated && Math.random() < 0.02) {
+    console.log('Drawing activated lotus:', lotus.id, 'sinkProgress:', sinkProgress.toFixed(3))
+  }
+
+  // Draw lily pad base
+  if (lilyPadBase && lilyPadImg && lilyPadImg.complete) {
+    ctx.save()
+    ctx.translate(x + displacement.x, y + displacement.y)
+    ctx.rotate(lilyPadBase.rotation + totalRotation)
+    ctx.scale(lilyPadBase.scale, lilyPadBase.scale)
+
+    // Fade and shrink when activated
+    if (lotus.isActivated && sinkProgress > 0) {
+      const fadeAlpha = 1 - sinkProgress
+      ctx.globalAlpha = fadeAlpha
+      const shrinkScale = 1 - sinkProgress * 0.3
+      ctx.scale(shrinkScale, shrinkScale)
+
+      if (Math.random() < 0.02) {
+        console.log('Lily pad alpha:', fadeAlpha.toFixed(3), 'scale:', shrinkScale.toFixed(3))
+      }
+    }
+
+    const lilyPadSize = lilyPadBase.radius * 2
+    ctx.drawImage(lilyPadImg, -lilyPadSize / 2, -lilyPadSize / 2, lilyPadSize, lilyPadSize)
+    ctx.restore()
+  }
+
+  // Draw flower
+  ctx.save()
+  ctx.translate(x + displacement.x, y + displacement.y)
+  ctx.rotate(lotus.rotation + totalRotation)
+  ctx.scale(lotus.scale, lotus.scale)
+
+  // Fade and shrink when activated
+  if (lotus.isActivated && sinkProgress > 0) {
+    const fadeAlpha = 1 - sinkProgress
+    ctx.globalAlpha = fadeAlpha
+    const shrinkScale = 1 - sinkProgress * 0.3
+    ctx.scale(shrinkScale, shrinkScale)
+  }
+
+  const flowerSize = 60
+  ctx.drawImage(flowerImg, -flowerSize / 2, -flowerSize / 2, flowerSize, flowerSize)
+  ctx.restore()
+
+  // Draw water closing in effect
+  if (lotus.isActivated && sinkProgress > 0.1 && sinkProgress < 1) {
+    ctx.save()
+    ctx.translate(x, y)
+
+    const maxRadius = 70
+    const waterRadius = maxRadius * sinkProgress // Water grows from 0 to maxRadius
+
+    // Draw semi-transparent blue water circle
+    const waterAlpha = Math.min(0.6, sinkProgress * 0.6)
+    ctx.fillStyle = `rgba(30, 100, 150, ${waterAlpha})`
+    ctx.beginPath()
+    ctx.arc(0, 0, waterRadius, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Draw bright animated edge
+    ctx.strokeStyle = `rgba(100, 200, 255, ${0.7 * sinkProgress})`
+    ctx.lineWidth = 2
+    ctx.shadowBlur = 6
+    ctx.shadowColor = 'rgba(100, 200, 255, 0.5)'
+
+    ctx.beginPath()
+    const segments = 24
+    for (let i = 0; i <= segments; i++) {
+      const angle = (i / segments) * Math.PI * 2
+      const wave = Math.sin(i * 0.7 + animationTime * 5) * 1.5
+      const r = waterRadius + wave
+      const xPos = Math.cos(angle) * r
+      const yPos = Math.sin(angle) * r
+
+      if (i === 0) {
+        ctx.moveTo(xPos, yPos)
+      } else {
+        ctx.lineTo(xPos, yPos)
+      }
+    }
+    ctx.closePath()
+    ctx.stroke()
+
+    ctx.restore()
+  }
+
+  ctx.shadowBlur = 0
+}
+
+function drawDecoration(ctx, decoration) {
+  const { x, y } = decoration.position
+  let img
+
+  if (decoration.type === 'reed') {
+    img = loadedImages.reeds[decoration.imageIndex]
+  } else if (decoration.type === 'fish') {
+    img = loadedImages.fish[decoration.imageIndex]
+  }
+
+  if (!img || !img.complete) return
+
+  // Apply some transparency to make decorations subtle
+  ctx.save()
+
+  if (decoration.type === 'reed') {
+    ctx.globalAlpha = 0.7
+  } else if (decoration.type === 'fish') {
+    // Use dynamic opacity for fish behavior
+    ctx.globalAlpha = decoration.opacity || 0.85
+  }
+
+  ctx.translate(x, y)
+  ctx.rotate(decoration.rotation)
+  ctx.scale(decoration.scale, decoration.scale)
+
+  // Size based on decoration type
+  const imgSize = decoration.type === 'reed' ? 120 : 60
+  ctx.drawImage(img, -imgSize / 2, -imgSize / 2, imgSize, imgSize)
+
+  ctx.restore()
+}
+
+function drawDecorationClipped(ctx, decoration, half) {
+  const { x, y } = decoration.position
+  let img
+
+  if (decoration.type === 'reed') {
+    img = loadedImages.reeds[decoration.imageIndex]
+  } else if (decoration.type === 'fish') {
+    img = loadedImages.fish[decoration.imageIndex]
+  }
+
+  if (!img || !img.complete) return
+
+  // Calculate wave displacement for reeds (gentle swaying)
+  let displacement = { x: 0, y: 0 }
+  let totalRotation = 0
+
+  if (decoration.type === 'reed') {
+    ripples.forEach(ripple => {
+      const dist = distance(ripple.origin, decoration.position)
+
+      if (dist < ripple.radius + 80 && dist > ripple.radius - 80) {
+        const power = calculateRipplePower(ripple.radius, ripple.peakRadius, ripple.peakPower)
+        const angle = Math.atan2(decoration.position.y - ripple.origin.y, decoration.position.x - ripple.origin.x)
+
+        const distFromEdge = Math.abs(dist - ripple.radius)
+        const proximityFactor = 1 - (distFromEdge / 80)
+
+        const wavePhase = (dist - ripple.radius) / 20
+        const verticalMove = Math.sin(wavePhase) * power * proximityFactor * 2
+        const horizontalMove = Math.cos(wavePhase) * power * proximityFactor * 1
+
+        // Reeds sway gently
+        const moveAmount = power * proximityFactor * 0.8
+        displacement.x += Math.cos(angle) * moveAmount + horizontalMove
+        displacement.y += Math.sin(angle) * moveAmount + verticalMove
+
+        // Gentle sway rotation
+        totalRotation += Math.sin(wavePhase) * power * proximityFactor * 0.06
+      }
+    })
+  }
+
+  ctx.save()
+
+  // Apply transparency only to fish
+  if (decoration.type === 'fish') {
+    ctx.globalAlpha = 0.85 // Increased from 0.5 to show true colors better
+  }
+  // Reeds are fully opaque (no transparency)
+
+  ctx.translate(x + displacement.x, y + displacement.y)
+  ctx.rotate(decoration.rotation + totalRotation)
+  ctx.scale(decoration.scale, decoration.scale)
+
+  const imgSize = decoration.type === 'reed' ? 120 : 60
+
+  // Create clipping region for top or bottom
+  // Top is 75% of the reed (protected from lily pads)
+  // Bottom is 25% of the reed (can be behind lily pads)
+  ctx.beginPath()
+  if (half === 'bottom') {
+    // Bottom 25%: from 25% point down to bottom
+    ctx.rect(-imgSize / 2, imgSize / 4, imgSize, imgSize / 4)
+  } else {
+    // Top 75%: from top to 25% point
+    ctx.rect(-imgSize / 2, -imgSize / 2, imgSize, imgSize * 0.75)
+  }
+  ctx.clip()
+
+  // Draw the image
+  ctx.drawImage(img, -imgSize / 2, -imgSize / 2, imgSize, imgSize)
+
+  ctx.restore()
 }
 
 function distance(p1, p2) {
@@ -1348,22 +2397,6 @@ function openInstructions() {
 
 .menu-fade-move {
   transition: transform 0.2s ease;
-}
-
-.taps-indicator {
-  position: absolute;
-  top: 120px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
-  padding: 8px 16px;
-  border-radius: 20px;
-  pointer-events: none;
 }
 
 .tap-hint {
