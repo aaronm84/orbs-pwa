@@ -1,23 +1,29 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
-      <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
+  <q-layout view="lHh lpR fFf" style="background: transparent;">
+    <!-- Dynamic gradient header (hidden for game pages) - overlay mode -->
+    <div v-if="!isGamePage" class="main-header">
+      <q-btn
+        v-if="showBackButton"
+        fab-mini
+        flat
+        icon="arrow_back"
+        color="white"
+        @click="goBack"
+      />
 
-        <q-toolbar-title> Quasar App </q-toolbar-title>
+      <q-space />
 
-        <div>Quasar v{{ $q.version }}</div>
-      </q-toolbar>
-    </q-header>
+      <q-btn
+        v-if="route.name === 'home'"
+        fab-mini
+        flat
+        icon="settings"
+        color="white"
+        @click="goToSettings"
+      />
+    </div>
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
-      <q-list>
-        <q-item-label header> Essential Links </q-item-label>
-
-        <EssentialLink v-for="link in linksList" :key="link.title" v-bind="link" />
-      </q-list>
-    </q-drawer>
-
+    <!-- Main Content -->
     <q-page-container>
       <router-view />
     </q-page-container>
@@ -25,57 +31,58 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import EssentialLink from 'components/EssentialLink.vue'
+import { computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useHaptics } from 'src/composables/useHaptics'
 
-const linksList = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev',
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework',
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev',
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev',
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev',
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev',
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev',
-  },
-]
+const router = useRouter()
+const route = useRoute()
+const haptics = useHaptics()
 
-const leftDrawerOpen = ref(false)
+const showBackButton = computed(() => {
+  return route.name !== 'home'
+})
 
-function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value
+const isGamePage = computed(() => {
+  // Hide header for game pages that have their own custom header
+  return route.name === 'chain-reaction'
+})
+
+function goBack() {
+  haptics.light()
+  router.back()
+}
+
+function goToSettings() {
+  haptics.light()
+  router.push({ name: 'settings' })
 }
 </script>
+
+<style lang="scss">
+// Force layout to be transparent
+.q-layout {
+  background: transparent !important;
+}
+
+.main-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+
+  // Allow interaction with buttons only
+  > * {
+    pointer-events: all;
+  }
+}
+</style>

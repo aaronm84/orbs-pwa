@@ -1,1 +1,69 @@
-// app global css in SCSS form
+// Zenith - Global Styles
+
+// Color Variables
+$primary: #667eea;
+$secondary: #764ba2;
+$accent: #ffd700;
+$dark: #1a1a2e;
+
+// Global styles
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', '-apple-system', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Utility classes
+.gradient-bg {
+  background: linear-gradient(135deg, $primary 0%, $secondary 100%);
+}
+
+.card-hover {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.game-canvas {
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  height: auto;
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
