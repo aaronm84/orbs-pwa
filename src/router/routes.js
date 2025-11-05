@@ -19,6 +19,11 @@ const routes = [
         component: () => import('pages/SolitairePage.vue'),
       },
       {
+        path: 'ripple',
+        name: 'ripple',
+        component: () => import('pages/RipplePage.vue'),
+      },
+      {
         path: 'settings',
         name: 'settings',
         component: () => import('pages/SettingsPage.vue'),

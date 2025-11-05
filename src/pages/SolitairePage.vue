@@ -4,6 +4,8 @@
     <div class="game-header">
       <q-btn fab-mini flat icon="arrow_back" color="white" @click="goBack" />
 
+      <q-space />
+
       <div v-if="showStats" class="game-stats">
         <div class="stat-item">
           <q-icon name="schedule" size="16px" />
@@ -27,8 +29,6 @@
         class="auto-complete-btn"
         @click="autoComplete"
       />
-
-      <q-space />
 
       <div class="header-menu">
         <q-btn
@@ -736,8 +736,25 @@ function handleDragEnd(event) {
   const clientY = event.changedTouches ? event.changedTouches[0].clientY : event.clientY
 
   // Find what element is under the drop position
-  const element = document.elementFromPoint(clientX, clientY)
-  const dropZone = element?.closest('[data-drop-zone]')
+  let element = document.elementFromPoint(clientX, clientY)
+  let dropZone = element?.closest('[data-drop-zone]')
+
+  // If no drop zone found, search in a wider radius (more forgiving)
+  if (!dropZone) {
+    const searchRadius = 50 // pixels
+    const offsets = [
+      [0, searchRadius], [0, -searchRadius],
+      [searchRadius, 0], [-searchRadius, 0],
+      [searchRadius, searchRadius], [-searchRadius, -searchRadius],
+      [searchRadius, -searchRadius], [-searchRadius, searchRadius]
+    ]
+
+    for (const [dx, dy] of offsets) {
+      element = document.elementFromPoint(clientX + dx, clientY + dy)
+      dropZone = element?.closest('[data-drop-zone]')
+      if (dropZone) break
+    }
+  }
 
   if (dropZone) {
     const dropType = dropZone.getAttribute('data-drop-type')
@@ -1025,10 +1042,16 @@ onBeforeUnmount(() => {
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
+
+  .menu-button {
+    background: transparent;
+    transition: background 0.2s ease;
+  }
 }
 
 .menu-button-active {
-  background: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(10px);
 }
 
 .menu-buttons-container {
@@ -1037,34 +1060,77 @@ onBeforeUnmount(() => {
   gap: 8px;
 }
 
+.menu-buttons-container:has(.menu-item) {
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+}
+
+.menu-item {
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+// Menu fade transitions
 .menu-fade-enter-active {
-  transition: all 0.3s ease;
+  transition: all 0.2s ease-out;
 }
 
 .menu-fade-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.15s ease-in;
 }
 
-.menu-fade-enter-from,
+.menu-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.8);
+}
+
 .menu-fade-leave-to {
   opacity: 0;
-  transform: translateX(10px);
+  transform: translateY(-10px) scale(0.8);
 }
 
+// Staggered delays for sequential appearance
 .menu-item-1 {
-  transition-delay: 0.05s;
+  &.menu-fade-enter-active {
+    transition-delay: 0ms;
+  }
+  &.menu-fade-leave-active {
+    transition-delay: 150ms;
+  }
 }
 
 .menu-item-2 {
-  transition-delay: 0.1s;
+  &.menu-fade-enter-active {
+    transition-delay: 50ms;
+  }
+  &.menu-fade-leave-active {
+    transition-delay: 100ms;
+  }
 }
 
 .menu-item-3 {
-  transition-delay: 0.15s;
+  &.menu-fade-enter-active {
+    transition-delay: 100ms;
+  }
+  &.menu-fade-leave-active {
+    transition-delay: 50ms;
+  }
 }
 
 .menu-item-4 {
-  transition-delay: 0.2s;
+  &.menu-fade-enter-active {
+    transition-delay: 150ms;
+  }
+  &.menu-fade-leave-active {
+    transition-delay: 0ms;
+  }
+}
+
+// Prevent layout shift during transition
+.menu-fade-move {
+  transition: transform 0.2s ease;
 }
 
 .game-stats {
@@ -1201,9 +1267,12 @@ onBeforeUnmount(() => {
     color: #e74c3c;
   }
 
-  &.draggable:hover {
-    transform: translateY(-4px) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  // Only apply hover effect on non-touch devices
+  @media (hover: hover) and (pointer: fine) {
+    &.draggable:hover:not(.being-dragged) {
+      transform: translateY(-4px) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
   }
 
   &.face-down {
@@ -1254,7 +1323,7 @@ onBeforeUnmount(() => {
 
 .card-corner {
   position: absolute;
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1;
 
@@ -1331,8 +1400,9 @@ onBeforeUnmount(() => {
 .win-card,
 .instructions-card {
   border-radius: 12px;
-  background: v-bind('themeStore.colors.cardBg');
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 
   :deep(*) {
     color: white !important;

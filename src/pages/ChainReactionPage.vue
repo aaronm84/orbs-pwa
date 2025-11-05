@@ -199,7 +199,10 @@ const capturedCount = ref(0)
 const clicksRemaining = ref(1)
 const isPlaying = ref(false)
 const gameStarted = ref(false)
-const showTapHint = ref(true)
+const gameEnded = ref(false) // Flag to prevent multiple game end checks
+// Session-based flag: only show "Tap to Start" once per app session
+const hasSeenTapHint = ref(false)
+const showTapHint = computed(() => !hasSeenTapHint.value)
 
 // Dialogs
 const showInstructions = ref(false)
@@ -314,6 +317,7 @@ function initLevel() {
   capturedCount.value = 0
   clicksRemaining.value = levelConfig.value.clicksAllowed
   gameStarted.value = false
+  gameEnded.value = false // Reset the game ended flag
   showTapHint.value = true
 
   // Reset bell sequence for musical chimes
@@ -371,6 +375,8 @@ function handleCanvasClick(event) {
 
   clicksRemaining.value--
   gameStarted.value = true
+  // Mark that user has seen the tap hint
+  hasSeenTapHint.value = true
 }
 
 function createExplosion(x, y, color = '#ffffff') {
@@ -462,8 +468,8 @@ function update() {
   // Remove fully faded explosions
   explosions = explosions.filter((e) => e.active || e.alpha > 0)
 
-  // Check win/lose conditions
-  if (gameStarted.value && explosions.length === 0) {
+  // Check win/lose conditions (only once)
+  if (gameStarted.value && !gameEnded.value && explosions.length === 0) {
     checkGameEnd()
   }
 }
@@ -544,10 +550,11 @@ function render() {
 }
 
 function checkGameEnd() {
-  stopGameLoop()
+  gameEnded.value = true // Mark game as ended to prevent repeated checks
 
   if (capturedCount.value >= levelGoal.value) {
     // Win!
+    stopGameLoop()
     haptics.success()
     showWinDialog.value = true
 
@@ -555,9 +562,10 @@ function checkGameEnd() {
     const nextLevelNumber = currentLevel.value + 1
     progressStore.updateChainReactionLevel(nextLevelNumber, capturedCount.value, isPerfect.value)
   } else {
-    // Lose
+    // Lose - keep game animating for a less abrupt feel
     haptics.warning()
     showLoseDialog.value = true
+    // Game continues animating in background
   }
 }
 
@@ -570,6 +578,7 @@ function nextLevel() {
 function retryLevel() {
   haptics.light()
   showLoseDialog.value = false
+  stopGameLoop() // Stop the background animation before reinitializing
   initLevel()
 }
 
@@ -700,13 +709,13 @@ function goBack() {
   align-items: flex-end;
 
   .menu-button {
-    background: rgba(0, 0, 0, 0.15);
-    backdrop-filter: blur(10px);
+    background: transparent;
     transition: background 0.2s ease;
   }
 
   .menu-button-active {
     background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(10px);
   }
 
   .menu-buttons-container {
@@ -717,6 +726,13 @@ function goBack() {
     flex-direction: column;
     gap: 8px;
     z-index: 20;
+  }
+
+  .menu-buttons-container:has(.menu-item) {
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
   }
 
   .menu-item {
@@ -815,6 +831,13 @@ function goBack() {
   min-width: 300px;
   max-width: 400px;
   border-radius: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  :deep(*) {
+    color: white !important;
+  }
 }
 
 .level-select-card {

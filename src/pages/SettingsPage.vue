@@ -142,6 +142,7 @@ async function saveSettings() {
   width: 100%;
   max-width: 600px;
   padding: 24px;
+  padding-top: max(40px, env(safe-area-inset-top) + 24px);
   margin: 0 auto;
 }
 

@@ -69,7 +69,7 @@ const haptics = useHaptics()
 const games = ref([
   {
     id: 'chain-reaction',
-    name: 'Chain Reaction',
+    name: 'Orbs',
     description: 'Create mesmerizing chain reactions',
     available: true,
     progress: 0,
@@ -91,7 +91,7 @@ const games = ref([
     id: 'ripple',
     name: 'Ripple',
     description: 'Create waves to reach lotus flowers',
-    available: false,
+    available: true,
   },
   {
     id: 'constellation',
