@@ -372,7 +372,7 @@
             </div>
           </q-card-section>
 
-          <q-card-section v-if="game.progress !== undefined">
+          <q-card-section v-if="game.progress !== undefined && game.currentLevel !== null">
             <q-linear-progress
               :value="game.progress / 100"
               :color="progressColor"
@@ -425,8 +425,8 @@ const games = ref([
   },
   {
     id: 'solitaire',
-    name: 'Solitaire',
-    description: 'Classic card game, reimagined',
+    name: 'Solitude',
+    description: "It's Solitaire, but even more zen",
     available: true,
     progress: 0,
     currentLevel: null,

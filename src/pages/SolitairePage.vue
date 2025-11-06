@@ -1,5 +1,52 @@
 <template>
   <q-page class="solitaire-page" :style="{ background: themeStore.colors.gradient }">
+    <!-- Whimsical Floating Particles -->
+    <div class="floating-particles">
+      <!-- Butterflies during day, fireflies at night -->
+      <div
+        v-for="particle in floatingParticles"
+        :key="'particle-' + particle.id"
+        :class="['floating-particle', particleType]"
+        :style="{
+          left: particle.x + '%',
+          top: particle.y + '%',
+          animationDelay: particle.delay + 's',
+          animationDuration: particle.duration + 's',
+        }"
+      ></div>
+    </div>
+
+    <!-- Placement Sparkles -->
+    <div class="placement-sparkles">
+      <div
+        v-for="sparkle in placementSparkles"
+        :key="'sparkle-' + sparkle.id"
+        class="sparkle"
+        :style="{
+          left: sparkle.x + 'px',
+          top: sparkle.y + 'px',
+        }"
+      >
+        <div class="sparkle-particle"></div>
+        <div class="sparkle-particle"></div>
+        <div class="sparkle-particle"></div>
+        <div class="sparkle-particle"></div>
+      </div>
+    </div>
+
+    <!-- Drag Trail -->
+    <div class="drag-trail">
+      <div
+        v-for="particle in dragTrail"
+        :key="'trail-' + particle.id"
+        class="trail-particle"
+        :style="{
+          left: particle.x + 'px',
+          top: particle.y + 'px',
+        }"
+      ></div>
+    </div>
+
     <!-- Game Header -->
     <div class="game-header">
       <q-btn fab-mini flat icon="arrow_back" color="white" @click="goBack" />
@@ -40,7 +87,7 @@
           :class="['menu-button', { 'menu-button-active': showMenu }]"
         />
 
-        <transition-group name="menu-fade" tag="div" class="menu-buttons-container">
+        <transition-group name="menu-fade" tag="div" :class="['menu-buttons-container', { 'has-items': showMenu }]">
           <q-btn
             v-if="showMenu"
             key="refresh"
@@ -74,12 +121,22 @@
           />
           <q-btn
             v-if="showMenu"
+            key="hints"
+            fab-mini
+            flat
+            :icon="hintsEnabled ? 'lightbulb' : 'lightbulb_outline'"
+            color="white"
+            :class="['menu-item', 'menu-item-4', { 'hint-enabled': hintsEnabled }]"
+            @click="toggleHints"
+          />
+          <q-btn
+            v-if="showMenu"
             key="help"
             fab-mini
             flat
             icon="help_outline"
             color="white"
-            class="menu-item menu-item-4"
+            class="menu-item menu-item-5"
             @click="showInstructions = true"
           />
         </transition-group>
@@ -111,6 +168,7 @@
                   draggable: index === visibleWaste.length - 1,
                   'red-card': isRedCard(card),
                   'being-dragged': isDragging && draggedCard && draggedCard.id === card.id,
+                  'impatient': hintCards.has(card.id),
                 }"
                 :style="{ transform: `translateX(${index * 20}px)` }"
                 @mousedown="
@@ -199,6 +257,7 @@
                 draggable: card.faceUp,
                 'red-card': card.faceUp && isRedCard(card),
                 'being-dragged': isDragging && draggedCard && draggedCard.id === card.id,
+                'impatient': hintCards.has(card.id),
               }"
               :style="{ transform: `translateY(${cardIndex * 30}px)` }"
               @mousedown="
@@ -411,6 +470,190 @@ const dragStartPos = ref({ x: 0, y: 0 })
 const lastClickTime = ref(0)
 const lastClickedCard = ref(null)
 
+// Whimsical floating particles
+const floatingParticles = ref([])
+const particleType = computed(() => {
+  const period = themeStore.period.key
+  if (period === 'night' || period === 'dusk') return 'firefly'
+  return 'butterfly'
+})
+
+// Hint system - wiggles cards that can be moved
+const hintCards = ref(new Set())
+const hintsEnabled = ref(true)
+let lastMoveTime = Date.now()
+const INACTIVITY_THRESHOLD = 15000 // 15 seconds of no moves before showing hints
+
+function findMovableCards() {
+  const movableCards = []
+
+  // Check waste pile card - can it move to foundation or tableau?
+  if (waste.value.length > 0) {
+    const card = waste.value[waste.value.length - 1]
+
+    // Check if can move to foundation
+    const foundationIndex = card.suit
+    if (canDropOnFoundation(foundationIndex, card)) {
+      movableCards.push({ id: card.id, priority: 'high' }) // Foundation moves are high priority
+    } else {
+      // Check if can move to any tableau pile
+      for (let i = 0; i < 7; i++) {
+        if (canDropOnTableau(i, card)) {
+          movableCards.push({ id: card.id, priority: 'medium' })
+          break
+        }
+      }
+    }
+  }
+
+  // Check tableau piles for movable cards
+  tableau.value.forEach((pile, pileIndex) => {
+    if (pile.length > 0) {
+      // Find the first face-up card in this pile
+      const firstFaceUpIndex = pile.findIndex(c => c.faceUp)
+      if (firstFaceUpIndex !== -1) {
+        const card = pile[firstFaceUpIndex]
+
+        // Check if can move to foundation (only single cards)
+        if (firstFaceUpIndex === pile.length - 1) {
+          const foundationIndex = card.suit
+          if (canDropOnFoundation(foundationIndex, card)) {
+            movableCards.push({ id: card.id, priority: 'high' })
+            return
+          }
+        }
+
+        // Check if can move to another tableau pile
+        for (let i = 0; i < 7; i++) {
+          if (i !== pileIndex && canDropOnTableau(i, card)) {
+            movableCards.push({ id: card.id, priority: 'medium' })
+            return
+          }
+        }
+      }
+    }
+  })
+
+  return movableCards
+}
+
+function triggerHint() {
+  if (!hintsEnabled.value) return
+
+  // Only show hints if user has been inactive
+  const timeSinceLastMove = Date.now() - lastMoveTime
+  if (timeSinceLastMove < INACTIVITY_THRESHOLD) return
+
+  const movableCards = findMovableCards()
+
+  if (movableCards.length > 0) {
+    // Prioritize high-priority moves (foundation moves)
+    const highPriority = movableCards.filter(c => c.priority === 'high')
+    const toShow = highPriority.length > 0 ? highPriority : movableCards
+
+    // Show 1-2 hints
+    const numToShow = Math.random() < 0.3 ? Math.min(2, toShow.length) : 1
+    const shuffled = [...toShow].sort(() => Math.random() - 0.5)
+    const selected = shuffled.slice(0, numToShow)
+
+    selected.forEach(card => {
+      hintCards.value.add(card.id)
+      // Remove after animation completes (0.6 seconds)
+      setTimeout(() => {
+        hintCards.value.delete(card.id)
+      }, 600)
+    })
+  }
+}
+
+// Track user activity - call this whenever the user makes a move
+function trackMove() {
+  lastMoveTime = Date.now()
+}
+
+// Trigger hints every 8-15 seconds
+let hintInterval = null
+function startHintInterval() {
+  function scheduleNext() {
+    const delay = 8000 + Math.random() * 7000 // 8-15 seconds
+    hintInterval = setTimeout(() => {
+      triggerHint()
+      scheduleNext()
+    }, delay)
+  }
+  scheduleNext()
+}
+
+function stopHintInterval() {
+  if (hintInterval) {
+    clearTimeout(hintInterval)
+    hintInterval = null
+  }
+}
+
+function toggleHints() {
+  haptics.light()
+  hintsEnabled.value = !hintsEnabled.value
+
+  if (hintsEnabled.value) {
+    startHintInterval()
+  } else {
+    stopHintInterval()
+    hintCards.value.clear()
+  }
+}
+
+// Initialize floating particles
+function initFloatingParticles() {
+  floatingParticles.value = []
+  for (let i = 0; i < 8; i++) {
+    floatingParticles.value.push({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      delay: Math.random() * 10,
+      duration: 15 + Math.random() * 10,
+    })
+  }
+}
+
+// Whimsical effects
+const placementSparkles = ref([])
+const dragTrail = ref([])
+let sparkleIdCounter = 0
+let trailIdCounter = 0
+
+// Create sparkle effect at position
+function createSparkle(x, y) {
+  const sparkleId = sparkleIdCounter++
+  const sparkle = {
+    id: sparkleId,
+    x,
+    y,
+  }
+  placementSparkles.value.push(sparkle)
+
+  // Remove after animation completes
+  setTimeout(() => {
+    placementSparkles.value = placementSparkles.value.filter((s) => s.id !== sparkleId)
+  }, 800)
+}
+
+// Create trail particle
+function createTrailParticle(x, y) {
+  const trailId = trailIdCounter++
+  const particle = {
+    id: trailId,
+    x,
+    y,
+  }
+  dragTrail.value.push(particle)
+
+  setTimeout(() => {
+    dragTrail.value = dragTrail.value.filter((p) => p.id !== trailId)
+  }, 600)
+}
+
 const dealCount = computed(() => settingsStore.settings.solitaireDealCount || 1)
 const canUndo = computed(() => moves.value.length > 0)
 const visibleWaste = computed(() => {
@@ -564,6 +807,7 @@ async function dealFromStock() {
     stock.value = waste.value.reverse().map((card) => ({ ...card, faceUp: false }))
     waste.value = []
     moveCount.value++
+    trackMove()
   } else {
     // Deal cards from stock to waste with animation
     dealingCard.value = true
@@ -591,6 +835,7 @@ async function dealFromStock() {
 
     // Count dealing as a move
     moveCount.value++
+    trackMove()
     dealingCard.value = false
   }
 
@@ -649,6 +894,7 @@ async function tryAutoMoveToFoundation(card, source, sourceElement) {
 
     // Increment move counter (only once for the entire action)
     moveCount.value++
+    trackMove()
 
     checkWin()
     return true
@@ -727,6 +973,11 @@ function handleDragMove(event) {
   dragPosition.value = {
     x: clientX - dragOffset.value.x,
     y: clientY - dragOffset.value.y,
+  }
+
+  // Create gentle trail particles (only occasionally to avoid too many)
+  if (Math.random() < 0.5) {
+    createTrailParticle(clientX, clientY)
   }
 }
 
@@ -839,8 +1090,21 @@ function dropOnFoundation(foundationIndex) {
   // Add to foundation
   foundation.value[foundationIndex].push(draggedCard.value)
 
+  // Create sparkle effect at drop location
+  createSparkle(dragPosition.value.x, dragPosition.value.y)
+
+  // Check if suit is complete (13 cards) for celebration
+  if (foundation.value[foundationIndex].length === 13) {
+    // Create extra celebration sparkles
+    setTimeout(() => createSparkle(dragPosition.value.x - 30, dragPosition.value.y - 20), 100)
+    setTimeout(() => createSparkle(dragPosition.value.x + 30, dragPosition.value.y - 20), 200)
+    setTimeout(() => createSparkle(dragPosition.value.x, dragPosition.value.y - 40), 300)
+    haptics.medium() // Extra haptic feedback
+  }
+
   // Increment move counter (only once for the entire action)
   moveCount.value++
+  trackMove()
 
   clearDrag()
   checkWin()
@@ -874,8 +1138,12 @@ function dropOnTableau(tableauIndex) {
   // Add to tableau
   tableau.value[tableauIndex].push(...draggedCards.value)
 
+  // Create sparkle effect at drop location
+  createSparkle(dragPosition.value.x, dragPosition.value.y)
+
   // Increment move counter (only once for the entire action)
   moveCount.value++
+  trackMove()
 
   clearDrag()
 }
@@ -994,10 +1262,17 @@ onMounted(() => {
   if (!loaded) {
     initializeGame()
   }
+
+  // Initialize whimsical particles
+  initFloatingParticles()
+
+  // Start hint system
+  startHintInterval()
 })
 
 onBeforeUnmount(() => {
   stopTimer()
+  stopHintInterval()
   saveGameState()
 })
 </script>
@@ -1061,18 +1336,34 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
+  transition: all 0.2s ease;
 
-.menu-buttons-container:has(.menu-item) {
-  padding: 8px;
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
+  &.has-items {
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+  }
 }
 
 .menu-item {
   background: rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(10px);
+
+  &.hint-enabled {
+    background: rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    animation: hint-glow 2s ease-in-out infinite;
+  }
+}
+
+@keyframes hint-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  }
 }
 
 // Menu fade transitions
@@ -1131,6 +1422,15 @@ onBeforeUnmount(() => {
   }
 }
 
+.menu-item-5 {
+  &.menu-fade-enter-active {
+    transition-delay: 200ms;
+  }
+  &.menu-fade-leave-active {
+    transition-delay: 0ms;
+  }
+}
+
 // Prevent layout shift during transition
 .menu-fade-move {
   transition: transform 0.2s ease;
@@ -1140,9 +1440,15 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 16px;
   padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.08); // More subtle
+  backdrop-filter: blur(8px);
   border-radius: 20px;
+  opacity: 0.7; // Softer overall appearance
+  transition: opacity 0.3s ease;
+
+  &:hover {
+    opacity: 1; // Full opacity on hover for visibility
+  }
 }
 
 .stat-item {
@@ -1263,7 +1569,7 @@ onBeforeUnmount(() => {
   background: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); // Smoother, more graceful
   color: #000;
 
   &.red-card {
@@ -1318,7 +1624,8 @@ onBeforeUnmount(() => {
     width: 100%;
     height: 100%;
     background:
-      linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e3a8a 100%);
+      linear-gradient(135deg, v-bind('themeStore.colors.primary') 0%, v-bind('themeStore.colors.secondary') 50%, v-bind('themeStore.colors.primary') 100%);
+    transition: background 2s ease; // Smooth transition between time periods
 
     // Add decorative pattern
     &::before {
@@ -1620,5 +1927,262 @@ onBeforeUnmount(() => {
     transform: translate(var(--end-x), var(--end-y)) scale(0.8);
     opacity: 0.8;
   }
+}
+
+// Whimsical floating particles
+.floating-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0; // Behind the game board
+}
+
+.floating-particle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  animation: floatAround ease-in-out infinite;
+  opacity: 0.7;
+
+  &.butterfly {
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(255, 255, 255, 0.8) 0%,
+      rgba(255, 200, 150, 0.6) 40%,
+      rgba(255, 180, 200, 0.4) 100%
+    );
+    box-shadow: 0 0 6px rgba(255, 200, 150, 0.5);
+    animation: floatAround ease-in-out infinite, butterfly-flutter 1.5s ease-in-out infinite;
+  }
+
+  &.firefly {
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(255, 255, 150, 0.9) 0%,
+      rgba(200, 255, 150, 0.5) 60%,
+      rgba(150, 200, 255, 0.2) 100%
+    );
+    box-shadow: 0 0 10px rgba(255, 255, 150, 0.6), 0 0 16px rgba(200, 255, 150, 0.3);
+    animation: floatAround ease-in-out infinite, firefly-glow 2.5s ease-in-out infinite;
+  }
+}
+
+@keyframes floatAround {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(15vw, -10vh);
+  }
+  50% {
+    transform: translate(10vw, 15vh);
+  }
+  75% {
+    transform: translate(-10vw, 5vh);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes butterfly-flutter {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes firefly-glow {
+  0%,
+  100% {
+    opacity: 0.3;
+    box-shadow: 0 0 6px rgba(255, 255, 150, 0.3);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 12px rgba(255, 255, 150, 0.7), 0 0 20px rgba(200, 255, 150, 0.5);
+  }
+}
+
+// Card placement sparkles
+.placement-sparkles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.sparkle {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  transform: translate(-20px, -20px);
+  animation: sparkle-fade 0.8s ease-out forwards;
+}
+
+.sparkle-particle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(255, 220, 150, 0.8) 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 220, 150, 0.8);
+
+  &:nth-child(1) {
+    top: 0;
+    left: 50%;
+    animation: sparkle-burst-up 0.8s ease-out forwards;
+  }
+
+  &:nth-child(2) {
+    top: 50%;
+    right: 0;
+    animation: sparkle-burst-right 0.8s ease-out forwards;
+  }
+
+  &:nth-child(3) {
+    bottom: 0;
+    left: 50%;
+    animation: sparkle-burst-down 0.8s ease-out forwards;
+  }
+
+  &:nth-child(4) {
+    top: 50%;
+    left: 0;
+    animation: sparkle-burst-left 0.8s ease-out forwards;
+  }
+}
+
+@keyframes sparkle-fade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes sparkle-burst-up {
+  0% {
+    transform: translate(-50%, 0) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -40px) scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes sparkle-burst-right {
+  0% {
+    transform: translate(0, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(40px, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes sparkle-burst-down {
+  0% {
+    transform: translate(-50%, 0) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, 40px) scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes sparkle-burst-left {
+  0% {
+    transform: translate(0, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-40px, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+// Drag trail
+.drag-trail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 999;
+}
+
+.trail-particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(200, 220, 255, 0.7) 50%,
+    rgba(150, 200, 255, 0.3) 100%
+  );
+  box-shadow: 0 0 8px rgba(200, 220, 255, 0.6);
+  transform: translate(-3px, -3px);
+  animation: trail-fade 0.6s ease-out forwards;
+}
+
+@keyframes trail-fade {
+  0% {
+    opacity: 0.8;
+    transform: translate(-3px, -3px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-3px, -3px) scale(0.3);
+  }
+}
+
+// Impatient card wiggle animation
+.card.impatient {
+  animation: card-wiggle 0.6s ease-in-out;
+}
+
+@keyframes card-wiggle {
+  0%, 100% {
+    rotate: 0deg;
+  }
+  10% {
+    rotate: -3deg;
+  }
+  30% {
+    rotate: 3deg;
+  }
+  50% {
+    rotate: -3deg;
+  }
+  70% {
+    rotate: 3deg;
+  }
+  90% {
+    rotate: -2deg;
+  }
+}
+
+// Disable animation when dragging
+.being-dragged {
+  animation: none !important;
 }
 </style>
