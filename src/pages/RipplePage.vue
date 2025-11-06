@@ -252,6 +252,58 @@ const TAP_CONFIGS = {
   }
 }
 
+// Water colors based on time of day
+const waterColors = computed(() => {
+  const period = themeStore.period.key
+
+  const colorSchemes = {
+    night: {
+      base: '#0a1628',
+      gradientStart: '#1a2847',
+      gradientMid: '#0f1e3a',
+      gradientEnd: '#0a1628'
+    },
+    dawn: {
+      base: '#4a2c5e',
+      gradientStart: '#7a4c8e',
+      gradientMid: '#5a3c7e',
+      gradientEnd: '#4a2c5e'
+    },
+    morning: {
+      base: '#1a5f7a',
+      gradientStart: '#3a8faa',
+      gradientMid: '#2a7f9a',
+      gradientEnd: '#1a5f7a'
+    },
+    midday: {
+      base: '#0a3a52',
+      gradientStart: '#1a6a8a',
+      gradientMid: '#155a7a',
+      gradientEnd: '#0a3a52'
+    },
+    afternoon: {
+      base: '#2a5f7a',
+      gradientStart: '#4a8faa',
+      gradientMid: '#3a7f9a',
+      gradientEnd: '#2a5f7a'
+    },
+    evening: {
+      base: '#3a2f52',
+      gradientStart: '#5a4f7a',
+      gradientMid: '#4a3f6a',
+      gradientEnd: '#3a2f52'
+    },
+    dusk: {
+      base: '#2a1f42',
+      gradientStart: '#4a3f6a',
+      gradientMid: '#3a2f5a',
+      gradientEnd: '#2a1f42'
+    }
+  }
+
+  return colorSchemes[period] || colorSchemes.midday
+})
+
 const activatedCount = computed(() => {
   return level.value.lotusFlowers.filter(l => l.isActivated).length
 })
@@ -1049,6 +1101,7 @@ function updateObstacles() {
 
       // Cap maximum velocity to prevent them from moving too fast
       const maxVelocity = 0.3
+      const minVelocity = 0.02 // Minimum drift speed to prevent getting stuck
       const currentSpeed = Math.sqrt(obstacle.velocity.x ** 2 + obstacle.velocity.y ** 2)
 
       if (currentSpeed > maxVelocity) {
@@ -1061,6 +1114,11 @@ function updateObstacles() {
         // This prevents the slow drift from stopping while still slowing down wave impacts
         obstacle.velocity.x *= 0.97
         obstacle.velocity.y *= 0.97
+      } else if (currentSpeed < minVelocity) {
+        // If moving too slowly, add a small random drift to prevent getting stuck
+        const angle = Math.random() * Math.PI * 2
+        obstacle.velocity.x += Math.cos(angle) * 0.015
+        obstacle.velocity.y += Math.sin(angle) * 0.015
       }
 
       // Update position
@@ -1109,11 +1167,19 @@ function updateObstacles() {
             other.position.y += pushY * 0.6
 
             // Add repulsion velocity to actively move away from each other
-            const repulsionStrength = 0.05 * separationForce
+            // Increased strength when very close to prevent sticking
+            const repulsionStrength = 0.08 * separationForce
             obstacle.velocity.x -= (dx / dist) * repulsionStrength
             obstacle.velocity.y -= (dy / dist) * repulsionStrength
             other.velocity.x += (dx / dist) * repulsionStrength
             other.velocity.y += (dy / dist) * repulsionStrength
+
+            // Add a small random tangential force to help them slide past each other
+            const tangentX = -dy / dist
+            const tangentY = dx / dist
+            const slideForce = (Math.random() - 0.5) * 0.03
+            obstacle.velocity.x += tangentX * slideForce
+            obstacle.velocity.y += tangentY * slideForce
           }
         }
 
@@ -1472,8 +1538,10 @@ function checkGameState() {
   if (showWinDialog.value || showLoseDialog.value) return
 
   const allActivated = level.value.lotusFlowers.every(l => l.isActivated)
+  const allFullySunk = level.value.lotusFlowers.every(l => !l.isActivated || (l.sinkProgress || 0) >= 1)
 
-  if (allActivated) {
+  // Only show win dialog when all flowers are activated AND fully sunk
+  if (allActivated && allFullySunk) {
     stopGameLoop()
     calculateScore()
     failureStreak.value = 0 // Reset streak on success
@@ -1485,7 +1553,8 @@ function checkGameState() {
     progressStore.updateRippleLevel(currentLevel.value, isPerfect)
 
     showWinDialog.value = true
-  } else if (tapsRemaining.value === 0 && ripples.length === 0) {
+  } else if (tapsRemaining.value === 0 && ripples.length === 0 && !allActivated) {
+    // Only trigger loss if not all flowers are activated
     stopGameLoop()
     handleFailure()
     showLoseDialog.value = true
@@ -1576,7 +1645,7 @@ function render() {
   const { width, height } = gameCanvas.value
 
   // Clear canvas with water color
-  ctx.fillStyle = '#0a3a52'
+  ctx.fillStyle = waterColors.value.base
   ctx.fillRect(0, 0, width, height)
 
   // Draw animated water gradient with subtle waves
@@ -1588,9 +1657,9 @@ function render() {
     height / 2,
     Math.max(width, height)
   )
-  gradient.addColorStop(0, '#1a6a8a')
-  gradient.addColorStop(0.5, '#155a7a')
-  gradient.addColorStop(1, '#0a3a52')
+  gradient.addColorStop(0, waterColors.value.gradientStart)
+  gradient.addColorStop(0.5, waterColors.value.gradientMid)
+  gradient.addColorStop(1, waterColors.value.gradientEnd)
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, width, height)
 
@@ -1626,6 +1695,17 @@ function render() {
     }
   })
 
+  // Draw stones (under lotus flowers and leaves)
+  level.value.obstacles.forEach(obstacle => {
+    if (obstacle.type === 'stone') {
+      if (imagesLoaded) {
+        drawObstacleImageWithDisplacement(ctx, obstacle)
+      } else {
+        drawObstacle(ctx, obstacle)
+      }
+    }
+  })
+
   // Draw lotus flowers WITH their lily pad bases (combined sinking effect)
   level.value.lotusFlowers.forEach(lotus => {
     // Find corresponding lily pad base
@@ -1641,17 +1721,6 @@ function render() {
         drawLotusWithLilyPadSinking(ctx, lotus, lilyPadBase)
       } else {
         drawLotus(ctx, lotus)
-      }
-    }
-  })
-
-  // Draw stones (on top of moving lily pads, under leaves)
-  level.value.obstacles.forEach(obstacle => {
-    if (obstacle.type === 'stone') {
-      if (imagesLoaded) {
-        drawObstacleImageWithDisplacement(ctx, obstacle)
-      } else {
-        drawObstacle(ctx, obstacle)
       }
     }
   })
@@ -1859,10 +1928,15 @@ function drawLotus(ctx, lotus) {
     ctx.shadowBlur = 30
     ctx.shadowColor = 'rgba(255, 215, 0, 0.8)'
   } else if (lotus.currentPower > 0) {
-    // Show current power as blue/cyan glow
+    // Show current power with time-of-day water color glow
     const glowIntensity = Math.min(lotus.currentPower / lotus.activationThreshold, 1)
     ctx.shadowBlur = 20 * glowIntensity
-    ctx.shadowColor = `rgba(100, 200, 255, ${glowIntensity * 0.6})`
+    // Use time-of-day water color for glow
+    const glowColor = waterColors.value.gradientStart
+    const r = parseInt(glowColor.slice(1, 3), 16)
+    const g = parseInt(glowColor.slice(3, 5), 16)
+    const b = parseInt(glowColor.slice(5, 7), 16)
+    ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${glowIntensity * 0.6})`
   }
 
   // Draw petals
@@ -2046,22 +2120,37 @@ function drawLotusWithLilyPadSinking(ctx, lotus, lilyPadBase) {
   if (!lotus.isActivated && lotus.currentPower > 0) {
     const glowIntensity = Math.min(lotus.currentPower / lotus.activationThreshold, 1)
     ctx.shadowBlur = 20 * glowIntensity
-    ctx.shadowColor = `rgba(100, 200, 255, ${glowIntensity * 0.6})`
+    // Use time-of-day water color for glow
+    const glowColor = waterColors.value.gradientStart
+    const r = parseInt(glowColor.slice(1, 3), 16)
+    const g = parseInt(glowColor.slice(3, 5), 16)
+    const b = parseInt(glowColor.slice(5, 7), 16)
+    ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${glowIntensity * 0.6})`
   }
 
   // Draw splash ripples when first activated
   if (lotus.isActivated && sinkProgress < 0.3) {
     ctx.save()
     const splashAlpha = 0.8 * (1 - sinkProgress / 0.3)
-    ctx.strokeStyle = `rgba(100, 200, 255, ${splashAlpha})`
+
+    // Use time-of-day water color for splash
+    const splashColor = waterColors.value.gradientStart
+    const r = parseInt(splashColor.slice(1, 3), 16)
+    const g = parseInt(splashColor.slice(3, 5), 16)
+    const b = parseInt(splashColor.slice(5, 7), 16)
+
+    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${splashAlpha})`
     ctx.lineWidth = 3
     const splashRadius = 40 + sinkProgress * 60
     ctx.beginPath()
     ctx.arc(x, y, splashRadius, 0, Math.PI * 2)
     ctx.stroke()
 
-    // Inner splash ring
-    ctx.strokeStyle = `rgba(150, 220, 255, ${splashAlpha * 0.6})`
+    // Inner splash ring - lighter version
+    const innerR = Math.min(255, r + 50)
+    const innerG = Math.min(255, g + 20)
+    const innerB = Math.min(255, b + 55)
+    ctx.strokeStyle = `rgba(${innerR}, ${innerG}, ${innerB}, ${splashAlpha * 0.6})`
     ctx.lineWidth = 2
     ctx.beginPath()
     ctx.arc(x, y, splashRadius * 0.6, 0, Math.PI * 2)
@@ -2124,18 +2213,27 @@ function drawLotusWithLilyPadSinking(ctx, lotus, lilyPadBase) {
     const maxRadius = 70
     const waterRadius = maxRadius * sinkProgress // Water grows from 0 to maxRadius
 
-    // Draw semi-transparent blue water circle
+    // Draw semi-transparent water circle with time-of-day color
     const waterAlpha = Math.min(0.6, sinkProgress * 0.6)
-    ctx.fillStyle = `rgba(30, 100, 150, ${waterAlpha})`
+    // Convert hex to rgb for dynamic coloring
+    const baseColor = waterColors.value.gradientMid
+    const r = parseInt(baseColor.slice(1, 3), 16)
+    const g = parseInt(baseColor.slice(3, 5), 16)
+    const b = parseInt(baseColor.slice(5, 7), 16)
+    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${waterAlpha})`
     ctx.beginPath()
     ctx.arc(0, 0, waterRadius, 0, Math.PI * 2)
     ctx.fill()
 
-    // Draw bright animated edge
-    ctx.strokeStyle = `rgba(100, 200, 255, ${0.7 * sinkProgress})`
+    // Draw bright animated edge with lighter color
+    const edgeColor = waterColors.value.gradientStart
+    const r2 = parseInt(edgeColor.slice(1, 3), 16)
+    const g2 = parseInt(edgeColor.slice(3, 5), 16)
+    const b2 = parseInt(edgeColor.slice(5, 7), 16)
+    ctx.strokeStyle = `rgba(${r2}, ${g2}, ${b2}, ${0.7 * sinkProgress})`
     ctx.lineWidth = 2
     ctx.shadowBlur = 6
-    ctx.shadowColor = 'rgba(100, 200, 255, 0.5)'
+    ctx.shadowColor = `rgba(${r2}, ${g2}, ${b2}, 0.5)`
 
     ctx.beginPath()
     const segments = 24
