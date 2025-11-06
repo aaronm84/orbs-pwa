@@ -13,6 +13,7 @@ export const useSettingsStore = defineStore('settings', () => {
     hapticsEnabled: true,
     hapticsIntensity: 'medium',
     theme: 'auto',
+    themeOverride: 'auto', // 'auto' or specific theme name ('night', 'dawn', etc.)
     reducedMotion: false,
     showTutorials: true,
     confirmations: true,

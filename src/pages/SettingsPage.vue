@@ -75,11 +75,19 @@
         <q-card-section>
           <div class="text-h6 q-mb-md text-white">Display</div>
 
+          <div class="text-caption text-white q-mb-md" style="opacity: 0.8;">
+            ZENith's theme automatically changes throughout the day based on the time. However, feel free to change it to whatever theme fits your mood.
+          </div>
+
           <q-select
-            v-model="settings.theme"
-            :options="['light', 'dark', 'auto']"
+            v-model="selectedTheme"
+            :options="themeOptions"
+            option-label="label"
+            option-value="value"
+            emit-value
+            map-options
             label="Theme"
-            @update:model-value="saveSettings"
+            @update:model-value="updateTheme"
           />
 
           <q-toggle
@@ -115,7 +123,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useSettingsStore } from 'src/stores/settings'
 import { useThemeStore } from 'src/stores/theme'
 import { useHaptics } from 'src/composables/useHaptics'
@@ -125,6 +133,43 @@ const themeStore = useThemeStore()
 const haptics = useHaptics()
 
 const settings = computed(() => settingsStore.settings)
+
+// Theme selection
+const selectedTheme = ref('auto')
+
+const themeOptions = computed(() => {
+  const options = [
+    { label: 'Auto (Based on time)', value: 'auto' }
+  ]
+
+  // Add all time-of-day themes
+  Object.entries(themeStore.timeSchemes).forEach(([key, scheme]) => {
+    options.push({
+      label: scheme.name,
+      value: key
+    })
+  })
+
+  return options
+})
+
+function updateTheme(value) {
+  haptics.light()
+  if (value === 'auto') {
+    themeStore.setThemeOverride(null)
+  } else {
+    themeStore.setThemeOverride(value)
+  }
+  selectedTheme.value = value
+
+  // Save theme preference to settings
+  settingsStore.updateSetting('themeOverride', value)
+}
+
+onMounted(() => {
+  // Initialize selected theme based on saved preference
+  selectedTheme.value = settingsStore.settings.themeOverride || 'auto'
+})
 
 async function saveSettings() {
   haptics.light()

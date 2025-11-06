@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc" xmlns="http://www.w3.org/2000/svg">
+  <title id="title">Minimalist Crescent Moon</title>
+  <desc id="desc">A simple crescent moon designed for a calming mobile UI.</desc>
+  <defs>
+    <mask id="cut">
+      <!-- outer circle (white = visible) -->
+      <rect width="100%" height="100%" fill="black"/>
+      <circle cx="32" cy="32" r="24" fill="white"/>
+      <!-- inner offset circle (black = cutout) -->
+      <circle cx="40" cy="32" r="20" fill="black"/>
+    </mask>
+  </defs>
+  <rect width="100%" height="100%" fill="transparent"/>
+  <g mask="url(#cut)">
+    <rect width="100%" height="100%" fill="#fffef0"/>
+  </g>
+</svg>

@@ -119,8 +119,8 @@
         <q-card-section class="q-pt-none">
           <ol class="instructions-list">
             <li>Tap the screen to create an explosion</li>
-            <li>Explosions capture bouncing balls</li>
-            <li>Captured balls create new explosions</li>
+            <li>Explosions capture bouncing orbs</li>
+            <li>Captured orbs create new explosions</li>
             <li>Create a chain reaction to reach your goal!</li>
           </ol>
           <p class="text-caption text-grey-7 q-mt-md">
@@ -140,7 +140,7 @@
         <q-card-section class="text-center">
           <div class="text-h4 text-positive q-mb-md">🎉 Level Complete!</div>
           <div class="text-h6 q-mb-sm">
-            {{ capturedCount }}/{{ levelConfig.totalBalls }} balls captured
+            {{ capturedCount }}/{{ levelConfig.totalOrbs }} orbs captured
           </div>
           <div v-if="isPerfect" class="text-positive text-weight-bold">⭐ PERFECT! ⭐</div>
         </q-card-section>
@@ -158,7 +158,7 @@
           <div class="text-h5 q-mb-md">Try Again</div>
           <div class="text-body1 q-mb-sm">Captured: {{ capturedCount }}/{{ levelGoal }}</div>
           <div class="text-caption text-grey-7">
-            You need {{ levelGoal }} balls to complete this level
+            You need {{ levelGoal }} orbs to complete this level
           </div>
         </q-card-section>
 
@@ -212,7 +212,7 @@ const showLevelSelect = ref(false)
 const showMenu = ref(false)
 
 // Game objects
-let balls = []
+let orbs = []
 let explosions = []
 
 // Level configuration
@@ -230,10 +230,10 @@ const levelConfig = computed(() => {
 
   return {
     level: currentLevel.value,
-    totalBalls: 5 + (currentLevel.value - 1) * 5,
+    totalOrbs: 5 + (currentLevel.value - 1) * 5,
     goal: Math.ceil((5 + (currentLevel.value - 1) * 5) * (0.35 + currentLevel.value * 0.025)), // Balanced goals
-    ballSpeed: 1.5 + currentLevel.value * 0.1, // Speed increases more noticeably
-    ballRadius: 8,
+    orbSpeed: 1.5 + currentLevel.value * 0.1, // Speed increases more noticeably
+    orbRadius: 8,
     explosionMaxRadius: baseRadius,
     explosionGrowthRate: 2.5,
     clicksAllowed: 1,
@@ -241,10 +241,10 @@ const levelConfig = computed(() => {
 })
 
 const levelGoal = computed(() => levelConfig.value.goal)
-const isPerfect = computed(() => capturedCount.value === levelConfig.value.totalBalls)
+const isPerfect = computed(() => capturedCount.value === levelConfig.value.totalOrbs)
 
-// Ball colors
-const ballColors = [
+// Orb colors
+const orbColors = [
   '#FF6B6B',
   '#4ECDC4',
   '#45B7D1',
@@ -312,7 +312,7 @@ function initLevel() {
   stopGameLoop()
 
   // Reset state completely
-  balls = []
+  orbs = []
   explosions = []
   capturedCount.value = 0
   clicksRemaining.value = levelConfig.value.clicksAllowed
@@ -328,11 +328,11 @@ function initLevel() {
     showTapHint.value = false
   }, 2500)
 
-  // Create balls
+  // Create orbs
   const config = levelConfig.value
 
-  for (let i = 0; i < config.totalBalls; i++) {
-    balls.push(createBall(i, config)) // ← Removed canvas parameter
+  for (let i = 0; i < config.totalOrbs; i++) {
+    orbs.push(createOrb(i, config)) // ← Removed canvas parameter
   }
 
   // Start game loop
@@ -340,21 +340,21 @@ function initLevel() {
   gameLoop()
 }
 
-function createBall(index, config) {
+function createOrb(index, config) {
   // ← Removed canvas parameter
   const canvas = gameCanvas.value // ← Access canvas here instead
 
-  // Add margin to keep balls away from edges
-  const margin = config.ballRadius * 3
+  // Add margin to keep orbs away from edges
+  const margin = config.orbRadius * 3
 
   return {
-    id: `ball-${index}-${Date.now()}`,
+    id: `orb-${index}-${Date.now()}`,
     x: Math.random() * (canvas.width - margin * 2) + margin,
     y: Math.random() * (canvas.height - margin * 2) + margin,
-    vx: (Math.random() - 0.5) * config.ballSpeed * 2,
-    vy: (Math.random() - 0.5) * config.ballSpeed * 2,
-    radius: config.ballRadius,
-    color: ballColors[index % ballColors.length],
+    vx: (Math.random() - 0.5) * config.orbSpeed * 2,
+    vy: (Math.random() - 0.5) * config.orbSpeed * 2,
+    radius: config.orbRadius,
+    color: orbColors[index % orbColors.length],
     captured: false,
   }
 }
@@ -407,22 +407,22 @@ function gameLoop() {
 function update() {
   const canvas = gameCanvas.value
 
-  // Update balls
-  balls.forEach((ball) => {
-    if (ball.captured) return
+  // Update orbs
+  orbs.forEach((orb) => {
+    if (orb.captured) return
 
-    // Move ball
-    ball.x += ball.vx
-    ball.y += ball.vy
+    // Move orb
+    orb.x += orb.vx
+    orb.y += orb.vy
 
     // Bounce off walls
-    if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
-      ball.vx *= -1
-      ball.x = Math.max(ball.radius, Math.min(canvas.width - ball.radius, ball.x))
+    if (orb.x - orb.radius < 0 || orb.x + orb.radius > canvas.width) {
+      orb.vx *= -1
+      orb.x = Math.max(orb.radius, Math.min(canvas.width - orb.radius, orb.x))
     }
-    if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
-      ball.vy *= -1
-      ball.y = Math.max(ball.radius, Math.min(canvas.height - ball.radius, ball.y))
+    if (orb.y - orb.radius < 0 || orb.y + orb.radius > canvas.height) {
+      orb.vy *= -1
+      orb.y = Math.max(orb.radius, Math.min(canvas.height - orb.radius, orb.y))
     }
   })
 
@@ -442,25 +442,25 @@ function update() {
       explosion.active = false
     }
 
-    // Check collision with balls
-    balls.forEach((ball) => {
-      if (ball.captured) return
+    // Check collision with orbs
+    orbs.forEach((orb) => {
+      if (orb.captured) return
 
-      const dx = ball.x - explosion.x
-      const dy = ball.y - explosion.y
+      const dx = orb.x - explosion.x
+      const dy = orb.y - explosion.y
       const distance = Math.sqrt(dx * dx + dy * dy)
 
-      if (distance < explosion.radius + ball.radius) {
-        // Ball captured!
-        ball.captured = true
+      if (distance < explosion.radius + orb.radius) {
+        // Orb captured!
+        orb.captured = true
         capturedCount.value++
         haptics.light()
 
         // Play bell chime sound (cycles through musical notes)
         audio.playCapture()
 
-        // Create new explosion at ball position with the ball's color
-        createExplosion(ball.x, ball.y, ball.color)
+        // Create new explosion at orb position with the orb's color
+        createExplosion(orb.x, orb.y, orb.color)
       }
     })
   })
@@ -527,23 +527,23 @@ function render() {
     }
   })
 
-  // Draw balls with enhanced glow
-  balls.forEach((ball) => {
-    if (ball.captured) return
+  // Draw orbs with enhanced glow
+  orbs.forEach((orb) => {
+    if (orb.captured) return
 
     ctx.beginPath()
-    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2)
+    ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2)
 
     // Glow effect
     ctx.shadowBlur = 15
-    ctx.shadowColor = ball.color
-    ctx.fillStyle = ball.color
+    ctx.shadowColor = orb.color
+    ctx.fillStyle = orb.color
     ctx.fill()
 
     // Inner highlight for depth
     ctx.shadowBlur = 0
     ctx.beginPath()
-    ctx.arc(ball.x - ball.radius * 0.3, ball.y - ball.radius * 0.3, ball.radius * 0.4, 0, Math.PI * 2)
+    ctx.arc(orb.x - orb.radius * 0.3, orb.y - orb.radius * 0.3, orb.radius * 0.4, 0, Math.PI * 2)
     ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'
     ctx.fill()
   })
@@ -679,7 +679,7 @@ function goBack() {
   right: 0;
   z-index: 10;
   padding: 16px;
-  padding-top: max(16px, env(safe-area-inset-top));
+  padding-top: max(56px, calc(env(safe-area-inset-top) + 16px));
   padding-left: max(16px, env(safe-area-inset-left));
   padding-right: max(16px, env(safe-area-inset-right));
   display: flex;

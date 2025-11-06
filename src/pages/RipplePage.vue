@@ -157,10 +157,12 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useThemeStore } from 'src/stores/theme'
+import { useProgressStore } from 'src/stores/progress'
 import { useHaptics } from 'src/composables/useHaptics'
 
 const router = useRouter()
 const themeStore = useThemeStore()
+const progressStore = useProgressStore()
 const haptics = useHaptics()
 
 // Canvas ref
@@ -265,13 +267,13 @@ onMounted(async () => {
   // Load assets
   await loadAssets()
 
-  // Load splash sounds
+  // Load splash sounds using Vite's import.meta.url for proper bundling
   try {
     const splashFiles = [
-      '/src/assets/audio/water/563858__nknverpacker__watersplash04.wav',
-      '/src/assets/audio/water/563859__nknverpacker__watersplash03.wav',
-      '/src/assets/audio/water/563860__nknverpacker__watersplash02.wav',
-      '/src/assets/audio/water/563861__nknverpacker__watersplash01.wav'
+      new URL('../assets/audio/water/563858__nknverpacker__watersplash04.wav', import.meta.url).href,
+      new URL('../assets/audio/water/563859__nknverpacker__watersplash03.wav', import.meta.url).href,
+      new URL('../assets/audio/water/563860__nknverpacker__watersplash02.wav', import.meta.url).href,
+      new URL('../assets/audio/water/563861__nknverpacker__watersplash01.wav', import.meta.url).href
     ]
 
     splashSounds = splashFiles.map(file => {
@@ -279,6 +281,7 @@ onMounted(async () => {
       audio.volume = 0.3
       return audio
     })
+    console.log('Loaded splash sounds:', splashSounds.length)
   } catch (error) {
     console.warn('Failed to load splash sounds:', error)
   }
@@ -406,10 +409,10 @@ function generateLevel(levelNum) {
   // Use level number as seed for consistent level generation
   const rng = seededRandom(levelNum * 12345)
 
-  // Calculate level difficulty
-  const lotusCount = Math.min(2 + Math.floor(levelNum / 3), 6)
-  const stoneCount = Math.min(Math.floor(levelNum / 2), 4)
-  const extraLilypadGroupCount = Math.min(Math.floor(levelNum / 3), 2) // Groups of decorative lily pads
+  // Calculate level difficulty with gentler curve
+  const lotusCount = Math.min(2 + Math.floor(levelNum / 4), 5) // Slower flower increase
+  const stoneCount = Math.min(Math.floor((levelNum - 1) / 3), 3) // Fewer stones, start later
+  const extraLilypadGroupCount = Math.min(Math.floor((levelNum - 2) / 4), 2) // Even fewer lily pad groups
   const leafCount = 0 // Disabled - leaves were using lily pad images and causing confusion
 
   // Tighter tap allowance - typically just 1-2 taps per lotus
@@ -419,16 +422,16 @@ function generateLevel(levelNum) {
   // Generate obstacles first (we'll add lily pads for flowers later)
   level.value.obstacles = []
   level.value.lotusFlowers = []
-  const minSpacing = 120
+  const minSpacing = 150 // Increased spacing between flowers
   const margin = 80
-  const topMargin = 140 // Extra margin at top for header
+  const topMargin = 180 // Extra margin at top for header + status bar
 
   // Generate lotus flowers WITH lily pads underneath
   for (let i = 0; i < lotusCount; i++) {
     let attempts = 0
     let position
 
-    while (attempts < 50) {
+    while (attempts < 100) {
       position = {
         x: margin + rng() * (width - 2 * margin),
         y: topMargin + rng() * (height - topMargin - margin)
@@ -439,7 +442,7 @@ function generateLevel(levelNum) {
         lotus => distance(position, lotus.position) < minSpacing
       )
       const tooCloseToObstacle = level.value.obstacles.some(
-        obs => distance(position, obs.position) < 80
+        obs => distance(position, obs.position) < 100 // Increased minimum distance
       )
 
       if (!tooCloseToLotus && !tooCloseToObstacle) break
@@ -476,19 +479,19 @@ function generateLevel(levelNum) {
     })
   }
 
-  // Stones (block waves)
+  // Stones (block waves) - keep them away from flowers
   for (let i = 0; i < stoneCount; i++) {
     let attempts = 0
     let position
 
-    while (attempts < 50) {
+    while (attempts < 100) {
       position = {
         x: margin + rng() * (width - 2 * margin),
         y: topMargin + rng() * (height - topMargin - margin)
       }
 
-      const minDistToLotus = 100
-      const minDistToObstacle = 60
+      const minDistToLotus = 180 // Much larger buffer around flowers
+      const minDistToObstacle = 80 // Increased spacing between obstacles
 
       const tooCloseToLotus = level.value.lotusFlowers.some(
         lotus => distance(position, lotus.position) < minDistToLotus
@@ -497,7 +500,17 @@ function generateLevel(levelNum) {
         obs => distance(position, obs.position) < minDistToObstacle
       )
 
-      if (!tooCloseToLotus && !tooCloseToObstacle) break
+      // Also ensure stones don't block paths between flowers
+      const blocksFlowerPath = level.value.lotusFlowers.some((lotus1, idx1) => {
+        return level.value.lotusFlowers.some((lotus2, idx2) => {
+          if (idx1 >= idx2) return false
+          // Check if stone is on the line between two flowers
+          const lineToFlower = pointToLineDistance(position, lotus1.position, lotus2.position)
+          return lineToFlower < 120 // Keep stones away from flower-to-flower paths
+        })
+      })
+
+      if (!tooCloseToLotus && !tooCloseToObstacle && !blocksFlowerPath) break
       attempts++
     }
 
@@ -512,20 +525,20 @@ function generateLevel(levelNum) {
     })
   }
 
-  // Decorative lily pad groups (block waves)
+  // Decorative lily pad groups (block waves) - place carefully to not block flowers
   for (let g = 0; g < extraLilypadGroupCount; g++) {
     // Pick a random spot for the group
     let groupCenter
     let attempts = 0
 
-    while (attempts < 50) {
+    while (attempts < 100) {
       groupCenter = {
         x: margin + rng() * (width - 2 * margin),
         y: topMargin + rng() * (height - topMargin - margin)
       }
 
-      const minDistToLotus = 100
-      const minDistToObstacle = 80
+      const minDistToLotus = 200 // Much larger buffer - these move and can block flowers
+      const minDistToObstacle = 100
 
       const tooCloseToLotus = level.value.lotusFlowers.some(
         lotus => distance(groupCenter, lotus.position) < minDistToLotus
@@ -534,13 +547,22 @@ function generateLevel(levelNum) {
         obs => obs.type !== 'lilypad-base' && distance(groupCenter, obs.position) < minDistToObstacle
       )
 
-      if (!tooCloseToLotus && !tooCloseToObstacle) break
+      // Ensure lily pad groups don't block paths between flowers
+      const blocksFlowerPath = level.value.lotusFlowers.some((lotus1, idx1) => {
+        return level.value.lotusFlowers.some((lotus2, idx2) => {
+          if (idx1 >= idx2) return false
+          const lineToFlower = pointToLineDistance(groupCenter, lotus1.position, lotus2.position)
+          return lineToFlower < 150 // Large buffer for moving obstacles
+        })
+      })
+
+      if (!tooCloseToLotus && !tooCloseToObstacle && !blocksFlowerPath) break
       attempts++
     }
 
-    // Create 2-4 lily pads in a cluster
-    const groupSize = 2 + Math.floor(rng() * 3)
-    const boundsSize = 100 + rng() * 100 // Movement area for lily pads
+    // Create 2-3 lily pads in a cluster (reduced from 2-4)
+    const groupSize = 2 + Math.floor(rng() * 2)
+    const boundsSize = 120 + rng() * 80 // Larger movement area to spread them out
 
     // Calculate bounds that avoid static lily pads
     let boundsCenterX = groupCenter.x
@@ -564,16 +586,18 @@ function generateLevel(levelNum) {
 
     for (let i = 0; i < groupSize; i++) {
       const angle = (i / groupSize) * Math.PI * 2 + rng() * 0.5
-      const dist = 30 + rng() * 40
+      const dist = 60 + rng() * 60 // Increased spacing (was 30 + rng() * 40)
       const position = {
         x: groupCenter.x + Math.cos(angle) * dist,
         y: groupCenter.y + Math.sin(angle) * dist
       }
 
       // Create velocity for moving lily pads (very slow drift)
+      // Give them a slight initial velocity away from group center to help spread out
+      const initialAngle = Math.atan2(position.y - groupCenter.y, position.x - groupCenter.x)
       const velocity = {
-        x: (rng() - 0.5) * 0.01,
-        y: (rng() - 0.5) * 0.01
+        x: (rng() - 0.5) * 0.01 + Math.cos(initialAngle) * 0.015,
+        y: (rng() - 0.5) * 0.01 + Math.sin(initialAngle) * 0.015
       }
 
       level.value.obstacles.push({
@@ -820,8 +844,11 @@ function handleTouchEnd(event) {
 
   showMenu.value = false
 
-  // Check protected zones
+  // Check protected zones (only for non-activated flowers)
   for (const lotus of level.value.lotusFlowers) {
+    // Skip activated flowers - user can click where they used to be
+    if (lotus.isActivated) continue
+
     const dist = distance({ x, y }, lotus.position)
     if (dist < lotus.protectedRadius) {
       haptics.warning()
@@ -884,8 +911,11 @@ function handleMouseUp(event) {
 
   showMenu.value = false
 
-  // Check protected zones
+  // Check protected zones (only for non-activated flowers)
   for (const lotus of level.value.lotusFlowers) {
+    // Skip activated flowers - user can click where they used to be
+    if (lotus.isActivated) continue
+
     const dist = distance({ x, y }, lotus.position)
     if (dist < lotus.protectedRadius) {
       haptics.warning()
@@ -1064,23 +1094,26 @@ function updateObstacles() {
           const dx = other.position.x - obstacle.position.x
           const dy = other.position.y - obstacle.position.y
           const dist = Math.sqrt(dx * dx + dy * dy)
-          const minDist = obstacle.radius + other.radius
+          const minDist = (obstacle.radius + other.radius) * 1.3 // Increased buffer to prevent clumping
 
           if (dist < minDist && dist > 0) {
-            // Push apart gently
-            const pushX = (dx / dist) * (minDist - dist) * 0.5
-            const pushY = (dy / dist) * (minDist - dist) * 0.5
+            // Stronger push force to actively separate them
+            const separationForce = (minDist - dist) / minDist // 0 to 1, stronger when closer
+            const pushX = (dx / dist) * (minDist - dist)
+            const pushY = (dy / dist) * (minDist - dist)
 
-            obstacle.position.x -= pushX
-            obstacle.position.y -= pushY
-            other.position.x += pushX
-            other.position.y += pushY
+            // Push positions apart
+            obstacle.position.x -= pushX * 0.6
+            obstacle.position.y -= pushY * 0.6
+            other.position.x += pushX * 0.6
+            other.position.y += pushY * 0.6
 
-            // Slightly alter velocities to prevent sticking
-            obstacle.velocity.x -= pushX * 0.01
-            obstacle.velocity.y -= pushY * 0.01
-            other.velocity.x += pushX * 0.01
-            other.velocity.y += pushY * 0.01
+            // Add repulsion velocity to actively move away from each other
+            const repulsionStrength = 0.05 * separationForce
+            obstacle.velocity.x -= (dx / dist) * repulsionStrength
+            obstacle.velocity.y -= (dy / dist) * repulsionStrength
+            other.velocity.x += (dx / dist) * repulsionStrength
+            other.velocity.y += (dy / dist) * repulsionStrength
           }
         }
 
@@ -1361,6 +1394,11 @@ function checkLotusActivations() {
   level.value.lotusFlowers.forEach(lotus => {
     if (lotus.isActivated) return
 
+    // Initialize accumulated power if needed
+    if (lotus.accumulatedPower === undefined) {
+      lotus.accumulatedPower = 0
+    }
+
     // Calculate combined power from all touching ripples (wave interference)
     let combinedPower = 0
     const touchingRipples = []
@@ -1383,8 +1421,21 @@ function checkLotusActivations() {
       combinedPower *= (1 + interferenceBonus)
     }
 
-    // Check if combined power activates the lotus
-    if (combinedPower >= lotus.activationThreshold && !lotus.isActivated) {
+    // Accumulate power over time (with slow decay)
+    // This ensures flowers can be activated even if obstacles push them around
+    if (combinedPower > 0) {
+      lotus.accumulatedPower += combinedPower * 0.02 // Accumulate 2% of current power each frame
+      lotus.accumulatedPower = Math.min(lotus.accumulatedPower, 1.5) // Cap at 1.5
+    } else {
+      // Slow decay when not being hit by waves
+      lotus.accumulatedPower *= 0.995 // Very slow decay (0.5% per frame)
+    }
+
+    // Check if instant power OR accumulated power activates the lotus
+    const shouldActivate = combinedPower >= lotus.activationThreshold ||
+                          lotus.accumulatedPower >= lotus.activationThreshold * 0.8 // Easier threshold for accumulated
+
+    if (shouldActivate && !lotus.isActivated) {
       lotus.isActivated = true
       lotus.activatedAt = Date.now()
       lotus.glowIntensity = 1.0
@@ -1426,6 +1477,13 @@ function checkGameState() {
     stopGameLoop()
     calculateScore()
     failureStreak.value = 0 // Reset streak on success
+
+    // Check if level was completed perfectly (minimum taps used)
+    const isPerfect = tapsUsed.value <= level.value.goal
+
+    // Update progress
+    progressStore.updateRippleLevel(currentLevel.value, isPerfect)
+
     showWinDialog.value = true
   } else if (tapsRemaining.value === 0 && ripples.length === 0) {
     stopGameLoop()
@@ -2217,6 +2275,26 @@ function distance(p1, p2) {
   return Math.sqrt(dx * dx + dy * dy)
 }
 
+// Calculate distance from a point to a line segment
+function pointToLineDistance(point, lineStart, lineEnd) {
+  const dx = lineEnd.x - lineStart.x
+  const dy = lineEnd.y - lineStart.y
+  const lengthSquared = dx * dx + dy * dy
+
+  if (lengthSquared === 0) return distance(point, lineStart)
+
+  // Calculate parameter t for the projection of point onto the line
+  const t = Math.max(0, Math.min(1, ((point.x - lineStart.x) * dx + (point.y - lineStart.y) * dy) / lengthSquared))
+
+  // Calculate the closest point on the line segment
+  const closestPoint = {
+    x: lineStart.x + t * dx,
+    y: lineStart.y + t * dy
+  }
+
+  return distance(point, closestPoint)
+}
+
 function goBack() {
   haptics.light()
   stopGameLoop()
@@ -2285,7 +2363,7 @@ function openInstructions() {
   right: 0;
   z-index: 10;
   padding: 16px;
-  padding-top: max(16px, env(safe-area-inset-top));
+  padding-top: max(56px, calc(env(safe-area-inset-top) + 16px));
   padding-left: max(16px, env(safe-area-inset-left));
   padding-right: max(16px, env(safe-area-inset-right));
   display: flex;

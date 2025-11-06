@@ -22,6 +22,7 @@
     "@capacitor/haptics": "^7.0.2",
     "@capacitor/ios": "^7.4.4",
     "@capacitor/preferences": "^7.0.2",
+    "@capacitor/status-bar": "^7.0.3",
     "@quasar/extras": "^1.16.4",
     "axios": "^1.2.1",
     "pinia": "^3.0.1",

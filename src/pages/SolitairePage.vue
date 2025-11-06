@@ -371,11 +371,13 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useThemeStore } from 'src/stores/theme'
 import { useSettingsStore } from 'src/stores/settings'
+import { useProgressStore } from 'src/stores/progress'
 import { useHaptics } from 'src/composables/useHaptics'
 
 const router = useRouter()
 const themeStore = useThemeStore()
 const settingsStore = useSettingsStore()
+const progressStore = useProgressStore()
 const haptics = useHaptics()
 
 // Game state
@@ -633,10 +635,9 @@ async function tryAutoMoveToFoundation(card, source, sourceElement) {
     } else if (source.type === 'tableau') {
       const pile = tableau.value[source.index]
       pile.pop()
-      // Flip top card if exists - counts as an extra move
+      // Flip top card if exists - part of the same move, not a separate move
       if (pile.length > 0 && !pile[pile.length - 1].faceUp) {
         pile[pile.length - 1].faceUp = true
-        moveCount.value++
       }
     }
 
@@ -646,7 +647,7 @@ async function tryAutoMoveToFoundation(card, source, sourceElement) {
     // Clear animation
     autoMovingCard.value = null
 
-    // Increment move counter
+    // Increment move counter (only once for the entire action)
     moveCount.value++
 
     checkWin()
@@ -829,17 +830,16 @@ function dropOnFoundation(foundationIndex) {
   } else if (dragSource.value.type === 'tableau') {
     const pile = tableau.value[dragSource.value.index]
     pile.pop()
-    // Flip top card if exists - counts as an extra move
+    // Flip top card if exists - part of the same move, not a separate move
     if (pile.length > 0 && !pile[pile.length - 1].faceUp) {
       pile[pile.length - 1].faceUp = true
-      moveCount.value++
     }
   }
 
   // Add to foundation
   foundation.value[foundationIndex].push(draggedCard.value)
 
-  // Increment move counter
+  // Increment move counter (only once for the entire action)
   moveCount.value++
 
   clearDrag()
@@ -865,17 +865,16 @@ function dropOnTableau(tableauIndex) {
   } else if (dragSource.value.type === 'tableau') {
     const sourcePile = tableau.value[dragSource.value.index]
     sourcePile.splice(dragSource.value.cardIndex)
-    // Flip top card if exists - counts as an extra move
+    // Flip top card if exists - part of the same move, not a separate move
     if (sourcePile.length > 0 && !sourcePile[sourcePile.length - 1].faceUp) {
       sourcePile[sourcePile.length - 1].faceUp = true
-      moveCount.value++
     }
   }
 
   // Add to tableau
   tableau.value[tableauIndex].push(...draggedCards.value)
 
-  // Increment move counter
+  // Increment move counter (only once for the entire action)
   moveCount.value++
 
   clearDrag()
@@ -930,6 +929,10 @@ function checkWin() {
   const isWin = foundation.value.every((pile) => pile.length === 13)
   if (isWin) {
     stopTimer()
+
+    // Update progress stats
+    progressStore.updateSolitaireStats(true, elapsedTime.value, moveCount.value)
+
     clearGameState() // Clear saved game on win
     showWinDialog.value = true
   } else {
@@ -1014,7 +1017,7 @@ onBeforeUnmount(() => {
   right: 0;
   z-index: 10;
   padding: 16px;
-  padding-top: max(16px, env(safe-area-inset-top));
+  padding-top: max(56px, calc(env(safe-area-inset-top) + 16px));
   padding-left: max(16px, env(safe-area-inset-left));
   padding-right: max(16px, env(safe-area-inset-right));
   display: flex;
@@ -1309,6 +1312,53 @@ onBeforeUnmount(() => {
 
   .card-back {
     transform: rotateY(180deg);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+      linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e3a8a 100%);
+
+    // Add decorative pattern
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border: 3px solid rgba(255, 255, 255, 0.5);
+      border-radius: 6px;
+      background:
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 8px,
+          rgba(255, 255, 255, 0.15) 8px,
+          rgba(255, 255, 255, 0.15) 16px
+        ),
+        repeating-linear-gradient(
+          -45deg,
+          transparent,
+          transparent 8px,
+          rgba(255, 255, 255, 0.15) 8px,
+          rgba(255, 255, 255, 0.15) 16px
+        );
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+    }
+
+    // Add center ornament
+    &::after {
+      content: '♠';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 40px;
+      font-weight: bold;
+      color: rgba(255, 255, 255, 0.6);
+      text-shadow:
+        0 0 15px rgba(255, 255, 255, 0.5),
+        0 2px 4px rgba(0, 0, 0, 0.3);
+    }
   }
 }
 

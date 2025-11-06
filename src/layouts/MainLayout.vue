@@ -72,7 +72,7 @@ function goToSettings() {
   right: 0;
   z-index: 10;
   padding: 16px;
-  padding-top: max(16px, env(safe-area-inset-top));
+  padding-top: max(56px, calc(env(safe-area-inset-top) + 16px));
   padding-left: max(16px, env(safe-area-inset-left));
   padding-right: max(16px, env(safe-area-inset-right));
   display: flex;
