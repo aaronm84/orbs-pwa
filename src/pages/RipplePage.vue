@@ -171,7 +171,7 @@ let ctx = null
 let animationId = null
 
 // Game state
-const currentLevel = ref(1)
+const currentLevel = ref(progressStore.ripple.currentLevel)
 const tapsRemaining = ref(3)
 const tapsUsed = ref(0)
 const clicksRemaining = ref(1)
@@ -1121,6 +1121,17 @@ function updateObstacles() {
         obstacle.velocity.y += Math.sin(angle) * 0.015
       }
 
+      // Add subtle flow field influence for more organic, varied movement
+      // This creates gentle circular currents that help prevent path retracing
+      const flowFieldScale = 0.008 // Very subtle influence
+      const flowFieldFreq = 0.002 // Low frequency for large, gentle currents
+      const flowAngle =
+        Math.sin(obstacle.position.x * flowFieldFreq + animationTime * 0.3) * 2 +
+        Math.cos(obstacle.position.y * flowFieldFreq + animationTime * 0.2) * 2
+
+      obstacle.velocity.x += Math.cos(flowAngle) * flowFieldScale
+      obstacle.velocity.y += Math.sin(flowAngle) * flowFieldScale
+
       // Update position
       obstacle.position.x += obstacle.velocity.x
       obstacle.position.y += obstacle.velocity.y
@@ -1132,18 +1143,22 @@ function updateObstacles() {
         obstacle.rotationSpeed *= 0.998
       }
 
-      // Bounce off bounds - gentle reflection like water current
+      // Bounce off bounds - gentle reflection like water current with varied angles
       if (obstacle.position.x <= obstacle.bounds.minX || obstacle.position.x >= obstacle.bounds.maxX) {
-        obstacle.velocity.x *= -1
-        // Add slight randomness to make it more natural
-        obstacle.velocity.x += (Math.random() - 0.5) * 0.02
-        obstacle.velocity.y += (Math.random() - 0.5) * 0.02
+        // Instead of perfect reflection, add angle variation to prevent retracing
+        obstacle.velocity.x *= -(0.8 + Math.random() * 0.3) // Varied reflection coefficient
+        // Add stronger perpendicular force to create varied bounce angles
+        obstacle.velocity.y += (Math.random() - 0.5) * 0.06
+        // Also add small parallel variation
+        obstacle.velocity.x += (Math.random() - 0.5) * 0.03
       }
       if (obstacle.position.y <= obstacle.bounds.minY || obstacle.position.y >= obstacle.bounds.maxY) {
-        obstacle.velocity.y *= -1
-        // Add slight randomness to make it more natural
-        obstacle.velocity.x += (Math.random() - 0.5) * 0.02
-        obstacle.velocity.y += (Math.random() - 0.5) * 0.02
+        // Instead of perfect reflection, add angle variation to prevent retracing
+        obstacle.velocity.y *= -(0.8 + Math.random() * 0.3) // Varied reflection coefficient
+        // Add stronger perpendicular force to create varied bounce angles
+        obstacle.velocity.x += (Math.random() - 0.5) * 0.06
+        // Also add small parallel variation
+        obstacle.velocity.y += (Math.random() - 0.5) * 0.03
       }
 
       // Check collision with other lily pads and stones to prevent overlap
@@ -1232,6 +1247,44 @@ function updateObstacles() {
             // Add slight randomness
             obstacle.velocity.x += (Math.random() - 0.5) * 0.02
             obstacle.velocity.y += (Math.random() - 0.5) * 0.02
+          }
+        }
+      })
+
+      // Collision with lotus flowers - lily pads must avoid protected zones
+      level.value.lotusFlowers.forEach(lotus => {
+        // Only avoid non-activated flowers
+        if (!lotus.isActivated) {
+          const dx = lotus.position.x - obstacle.position.x
+          const dy = lotus.position.y - obstacle.position.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          // Use protected radius to keep lily pads away from lotus flowers
+          const minDist = obstacle.radius + lotus.protectedRadius
+
+          if (dist < minDist && dist > 0) {
+            // Strong repulsion to push lily pad away from lotus flower
+            const pushX = (dx / dist) * (minDist - dist)
+            const pushY = (dy / dist) * (minDist - dist)
+
+            obstacle.position.x -= pushX * 1.2 // Stronger push than other collisions
+            obstacle.position.y -= pushY * 1.2
+
+            // Add strong repulsion velocity to actively move away
+            const repulsionStrength = 0.15 // Stronger than lily pad-to-lily pad repulsion
+            obstacle.velocity.x -= (dx / dist) * repulsionStrength
+            obstacle.velocity.y -= (dy / dist) * repulsionStrength
+
+            // Add a perpendicular "flow" force to help lily pads slide around the flower
+            // This prevents them from getting stuck bouncing back and forth
+            const tangentX = -dy / dist
+            const tangentY = dx / dist
+            const flowForce = 0.08
+            obstacle.velocity.x += tangentX * flowForce
+            obstacle.velocity.y += tangentY * flowForce
+
+            // Add randomness to prevent predictable paths
+            obstacle.velocity.x += (Math.random() - 0.5) * 0.05
+            obstacle.velocity.y += (Math.random() - 0.5) * 0.05
           }
         }
       })
@@ -1549,8 +1602,9 @@ function checkGameState() {
     // Check if level was completed perfectly (minimum taps used)
     const isPerfect = tapsUsed.value <= level.value.goal
 
-    // Update progress
-    progressStore.updateRippleLevel(currentLevel.value, isPerfect)
+    // Update progress to next level
+    const nextLevelNumber = currentLevel.value + 1
+    progressStore.updateRippleLevel(nextLevelNumber, isPerfect)
 
     showWinDialog.value = true
   } else if (tapsRemaining.value === 0 && ripples.length === 0 && !allActivated) {

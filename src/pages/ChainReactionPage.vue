@@ -194,7 +194,7 @@ let ctx = null
 let animationId = null
 
 // Game state
-const currentLevel = ref(1)
+const currentLevel = ref(progressStore.chainReaction.currentLevel)
 const capturedCount = ref(0)
 const clicksRemaining = ref(1)
 const isPlaying = ref(false)

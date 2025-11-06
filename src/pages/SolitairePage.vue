@@ -214,7 +214,12 @@
               <div class="suit-icon">{{ getSuitIcon(index) }}</div>
             </div>
             <div v-else class="card-stack">
-              <div class="card" :class="{ 'red-card': isRedCard(pile[pile.length - 1]) }">
+              <div
+                class="card"
+                :class="{ 'red-card': isRedCard(pile[pile.length - 1]) }"
+                @mousedown="handleCardClick($event, { type: 'foundation', index }, pile[pile.length - 1])"
+                @touchstart="handleCardClick($event, { type: 'foundation', index }, pile[pile.length - 1])"
+              >
                 <div class="card-content">
                   <div class="card-corner top-left">
                     {{ getCardDisplay(pile[pile.length - 1]) }}
@@ -730,6 +735,19 @@ function createDeck() {
       })
     }
   }
+
+  // Validate deck
+  if (deck.length !== 52) {
+    console.error(`Invalid deck size: ${deck.length} cards (should be 52)`)
+  }
+
+  // Check for duplicates
+  const uniqueCards = new Set(deck.map(c => `${c.suit}-${c.rank}`))
+  if (uniqueCards.size !== 52) {
+    console.error(`Duplicate cards detected! Unique cards: ${uniqueCards.size}`)
+  }
+
+  console.log('Deck created with', deck.length, 'cards')
   return shuffleDeck(deck)
 }
 
@@ -884,6 +902,9 @@ async function tryAutoMoveToFoundation(card, source, sourceElement) {
       if (pile.length > 0 && !pile[pile.length - 1].faceUp) {
         pile[pile.length - 1].faceUp = true
       }
+    } else if (source.type === 'foundation') {
+      // Remove card from foundation pile
+      foundation.value[source.index].pop()
     }
 
     // Add to foundation
@@ -993,12 +1014,19 @@ function handleDragEnd(event) {
 
   // If no drop zone found, search in a wider radius (more forgiving)
   if (!dropZone) {
-    const searchRadius = 50 // pixels
+    const searchRadius = 80 // pixels - increased for more liberal drop zones
     const offsets = [
+      // Cardinal directions
       [0, searchRadius], [0, -searchRadius],
       [searchRadius, 0], [-searchRadius, 0],
+      // Diagonals
       [searchRadius, searchRadius], [-searchRadius, -searchRadius],
-      [searchRadius, -searchRadius], [-searchRadius, searchRadius]
+      [searchRadius, -searchRadius], [-searchRadius, searchRadius],
+      // Mid-range checks for better coverage
+      [searchRadius / 2, searchRadius / 2], [-searchRadius / 2, -searchRadius / 2],
+      [searchRadius / 2, -searchRadius / 2], [-searchRadius / 2, searchRadius / 2],
+      [searchRadius / 2, 0], [-searchRadius / 2, 0],
+      [0, searchRadius / 2], [0, -searchRadius / 2]
     ]
 
     for (const [dx, dy] of offsets) {
@@ -1085,6 +1113,9 @@ function dropOnFoundation(foundationIndex) {
     if (pile.length > 0 && !pile[pile.length - 1].faceUp) {
       pile[pile.length - 1].faceUp = true
     }
+  } else if (dragSource.value.type === 'foundation') {
+    // Remove card from foundation pile
+    foundation.value[dragSource.value.index].pop()
   }
 
   // Add to foundation
@@ -1133,6 +1164,9 @@ function dropOnTableau(tableauIndex) {
     if (sourcePile.length > 0 && !sourcePile[sourcePile.length - 1].faceUp) {
       sourcePile[sourcePile.length - 1].faceUp = true
     }
+  } else if (dragSource.value.type === 'foundation') {
+    // Remove card from foundation pile (only single cards can be moved from foundation)
+    foundation.value[dragSource.value.index].pop()
   }
 
   // Add to tableau
@@ -1240,6 +1274,43 @@ function loadGameState() {
       moveCount.value = gameState.moveCount || 0
       elapsedTime.value = gameState.elapsedTime || 0
       showStats.value = gameState.showStats !== undefined ? gameState.showStats : true
+
+      // Validate loaded state - count all cards
+      const totalCards =
+        stock.value.length +
+        waste.value.length +
+        foundation.value.reduce((sum, pile) => sum + pile.length, 0) +
+        tableau.value.reduce((sum, pile) => sum + pile.length, 0)
+
+      console.log('Loaded game state:', {
+        stock: stock.value.length,
+        waste: waste.value.length,
+        foundation: foundation.value.map(p => p.length),
+        tableau: tableau.value.map(p => p.length),
+        total: totalCards
+      })
+
+      if (totalCards !== 52) {
+        console.error(`Invalid saved game state! Total cards: ${totalCards} (should be 52)`)
+        console.log('Discarding corrupted save and starting new game')
+        clearGameState()
+        return false
+      }
+
+      // Check for duplicate cards
+      const allCards = [
+        ...stock.value,
+        ...waste.value,
+        ...foundation.value.flat(),
+        ...tableau.value.flat()
+      ]
+      const uniqueCards = new Set(allCards.map(c => `${c.suit}-${c.rank}`))
+      if (uniqueCards.size !== 52) {
+        console.error(`Duplicate cards in saved state! Unique cards: ${uniqueCards.size}`)
+        console.log('Discarding corrupted save and starting new game')
+        clearGameState()
+        return false
+      }
 
       // Start timer if there's a saved game
       startTimer()
