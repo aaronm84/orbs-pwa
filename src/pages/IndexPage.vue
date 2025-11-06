@@ -345,14 +345,12 @@
     </div>
 
     <div class="page-content">
-      <!-- App Title -->
-      <div class="text-center q-mb-xl">
-        <h1 class="text-h2 text-white text-weight-light q-mb-sm app-title">
+      <!-- App Title - Show after loading transition -->
+      <div class="title-container" :class="{ 'title-hidden': !showTitle }">
+        <h1 class="app-title">
           <span class="zen-emphasis">Zen</span><span class="ith-subtle">ith</span>
         </h1>
-        <p class="text-white text-subtitle1 text-weight-light">
-          Relaxing games for mindful moments
-        </p>
+        <p class="subtitle">Relaxing games for mindful moments</p>
       </div>
 
       <!-- Game Cards -->
@@ -413,6 +411,24 @@ const router = useRouter()
 const progressStore = useProgressStore()
 const themeStore = useThemeStore()
 const haptics = useHaptics()
+
+// Control title visibility for loading screen transition
+// Check if this is initial app load or navigation back to page
+const isInitialLoad = !window.__appLoaded
+if (isInitialLoad) {
+  window.__appLoaded = true
+}
+
+const showTitle = ref(!isInitialLoad) // Show immediately if not initial load
+
+// Auto-show title after loading screen should be done (fallback for initial load)
+onMounted(() => {
+  if (isInitialLoad) {
+    setTimeout(() => {
+      showTitle.value = true
+    }, 2100) // 1.5s loading + 0.6s for title to reach position
+  }
+})
 
 const games = ref([
   {
@@ -1192,6 +1208,14 @@ function navigateTo(routeName) {
   haptics.light()
   router.push({ name: routeName })
 }
+
+// Method to reveal title after loading screen transition
+function revealTitle() {
+  showTitle.value = true
+}
+
+// Expose method to parent
+defineExpose({ revealTitle })
 </script>
 
 <style lang="scss" scoped>
@@ -2365,19 +2389,63 @@ function navigateTo(routeName) {
 .page-content {
   width: 100%;
   max-width: 600px;
-  padding: 24px;
+  padding: 76.35px 24px 24px 24px; // Fine-tuned to match loading screen final position exactly
   margin: 0 auto;
   position: relative;
   z-index: 1;
 }
 
+.title-hidden {
+  opacity: 0 !important;
+}
+
+.title-container {
+  text-align: center;
+  margin-bottom: 48px;
+  margin-top: 0;
+  transition: opacity 0.2s ease; // Faster fade to reduce flicker
+}
+
 .app-title {
+  font-size: 64px !important;
+  font-weight: 300 !important;
+  margin: 0 !important;
+  margin-bottom: 8px !important;
+  padding: 0 !important;
+  letter-spacing: 4px !important;
+  color: white !important;
+  text-shadow: none !important;
+  line-height: 1 !important;
+  font-family: inherit !important;
+
   .zen-emphasis {
-    opacity: 1;
+    font-weight: 700 !important;
+    letter-spacing: 8px !important;
   }
 
   .ith-subtle {
-    opacity: 0.4;
+    font-weight: 200 !important;
+    letter-spacing: 2px !important;
+  }
+}
+
+.subtitle {
+  font-size: 16px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 8px 0 0 0;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+// Mobile responsiveness - match LoadingScreen
+@media (max-width: 600px) {
+  .app-title {
+    font-size: 48px !important;
+  }
+
+  .subtitle {
+    font-size: 14px;
   }
 }
 

@@ -1,6 +1,8 @@
 <template>
   <LoadingScreen ref="loadingScreen" />
-  <router-view />
+  <router-view v-slot="{ Component }">
+    <component :is="Component" ref="currentPage" />
+  </router-view>
 </template>
 
 <script setup>
@@ -16,6 +18,7 @@ const progressStore = useProgressStore()
 const themeStore = useThemeStore()
 const statusBar = useStatusBar()
 const loadingScreen = ref(null)
+const currentPage = ref(null)
 
 // Load saved data on app startup
 onMounted(async () => {
@@ -38,10 +41,17 @@ onMounted(async () => {
     // Minimum loading time for better UX (show loading for at least 1.5 seconds)
     await new Promise(resolve => setTimeout(resolve, 1500))
 
-    // Hide loading screen with fade out
+    // Hide loading screen with transition
     if (loadingScreen.value) {
       loadingScreen.value.hide()
     }
+
+    // Reveal index page title right when loading title reaches position (0.8s transition)
+    setTimeout(() => {
+      if (currentPage.value && currentPage.value.revealTitle) {
+        currentPage.value.revealTitle()
+      }
+    }, 800) // Start fading in exactly when loading title stops moving
   } catch (error) {
     console.error('Error during app initialization:', error)
     // Hide loading screen even if there's an error

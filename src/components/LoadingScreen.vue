@@ -1,17 +1,21 @@
 <template>
-  <transition name="fade">
-    <div v-if="isLoading" class="loading-screen" :style="{ background: themeStore.colors.gradient }">
+  <transition name="fade-screen">
+    <div
+      v-if="isLoading || isTransitioning"
+      class="loading-screen"
+      :style="{ background: isTransitioning ? 'transparent' : themeStore.colors.gradient }"
+    >
       <div class="loading-content">
         <!-- ZENith Logo with Animation -->
-        <div class="logo-container">
+        <div class="logo-container" :class="{ 'moving-up': isTransitioning }">
           <h1 class="app-title">
-            <span class="zen-text">ZEN</span><span class="ith-text">ith</span>
+            <span class="zen-emphasis">Zen</span><span class="ith-subtle">ith</span>
           </h1>
-          <div class="tagline">Find Your Balance</div>
+          <div v-if="!isTransitioning" class="tagline">It's time to relax</div>
         </div>
 
-        <!-- Animated Zen Circle (Enso) -->
-        <div class="zen-circle-container">
+        <!-- Animated Zen Circle (Enso) - instantly hide during transition -->
+        <div v-if="!isTransitioning" class="zen-circle-container">
           <svg class="zen-circle" viewBox="0 0 100 100" width="120" height="120">
             <circle
               cx="50"
@@ -28,8 +32,8 @@
           </svg>
         </div>
 
-        <!-- Loading Text -->
-        <div class="loading-text">
+        <!-- Loading Text - instantly hide during transition -->
+        <div v-if="!isTransitioning" class="loading-text">
           {{ loadingMessage }}
         </div>
       </div>
@@ -38,12 +42,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useThemeStore } from 'src/stores/theme'
 
+const router = useRouter()
 const themeStore = useThemeStore()
 const isLoading = ref(true)
+const isTransitioning = ref(false)
 const loadingMessage = ref('Preparing your sanctuary...')
+const showOnlyOnIndex = ref(false) // Track if we should only show on index page
 
 const loadingMessages = [
   'Preparing your sanctuary...',
@@ -65,25 +73,68 @@ onMounted(() => {
 
 // Function to hide loading screen (will be called from parent)
 function hide() {
-  isLoading.value = false
   if (messageInterval) {
     clearInterval(messageInterval)
   }
+
+  // Start transition - fade out circle and text, move title up
+  isTransitioning.value = true
+
+  // Keep loading screen active permanently with isLoading=true
+  // This maintains the title in position without layout shifts
+  // Only isTransitioning changes to true, which makes background transparent
+
+  // After transition completes and IndexPage title is visible, hide the loading screen title
+  setTimeout(() => {
+    showOnlyOnIndex.value = true
+    // Hide the loading screen completely after IndexPage title has faded in
+    isLoading.value = false
+    isTransitioning.value = false
+  }, 850) // 800ms transition + 50ms overlap
 }
+
+// Watch route changes to completely hide loading screen on non-index pages
+watch(() => router.currentRoute.value.path, (newPath) => {
+  if (showOnlyOnIndex.value) {
+    // Completely hide loading screen if not on index page
+    if (newPath !== '/') {
+      isLoading.value = false
+      isTransitioning.value = false
+    } else {
+      // Show loading screen title on index page
+      isLoading.value = true
+      isTransitioning.value = true
+    }
+  }
+}, { immediate: true })
 
 // Expose hide method to parent
 defineExpose({ hide })
 </script>
 
 <style lang="scss" scoped>
-// Fade transition
-.fade-enter-active,
+// Fade transitions for elements (faster fade out)
+.fade-enter-active {
+  transition: opacity 0.3s ease;
+}
+
 .fade-leave-active {
-  transition: opacity 0.5s ease;
+  transition: opacity 0.15s ease; // Faster fade out
 }
 
 .fade-enter-from,
 .fade-leave-to {
+  opacity: 0;
+}
+
+// Fade transition for entire screen
+.fade-screen-enter-active,
+.fade-screen-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-screen-enter-from,
+.fade-screen-leave-to {
   opacity: 0;
 }
 
@@ -97,7 +148,8 @@ defineExpose({ hide })
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 2s ease;
+  transition: background 0.5s ease;
+  pointer-events: none; // Allow clicks to pass through
 }
 
 .loading-content {
@@ -105,11 +157,88 @@ defineExpose({ hide })
   flex-direction: column;
   align-items: center;
   gap: 32px;
+  width: 100%;
 }
 
 .logo-container {
   text-align: center;
-  animation: fadeInUp 1s ease-out;
+  position: relative; // For glow positioning
+  // Only transition top and margin-top
+  transition:
+    top 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-top 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 1s ease-out;
+
+  // Always centered horizontally
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  z-index: 1; // Below page content when scrolling
+
+  // Start above center, with spinner below
+  top: 30%;
+  margin-top: 0;
+
+  // Initial fade in
+  opacity: 0;
+  animation: fadeIn 1s ease-out forwards;
+
+  &.moving-up {
+    top: 76px; // Match the IndexPage padding-top
+    margin-top: 0;
+  }
+}
+
+.title-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  height: 150px;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
+  filter: blur(40px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0; // Above background but below text
+
+  &.glow-active {
+    animation: glowInOut 3s ease 0.8s forwards; // Wait 0.8s for title to reach position, then glow
+  }
+}
+
+@keyframes glowInOut {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1; // Fade in over 0.45s
+  }
+  65% {
+    opacity: 1; // Stay at full glow
+  }
+  100% {
+    opacity: 0; // Fade out over 1.05s
+  }
+}
+
+@keyframes glowFadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeInUp {
@@ -127,19 +256,23 @@ defineExpose({ hide })
   font-size: 64px;
   font-weight: 300;
   margin: 0;
+  padding: 0;
   letter-spacing: 4px;
   color: white;
-  text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
-}
+  text-shadow: none;
+  line-height: 1;
+  position: relative;
+  z-index: 1; // Above the glow
 
-.zen-text {
-  font-weight: 700;
-  letter-spacing: 8px;
-}
+  .zen-emphasis {
+    font-weight: 700;
+    letter-spacing: 8px;
+  }
 
-.ith-text {
-  font-weight: 200;
-  letter-spacing: 2px;
+  .ith-subtle {
+    font-weight: 200;
+    letter-spacing: 2px;
+  }
 }
 
 .tagline {
@@ -198,7 +331,8 @@ defineExpose({ hide })
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.5;
   }
   50% {
@@ -209,7 +343,7 @@ defineExpose({ hide })
 // Mobile responsiveness
 @media (max-width: 600px) {
   .app-title {
-    font-size: 48px;
+    font-size: 48px !important;
   }
 
   .tagline {
