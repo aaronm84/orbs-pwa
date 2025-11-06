@@ -22,15 +22,25 @@ const currentPage = ref(null)
 
 // Load saved data on app startup
 onMounted(async () => {
+  console.log('[App] Starting app initialization...')
   try {
     // Load all data
+    console.log('[App] Loading settings and progress...')
     await Promise.all([
       settingsStore.loadSettings(),
       progressStore.loadFromStorage()
     ])
+    console.log('[App] Data loaded successfully')
+    console.log('[App] Current settings:', JSON.stringify(settingsStore.settings))
+    console.log('[App] Current progress:', JSON.stringify({
+      chainReaction: progressStore.chainReaction,
+      solitaire: progressStore.solitaire,
+      ripple: progressStore.ripple
+    }))
 
     // Restore theme override preference
     const themeOverride = settingsStore.settings.themeOverride
+    console.log('[App] Theme override preference:', themeOverride)
     if (themeOverride && themeOverride !== 'auto') {
       themeStore.setThemeOverride(themeOverride)
     }
@@ -53,11 +63,12 @@ onMounted(async () => {
       }
     }, 800) // Start fading in exactly when loading title stops moving
   } catch (error) {
-    console.error('Error during app initialization:', error)
+    console.error('[App] Error during app initialization:', error)
     // Hide loading screen even if there's an error
     if (loadingScreen.value) {
       loadingScreen.value.hide()
     }
   }
+  console.log('[App] Initialization complete')
 })
 </script>

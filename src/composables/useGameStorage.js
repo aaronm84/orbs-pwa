@@ -9,42 +9,58 @@ export function useGameStorage() {
 
   async function saveSettings(settings) {
     try {
+      const settingsJson = JSON.stringify(settings)
+      console.log('[Storage] Saving settings:', settingsJson.substring(0, 100) + '...')
       await Preferences.set({
         key: KEYS.SETTINGS,
-        value: JSON.stringify(settings),
+        value: settingsJson,
       })
+      console.log('[Storage] Settings saved successfully to key:', KEYS.SETTINGS)
     } catch (error) {
-      console.error('Error saving settings:', error)
+      console.error('[Storage] Error saving settings:', error)
+      throw error
     }
   }
 
   async function loadSettings() {
     try {
+      console.log('[Storage] Loading settings from key:', KEYS.SETTINGS)
       const { value } = await Preferences.get({ key: KEYS.SETTINGS })
-      return value ? JSON.parse(value) : null
+      console.log('[Storage] Raw value retrieved:', value ? value.substring(0, 100) + '...' : 'null')
+      const parsed = value ? JSON.parse(value) : null
+      console.log('[Storage] Settings loaded successfully:', parsed ? Object.keys(parsed) : 'null')
+      return parsed
     } catch (error) {
-      console.error('Error loading settings:', error)
+      console.error('[Storage] Error loading settings:', error)
       return null
     }
   }
 
   async function saveProgress(progress) {
     try {
+      const progressJson = JSON.stringify(progress)
+      console.log('[Storage] Saving progress:', progressJson.substring(0, 100) + '...')
       await Preferences.set({
         key: KEYS.PROGRESS,
-        value: JSON.stringify(progress),
+        value: progressJson,
       })
+      console.log('[Storage] Progress saved successfully to key:', KEYS.PROGRESS)
     } catch (error) {
-      console.error('Error saving progress:', error)
+      console.error('[Storage] Error saving progress:', error)
+      throw error
     }
   }
 
   async function loadProgress() {
     try {
+      console.log('[Storage] Loading progress from key:', KEYS.PROGRESS)
       const { value } = await Preferences.get({ key: KEYS.PROGRESS })
-      return value ? JSON.parse(value) : null
+      console.log('[Storage] Raw value retrieved:', value ? value.substring(0, 100) + '...' : 'null')
+      const parsed = value ? JSON.parse(value) : null
+      console.log('[Storage] Progress loaded successfully:', parsed ? Object.keys(parsed) : 'null')
+      return parsed
     } catch (error) {
-      console.error('Error loading progress:', error)
+      console.error('[Storage] Error loading progress:', error)
       return null
     }
   }

@@ -42,16 +42,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
 import { useThemeStore } from 'src/stores/theme'
 
-const router = useRouter()
 const themeStore = useThemeStore()
 const isLoading = ref(true)
 const isTransitioning = ref(false)
 const loadingMessage = ref('Preparing your sanctuary...')
-const showOnlyOnIndex = ref(false) // Track if we should only show on index page
 
 const loadingMessages = [
   'Preparing your sanctuary...',
@@ -80,33 +77,15 @@ function hide() {
   // Start transition - fade out circle and text, move title up
   isTransitioning.value = true
 
-  // Keep loading screen active permanently with isLoading=true
-  // This maintains the title in position without layout shifts
-  // Only isTransitioning changes to true, which makes background transparent
-
-  // After transition completes and IndexPage title is visible, hide the loading screen title
+  // After transition completes and IndexPage title is visible, hide the loading screen completely
   setTimeout(() => {
-    showOnlyOnIndex.value = true
-    // Hide the loading screen completely after IndexPage title has faded in
     isLoading.value = false
     isTransitioning.value = false
   }, 850) // 800ms transition + 50ms overlap
 }
 
-// Watch route changes to completely hide loading screen on non-index pages
-watch(() => router.currentRoute.value.path, (newPath) => {
-  if (showOnlyOnIndex.value) {
-    // Completely hide loading screen if not on index page
-    if (newPath !== '/') {
-      isLoading.value = false
-      isTransitioning.value = false
-    } else {
-      // Show loading screen title on index page
-      isLoading.value = true
-      isTransitioning.value = true
-    }
-  }
-}, { immediate: true })
+// Once the initial transition is complete, never show the loading screen again
+// The route watcher is removed - loading screen only shows on initial app load
 
 // Expose hide method to parent
 defineExpose({ hide })
