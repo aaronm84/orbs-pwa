@@ -1,0 +1,22 @@
+{
+  "Crux": {
+    "imagePath": "/Users/aaronmiddleton/Documents/Dev/zenith/zenith-app/constellation-images/crux.jpg",
+    "imageUrl": "https://www.star-registration.com/cdn/shop/files/41_EN_Kreuz-des-Suedens.jpg?v=1678109349&width=600"
+  },
+  "Leo": {
+    "imagePath": "/Users/aaronmiddleton/Documents/Dev/zenith/zenith-app/constellation-images/leo.jpg",
+    "imageUrl": "https://www.star-registration.com/cdn/shop/files/08_Chamaleon.jpg?v=1680194581&width=1000"
+  },
+  "Orion": {
+    "imagePath": "/Users/aaronmiddleton/Documents/Dev/zenith/zenith-app/constellation-images/orion.jpg",
+    "imageUrl": "https://www.star-registration.com/cdn/shop/files/51_Orion.jpg?v=1681715373&width=1000"
+  },
+  "Perseus": {
+    "imagePath": "/Users/aaronmiddleton/Documents/Dev/zenith/zenith-app/constellation-images/perseus.jpg",
+    "imageUrl": "https://www.star-registration.com/cdn/shop/files/55_Perseus.jpg?v=1681744808&width=1000"
+  },
+  "Eridanus": {
+    "imagePath": "/Users/aaronmiddleton/Documents/Dev/zenith/zenith-app/constellation-images/eridanus.jpg",
+    "imageUrl": "https://www.star-registration.com/cdn/shop/files/15_Eridanus.jpg?v=1680594187&width=1000"
+  }
+}

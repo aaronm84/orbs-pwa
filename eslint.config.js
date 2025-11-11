@@ -14,7 +14,7 @@ export default [
      *
      * ESLint requires "ignores" key to be the only one in this object
      */
-    // ignores: []
+    ignores: ['src/lib/hexapipes/**']
   },
 
   ...pluginQuasar.configs.recommended(),

@@ -448,12 +448,6 @@ const games = ref([
     currentLevel: null,
   },
   {
-    id: 'flow-connect',
-    name: 'Flow Connect',
-    description: 'Connect the dots without crossing',
-    available: false,
-  },
-  {
     id: 'ripple',
     name: 'Ripple',
     description: 'Create waves to reach lotus flowers',
@@ -464,8 +458,10 @@ const games = ref([
   {
     id: 'constellation',
     name: 'Constellation',
-    description: 'Learn the stars while you play',
-    available: false,
+    description: 'Connect the stars and learn their stories',
+    available: true,
+    progress: 0,
+    currentLevel: null,
   },
 ])
 

@@ -24,6 +24,11 @@ const routes = [
         component: () => import('pages/RipplePage.vue'),
       },
       {
+        path: 'constellation',
+        name: 'constellation',
+        component: () => import('pages/ConstellationPage.vue'),
+      },
+      {
         path: 'settings',
         name: 'settings',
         component: () => import('pages/SettingsPage.vue'),

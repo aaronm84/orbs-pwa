@@ -1,0 +1,3887 @@
+[
+  {
+    "id": "crux",
+    "name": "Crux",
+    "latinName": "Crux",
+    "abbreviation": "Cru",
+    "hemisphere": "southern",
+    "tier": 1,
+    "difficulty": 1,
+    "stars": [
+      {
+        "id": "hip-61084",
+        "name": "HIP 61084",
+        "hip": 61084,
+        "position": {
+          "x": 222.2992965554541,
+          "y": 50
+        },
+        "magnitude": 1.59,
+        "color": "#e8f4f8",
+        "ra": 187.791375,
+        "dec": -57.11255555555556
+      },
+      {
+        "id": "hip-60718",
+        "name": "HIP 60718",
+        "hip": 60718,
+        "position": {
+          "x": 269.8217039314384,
+          "y": 550
+        },
+        "magnitude": 0.77,
+        "color": "#ffffff",
+        "ra": 186.64974999999998,
+        "dec": -63.09905555555556
+      },
+      {
+        "id": "hip-62434",
+        "name": "HIP 62434",
+        "hip": 62434,
+        "position": {
+          "x": 50,
+          "y": 265.1646760767276
+        },
+        "magnitude": 1.25,
+        "color": "#e8f4f8",
+        "ra": 191.9305,
+        "dec": -59.68872222222222
+      },
+      {
+        "id": "hip-59747",
+        "name": "HIP 59747",
+        "hip": 59747,
+        "position": {
+          "x": 389.01017030111717,
+          "y": 186.66861549597706
+        },
+        "magnitude": 2.79,
+        "color": "#ffffff",
+        "ra": 183.78650000000002,
+        "dec": -58.74888888888889
+      }
+    ],
+    "connections": [
+      [
+        "hip-61084",
+        "hip-60718"
+      ],
+      [
+        "hip-62434",
+        "hip-59747"
+      ]
+    ],
+    "mythology": {
+      "culture": "Various",
+      "title": "The Southern Cross",
+      "shortDescription": "The smallest yet most famous constellation in the southern sky, used for navigation for centuries.",
+      "fullStory": "Crux, commonly known as the Southern Cross, is the smallest of all 88 constellations but one of the most distinctive. Ancient Greeks saw it as part of Centaurus, but it became a separate constellation in the 16th century. For centuries, sailors have used it to find true south, as it points toward the South Celestial Pole. The constellation holds deep cultural significance for many Southern Hemisphere cultures, appearing on the flags of Australia, New Zealand, Brazil, and Papua New Guinea."
+    }
+  },
+  {
+    "id": "cassiopeia",
+    "name": "Cassiopeia",
+    "latinName": "Cassiopeia",
+    "abbreviation": "Cas",
+    "hemisphere": "northern",
+    "tier": 1,
+    "difficulty": 2,
+    "stars": [
+      {
+        "id": "hip-8886",
+        "name": "HIP 8886",
+        "hip": 8886,
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "magnitude": 3.35,
+        "color": "#d0d0d0",
+        "ra": 28.598666666666666,
+        "dec": 63.670138888888886
+      },
+      {
+        "id": "hip-6686",
+        "name": "HIP 6686",
+        "hip": 6686,
+        "position": {
+          "x": 240.15425455248118,
+          "y": 233.3664370063064
+        },
+        "magnitude": 2.66,
+        "color": "#ffffff",
+        "ra": 21.4525,
+        "dec": 60.235416666666666
+      },
+      {
+        "id": "hip-4427",
+        "name": "HIP 4427",
+        "hip": 4427,
+        "position": {
+          "x": 433.7477568229803,
+          "y": 207.66992572086107
+        },
+        "magnitude": 2.15,
+        "color": "#ffffff",
+        "ra": 14.177083333333332,
+        "dec": 60.716750000000005
+      },
+      {
+        "id": "hip-3179",
+        "name": "HIP 3179",
+        "hip": 3179,
+        "position": {
+          "x": 541.5274827792111,
+          "y": 430.78824877966326
+        },
+        "magnitude": 2.24,
+        "color": "#ffffff",
+        "ra": 10.126624999999999,
+        "dec": 56.537416666666665
+      },
+      {
+        "id": "hip-746",
+        "name": "HIP 746",
+        "hip": 746,
+        "position": {
+          "x": 750,
+          "y": 291.3007402374054
+        },
+        "magnitude": 2.28,
+        "color": "#ffffff",
+        "ra": 2.2920416666666665,
+        "dec": 59.15022222222222
+      }
+    ],
+    "connections": [
+      [
+        "hip-8886",
+        "hip-6686"
+      ],
+      [
+        "hip-6686",
+        "hip-4427"
+      ],
+      [
+        "hip-4427",
+        "hip-3179"
+      ],
+      [
+        "hip-3179",
+        "hip-746"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The Vain Queen",
+      "shortDescription": "Cassiopeia was a vain queen who boasted about her beauty, angering the sea god Poseidon.",
+      "fullStory": "Queen Cassiopeia of Ethiopia was known for her extraordinary beauty, but also her vanity. She boasted that she and her daughter Andromeda were more beautiful than the Nereids, sea nymphs who served Poseidon. Angered by this insult, Poseidon sent a sea monster to ravage the coast of Ethiopia. To appease the god, Cassiopeia's daughter Andromeda was chained to a rock as a sacrifice. She was saved by the hero Perseus, but Cassiopeia was punished by being placed in the sky, where she circles the celestial pole, spending half the year upside down as a lesson in humility. The constellation is easily recognized by its distinctive 'W' or 'M' shape."
+    }
+  },
+  {
+    "id": "triangulum",
+    "name": "Triangulum",
+    "latinName": "Triangulum",
+    "abbreviation": "Tri",
+    "hemisphere": "northern",
+    "tier": 1,
+    "difficulty": 3,
+    "stars": [
+      {
+        "id": "hip-10670",
+        "name": "HIP 10670",
+        "hip": 10670,
+        "position": {
+          "x": 50,
+          "y": 155.40454470742873
+        },
+        "magnitude": 4.03,
+        "color": "#d0d0d0",
+        "ra": 34.3285,
+        "dec": 33.84733333333334
+      },
+      {
+        "id": "hip-10064",
+        "name": "HIP 10064",
+        "hip": 10064,
+        "position": {
+          "x": 201.87173445910614,
+          "y": 50
+        },
+        "magnitude": 3,
+        "color": "#d0d0d0",
+        "ra": 32.3855,
+        "dec": 34.98738888888889
+      },
+      {
+        "id": "hip-8796",
+        "name": "HIP 8796",
+        "hip": 8796,
+        "position": {
+          "x": 523.5211648641985,
+          "y": 550
+        },
+        "magnitude": 3.42,
+        "color": "#d0d0d0",
+        "ra": 28.270416666666666,
+        "dec": 29.57938888888889
+      }
+    ],
+    "connections": [
+      [
+        "hip-10670",
+        "hip-10064"
+      ],
+      [
+        "hip-10064",
+        "hip-8796"
+      ],
+      [
+        "hip-8796",
+        "hip-10670"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The Triangle",
+      "shortDescription": "A small constellation representing the Greek letter Delta or the island of Sicily.",
+      "fullStory": "Triangulum is one of the 48 constellations listed by Ptolemy in the 2nd century. Ancient Greeks called it Deltoton, after the Greek letter Delta (Δ), which it resembles. Some myths associate it with the island of Sicily, which Zeus placed in the heavens to honor the island's triangular shape. Despite its small size, Triangulum is home to the Triangulum Galaxy (M33), one of the closest spiral galaxies to our own Milky Way, visible to the naked eye under dark skies."
+    }
+  },
+  {
+    "id": "aries",
+    "name": "Aries",
+    "latinName": "Aries",
+    "abbreviation": "Ari",
+    "hemisphere": "both",
+    "tier": 1,
+    "difficulty": 4,
+    "stars": [
+      {
+        "id": "hip-13209",
+        "name": "HIP 13209",
+        "hip": 13209,
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "magnitude": 3.61,
+        "color": "#d0d0d0",
+        "ra": 42.49579166666666,
+        "dec": 27.26077777777778
+      },
+      {
+        "id": "hip-9884",
+        "name": "HIP 9884",
+        "hip": 9884,
+        "position": {
+          "x": 580.8453540071209,
+          "y": 255.06587422903405
+        },
+        "magnitude": 2.01,
+        "color": "#ffffff",
+        "ra": 31.792875,
+        "dec": 23.462777777777777
+      },
+      {
+        "id": "hip-8903",
+        "name": "HIP 8903",
+        "hip": 8903,
+        "position": {
+          "x": 736.2406339121758,
+          "y": 398.3891145836118
+        },
+        "magnitude": 2.64,
+        "color": "#ffffff",
+        "ra": 28.659791666666667,
+        "dec": 20.808305555555556
+      },
+      {
+        "id": "hip-8832",
+        "name": "HIP 8832",
+        "hip": 8832,
+        "position": {
+          "x": 750,
+          "y": 480.1466985164791
+        },
+        "magnitude": 3.88,
+        "color": "#d0d0d0",
+        "ra": 28.382375,
+        "dec": 19.294083333333337
+      }
+    ],
+    "connections": [
+      [
+        "hip-13209",
+        "hip-9884"
+      ],
+      [
+        "hip-9884",
+        "hip-8903"
+      ],
+      [
+        "hip-8903",
+        "hip-8832"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The Golden Ram",
+      "shortDescription": "Aries represents the golden ram whose fleece became the legendary Golden Fleece sought by Jason.",
+      "fullStory": "In Greek mythology, Aries represents Chrysomallus, the flying ram with golden fleece. The ram rescued Phrixus and Helle, carrying them away from their stepmother who plotted to kill them. While Helle fell into the sea (giving her name to the Hellespont), Phrixus arrived safely in Colchis, where he sacrificed the ram to Zeus. The Golden Fleece was hung in a sacred grove, guarded by a dragon, until Jason and the Argonauts came to claim it. Aries is one of the twelve zodiac constellations and was the location of the vernal equinox in ancient times."
+    }
+  },
+  {
+    "id": "leo",
+    "name": "Leo",
+    "latinName": "Leo",
+    "abbreviation": "Leo",
+    "hemisphere": "both",
+    "tier": 2,
+    "difficulty": 5,
+    "stars": [
+      {
+        "id": "hip-57632",
+        "name": "HIP 57632",
+        "hip": 57632,
+        "position": {
+          "x": 50,
+          "y": 324.8049512489711
+        },
+        "magnitude": 2.14,
+        "color": "#ffffff",
+        "ra": 177.26616666666666,
+        "dec": 14.572333333333333
+      },
+      {
+        "id": "hip-54879",
+        "name": "HIP 54879",
+        "hip": 54879,
+        "position": {
+          "x": 247.8427600983659,
+          "y": 304.1991360555136
+        },
+        "magnitude": 3.33,
+        "color": "#d0d0d0",
+        "ra": 168.56016666666667,
+        "dec": 15.429749999999999
+      },
+      {
+        "id": "hip-49669",
+        "name": "HIP 49669",
+        "hip": 49669,
+        "position": {
+          "x": 622.0438049015387,
+          "y": 387.4127971011244
+        },
+        "magnitude": 1.36,
+        "color": "#e8f4f8",
+        "ra": 152.09358333333333,
+        "dec": 11.967194444444445
+      },
+      {
+        "id": "hip-49583",
+        "name": "HIP 49583",
+        "hip": 49583,
+        "position": {
+          "x": 627.9626879198349,
+          "y": 272.16589531109196
+        },
+        "magnitude": 3.48,
+        "color": "#d0d0d0",
+        "ra": 151.833125,
+        "dec": 16.762666666666668
+      },
+      {
+        "id": "hip-50583",
+        "name": "HIP 50583",
+        "hip": 50583,
+        "position": {
+          "x": 556.1700740452172,
+          "y": 198.16533743342453
+        },
+        "magnitude": 2.01,
+        "color": "#ffffff",
+        "ra": 154.9923333333333,
+        "dec": 19.84186111111111
+      },
+      {
+        "id": "hip-54872",
+        "name": "HIP 54872",
+        "hip": 54872,
+        "position": {
+          "x": 248.60309653472729,
+          "y": 181.7712074719469
+        },
+        "magnitude": 2.56,
+        "color": "#ffffff",
+        "ra": 168.52670833333332,
+        "dec": 20.52402777777778
+      },
+      {
+        "id": "hip-50335",
+        "name": "HIP 50335",
+        "hip": 50335,
+        "position": {
+          "x": 574.8006839105174,
+          "y": 112.23801329255318
+        },
+        "magnitude": 3.43,
+        "color": "#d0d0d0",
+        "ra": 154.1725,
+        "dec": 23.417333333333335
+      },
+      {
+        "id": "hip-48455",
+        "name": "HIP 48455",
+        "hip": 48455,
+        "position": {
+          "x": 710.7181601508496,
+          "y": 50
+        },
+        "magnitude": 3.88,
+        "color": "#d0d0d0",
+        "ra": 148.1915,
+        "dec": 26.007083333333334
+      },
+      {
+        "id": "hip-47908",
+        "name": "HIP 47908",
+        "hip": 47908,
+        "position": {
+          "x": 750,
+          "y": 103.65976709966347
+        },
+        "magnitude": 2.97,
+        "color": "#ffffff",
+        "ra": 146.46291666666664,
+        "dec": 23.774277777777776
+      }
+    ],
+    "connections": [
+      [
+        "hip-57632",
+        "hip-54879"
+      ],
+      [
+        "hip-54879",
+        "hip-49669"
+      ],
+      [
+        "hip-49669",
+        "hip-49583"
+      ],
+      [
+        "hip-49583",
+        "hip-50583"
+      ],
+      [
+        "hip-50583",
+        "hip-54872"
+      ],
+      [
+        "hip-54872",
+        "hip-57632"
+      ],
+      [
+        "hip-50583",
+        "hip-50335"
+      ],
+      [
+        "hip-50335",
+        "hip-48455"
+      ],
+      [
+        "hip-48455",
+        "hip-47908"
+      ],
+      [
+        "hip-54872",
+        "hip-54879"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The Nemean Lion",
+      "shortDescription": "Leo represents the fearsome lion slain by Hercules as the first of his twelve labors.",
+      "fullStory": "Leo represents the Nemean Lion, a fearsome beast with an impenetrable hide that terrorized the region of Nemea. As the first of his twelve labors, Hercules was tasked with slaying this invulnerable lion. Unable to harm it with weapons, Hercules wrestled the lion with his bare hands and strangled it. He then used the lion's own claws to skin it, and wore its hide as armor. Zeus honored the lion by placing it among the stars. Leo has been associated with lions since ancient times by many cultures, including the Egyptians and Mesopotamians. The constellation contains the bright star Regulus, known as the \"heart of the lion.\""
+    }
+  },
+  {
+    "id": "ursa-major",
+    "name": "Ursa Major",
+    "latinName": "Ursa Major",
+    "abbreviation": "UMa",
+    "hemisphere": "northern",
+    "tier": 2,
+    "difficulty": 6,
+    "stars": [
+      {
+        "id": "hip-67301",
+        "name": "HIP 67301",
+        "hip": 67301,
+        "position": {
+          "x": 50,
+          "y": 248.32224358427035
+        },
+        "magnitude": 1.85,
+        "color": "#e8f4f8",
+        "ra": 206.885625,
+        "dec": 49.31330555555555
+      },
+      {
+        "id": "hip-65378",
+        "name": "HIP 65378",
+        "hip": 65378,
+        "position": {
+          "x": 102.10989193403,
+          "y": 167.3674872981469
+        },
+        "magnitude": 2.23,
+        "color": "#ffffff",
+        "ra": 200.98091666666667,
+        "dec": 54.92541666666666
+      },
+      {
+        "id": "hip-62956",
+        "name": "HIP 62956",
+        "hip": 62956,
+        "position": {
+          "x": 168.07010945277824,
+          "y": 152.44601701889485
+        },
+        "magnitude": 1.76,
+        "color": "#e8f4f8",
+        "ra": 193.50679166666666,
+        "dec": 55.959833333333336
+      },
+      {
+        "id": "hip-59774",
+        "name": "HIP 59774",
+        "hip": 59774,
+        "position": {
+          "x": 253.23935257074297,
+          "y": 136.97118734611342
+        },
+        "magnitude": 3.32,
+        "color": "#d0d0d0",
+        "ra": 183.85604166666667,
+        "dec": 57.03261111111111
+      },
+      {
+        "id": "hip-54061",
+        "name": "HIP 54061",
+        "hip": 54061,
+        "position": {
+          "x": 411.41568942222625,
+          "y": 68.90677985785074
+        },
+        "magnitude": 1.81,
+        "color": "#e8f4f8",
+        "ra": 165.93266666666668,
+        "dec": 61.75111111111111
+      },
+      {
+        "id": "hip-53910",
+        "name": "HIP 53910",
+        "hip": 53910,
+        "position": {
+          "x": 415.5874077825146,
+          "y": 146.3514504905933
+        },
+        "magnitude": 2.34,
+        "color": "#ffffff",
+        "ra": 165.45995833333336,
+        "dec": 56.382333333333335
+      },
+      {
+        "id": "hip-58001",
+        "name": "HIP 58001",
+        "hip": 58001,
+        "position": {
+          "x": 300.8844578736031,
+          "y": 185.12026639324236
+        },
+        "magnitude": 2.41,
+        "color": "#ffffff",
+        "ra": 178.45725,
+        "dec": 53.69472222222222
+      },
+      {
+        "id": "hip-57399",
+        "name": "HIP 57399",
+        "hip": 57399,
+        "position": {
+          "x": 318.04237329091654,
+          "y": 270.4498075153944
+        },
+        "magnitude": 3.69,
+        "color": "#d0d0d0",
+        "ra": 176.51304166666668,
+        "dec": 47.779333333333334
+      },
+      {
+        "id": "hip-54539",
+        "name": "HIP 54539",
+        "hip": 54539,
+        "position": {
+          "x": 398.32432608480974,
+          "y": 317.775058240223
+        },
+        "magnitude": 3,
+        "color": "#d0d0d0",
+        "ra": 167.41608333333332,
+        "dec": 44.498555555555555
+      },
+      {
+        "id": "hip-50372",
+        "name": "HIP 50372",
+        "hip": 50372,
+        "position": {
+          "x": 514.2988319293652,
+          "y": 340.62547542690635
+        },
+        "magnitude": 3.45,
+        "color": "#d0d0d0",
+        "ra": 154.27470833333334,
+        "dec": 42.91447222222222
+      },
+      {
+        "id": "hip-50801",
+        "name": "HIP 50801",
+        "hip": 50801,
+        "position": {
+          "x": 502.75738422778943,
+          "y": 361.03726461285055
+        },
+        "magnitude": 3.06,
+        "color": "#d0d0d0",
+        "ra": 155.5825,
+        "dec": 41.49944444444444
+      },
+      {
+        "id": "hip-48402",
+        "name": "HIP 48402",
+        "hip": 48402,
+        "position": {
+          "x": 569.440160281396,
+          "y": 179.78942398084757
+        },
+        "magnitude": 4.55,
+        "color": "#d0d0d0",
+        "ra": 148.0265,
+        "dec": 54.064277777777775
+      },
+      {
+        "id": "hip-46853",
+        "name": "HIP 46853",
+        "hip": 46853,
+        "position": {
+          "x": 611.8754898479343,
+          "y": 214.20268839351374
+        },
+        "magnitude": 3.17,
+        "color": "#d0d0d0",
+        "ra": 143.21804166666666,
+        "dec": 51.67861111111111
+      },
+      {
+        "id": "hip-44471",
+        "name": "HIP 44471",
+        "hip": 44471,
+        "position": {
+          "x": 676.4008862964447,
+          "y": 279.43178011884004
+        },
+        "magnitude": 3.57,
+        "color": "#d0d0d0",
+        "ra": 135.90650000000002,
+        "dec": 47.156666666666666
+      },
+      {
+        "id": "hip-44127",
+        "name": "HIP 44127",
+        "hip": 44127,
+        "position": {
+          "x": 686.1350183752073,
+          "y": 266.65562931312706
+        },
+        "magnitude": 3.12,
+        "color": "#d0d0d0",
+        "ra": 134.80349999999999,
+        "dec": 48.042361111111106
+      },
+      {
+        "id": "hip-48319",
+        "name": "HIP 48319",
+        "hip": 48319,
+        "position": {
+          "x": 571.8917113001747,
+          "y": 108.02740571525631
+        },
+        "magnitude": 3.78,
+        "color": "#d0d0d0",
+        "ra": 147.74870833333333,
+        "dec": 59.03911111111111
+      },
+      {
+        "id": "hip-41704",
+        "name": "HIP 41704",
+        "hip": 41704,
+        "position": {
+          "x": 750,
+          "y": 83.80300637041739
+        },
+        "magnitude": 3.35,
+        "color": "#d0d0d0",
+        "ra": 127.56679166666666,
+        "dec": 60.718444444444444
+      },
+      {
+        "id": "hip-46733",
+        "name": "HIP 46733",
+        "hip": 46733,
+        "position": {
+          "x": 614.8451502690615,
+          "y": 50
+        },
+        "magnitude": 3.65,
+        "color": "#d0d0d0",
+        "ra": 142.8815416666667,
+        "dec": 63.06180555555555
+      }
+    ],
+    "connections": [
+      [
+        "hip-67301",
+        "hip-65378"
+      ],
+      [
+        "hip-65378",
+        "hip-62956"
+      ],
+      [
+        "hip-62956",
+        "hip-59774"
+      ],
+      [
+        "hip-59774",
+        "hip-54061"
+      ],
+      [
+        "hip-54061",
+        "hip-53910"
+      ],
+      [
+        "hip-53910",
+        "hip-58001"
+      ],
+      [
+        "hip-58001",
+        "hip-59774"
+      ],
+      [
+        "hip-58001",
+        "hip-57399"
+      ],
+      [
+        "hip-57399",
+        "hip-54539"
+      ],
+      [
+        "hip-54539",
+        "hip-50372"
+      ],
+      [
+        "hip-54539",
+        "hip-50801"
+      ],
+      [
+        "hip-53910",
+        "hip-48402"
+      ],
+      [
+        "hip-48402",
+        "hip-46853"
+      ],
+      [
+        "hip-46853",
+        "hip-44471"
+      ],
+      [
+        "hip-46853",
+        "hip-44127"
+      ],
+      [
+        "hip-48402",
+        "hip-48319"
+      ],
+      [
+        "hip-48319",
+        "hip-41704"
+      ],
+      [
+        "hip-41704",
+        "hip-46733"
+      ],
+      [
+        "hip-46733",
+        "hip-54061"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The Great Bear",
+      "shortDescription": "Ursa Major represents Callisto, a nymph who was turned into a bear by Zeus's jealous wife Hera.",
+      "fullStory": "In Greek mythology, Callisto was a beautiful nymph and follower of Artemis. Zeus fell in love with her, which angered his wife Hera. As punishment, Hera transformed Callisto into a bear. Years later, Callisto's son Arcas nearly killed her while hunting, not recognizing his mother. To prevent this tragedy, Zeus placed them both in the heavens as Ursa Major (the Great Bear) and Ursa Minor (the Little Bear). The constellation is best known for containing the Big Dipper, one of the most recognizable star patterns in the sky. Ancient cultures worldwide have their own stories about this prominent constellation."
+    }
+  },
+  {
+    "id": "gemini",
+    "name": "Gemini",
+    "latinName": "Gemini",
+    "abbreviation": "Gem",
+    "hemisphere": "both",
+    "tier": 2,
+    "difficulty": 7,
+    "stars": [
+      {
+        "id": "hip-31681",
+        "name": "HIP 31681",
+        "hip": 31681,
+        "position": {
+          "x": 418.12215905928605,
+          "y": 466.8452339352095
+        },
+        "magnitude": 1.93,
+        "color": "#e8f4f8",
+        "ra": 99.42791666666668,
+        "dec": 16.399416666666667
+      },
+      {
+        "id": "hip-34088",
+        "name": "HIP 34088",
+        "hip": 34088,
+        "position": {
+          "x": 274.39638455403815,
+          "y": 367.8462216045077
+        },
+        "magnitude": 4.01,
+        "color": "#d0d0d0",
+        "ra": 106.02725,
+        "dec": 20.570305555555557
+      },
+      {
+        "id": "hip-35550",
+        "name": "HIP 35550",
+        "hip": 35550,
+        "position": {
+          "x": 187.2039216579324,
+          "y": 334.33073866850583
+        },
+        "magnitude": 3.5,
+        "color": "#d0d0d0",
+        "ra": 110.03079166666667,
+        "dec": 21.982333333333333
+      },
+      {
+        "id": "hip-35350",
+        "name": "HIP 35350",
+        "hip": 35350,
+        "position": {
+          "x": 198.25486418953233,
+          "y": 463.4971800656952
+        },
+        "magnitude": 3.58,
+        "color": "#d0d0d0",
+        "ra": 109.523375,
+        "dec": 16.540472222222224
+      },
+      {
+        "id": "hip-32362",
+        "name": "HIP 32362",
+        "hip": 32362,
+        "position": {
+          "x": 376.8576238532227,
+          "y": 550
+        },
+        "magnitude": 3.35,
+        "color": "#d0d0d0",
+        "ra": 101.322625,
+        "dec": 12.896055555555556
+      },
+      {
+        "id": "hip-36962",
+        "name": "HIP 36962",
+        "hip": 36962,
+        "position": {
+          "x": 101.17934864835775,
+          "y": 217.70136783626586
+        },
+        "magnitude": 4.06,
+        "color": "#d0d0d0",
+        "ra": 113.98070833333333,
+        "dec": 26.896
+      },
+      {
+        "id": "hip-37740",
+        "name": "HIP 37740",
+        "hip": 37740,
+        "position": {
+          "x": 54.76321213239981,
+          "y": 276.98987671935566
+        },
+        "magnitude": 3.57,
+        "color": "#d0d0d0",
+        "ra": 116.11195833333333,
+        "dec": 24.398138888888887
+      },
+      {
+        "id": "hip-37826",
+        "name": "HIP 37826",
+        "hip": 37826,
+        "position": {
+          "x": 50,
+          "y": 190.87276208510318
+        },
+        "magnitude": 1.16,
+        "color": "#e8f4f8",
+        "ra": 116.33066666666666,
+        "dec": 28.026305555555556
+      },
+      {
+        "id": "hip-36046",
+        "name": "HIP 36046",
+        "hip": 36046,
+        "position": {
+          "x": 156.6872402328072,
+          "y": 196.28516346652148
+        },
+        "magnitude": 3.78,
+        "color": "#d0d0d0",
+        "ra": 111.43200000000002,
+        "dec": 27.79827777777778
+      },
+      {
+        "id": "hip-34693",
+        "name": "HIP 34693",
+        "hip": 34693,
+        "position": {
+          "x": 236.11554938442524,
+          "y": 138.20387920633067
+        },
+        "magnitude": 4.41,
+        "color": "#d0d0d0",
+        "ra": 107.78495833333335,
+        "dec": 30.24527777777778
+      },
+      {
+        "id": "hip-36850",
+        "name": "HIP 36850",
+        "hip": 36850,
+        "position": {
+          "x": 108.38179000763745,
+          "y": 99.19753517830148
+        },
+        "magnitude": 1.58,
+        "color": "#e8f4f8",
+        "ra": 113.64999999999999,
+        "dec": 31.888638888888888
+      },
+      {
+        "id": "hip-33018",
+        "name": "HIP 33018",
+        "hip": 33018,
+        "position": {
+          "x": 336.03048019751475,
+          "y": 50
+        },
+        "magnitude": 3.6,
+        "color": "#d0d0d0",
+        "ra": 103.19725000000001,
+        "dec": 33.96136111111112
+      },
+      {
+        "id": "hip-32246",
+        "name": "HIP 32246",
+        "hip": 32246,
+        "position": {
+          "x": 384.2533523499,
+          "y": 259.5909413978488
+        },
+        "magnitude": 3.06,
+        "color": "#d0d0d0",
+        "ra": 100.98304166666668,
+        "dec": 25.13116666666667
+      },
+      {
+        "id": "hip-30883",
+        "name": "HIP 30883",
+        "hip": 30883,
+        "position": {
+          "x": 465.7551878346359,
+          "y": 376.3469026875419
+        },
+        "magnitude": 4.13,
+        "color": "#d0d0d0",
+        "ra": 97.24079166666667,
+        "dec": 20.212166666666665
+      },
+      {
+        "id": "hip-30343",
+        "name": "HIP 30343",
+        "hip": 30343,
+        "position": {
+          "x": 498.44158543590265,
+          "y": 321.71454906764814
+        },
+        "magnitude": 2.87,
+        "color": "#ffffff",
+        "ra": 95.73995833333333,
+        "dec": 22.51386111111111
+      },
+      {
+        "id": "hip-29655",
+        "name": "HIP 29655",
+        "hip": 29655,
+        "position": {
+          "x": 542.4429939114111,
+          "y": 321.8813583683546
+        },
+        "magnitude": 3.31,
+        "color": "#d0d0d0",
+        "ra": 93.71958333333335,
+        "dec": 22.506833333333333
+      },
+      {
+        "id": "hip-28734",
+        "name": "HIP 28734",
+        "hip": 28734,
+        "position": {
+          "x": 601.0171636050974,
+          "y": 303.91804059070284
+        },
+        "magnitude": 4.16,
+        "color": "#d0d0d0",
+        "ra": 91.03008333333334,
+        "dec": 23.263638888888888
+      }
+    ],
+    "connections": [
+      [
+        "hip-31681",
+        "hip-34088"
+      ],
+      [
+        "hip-34088",
+        "hip-35550"
+      ],
+      [
+        "hip-35550",
+        "hip-35350"
+      ],
+      [
+        "hip-35350",
+        "hip-32362"
+      ],
+      [
+        "hip-35550",
+        "hip-36962"
+      ],
+      [
+        "hip-36962",
+        "hip-37740"
+      ],
+      [
+        "hip-36962",
+        "hip-37826"
+      ],
+      [
+        "hip-36962",
+        "hip-36046"
+      ],
+      [
+        "hip-36046",
+        "hip-34693"
+      ],
+      [
+        "hip-34693",
+        "hip-36850"
+      ],
+      [
+        "hip-34693",
+        "hip-33018"
+      ],
+      [
+        "hip-34693",
+        "hip-32246"
+      ],
+      [
+        "hip-32246",
+        "hip-30883"
+      ],
+      [
+        "hip-32246",
+        "hip-30343"
+      ],
+      [
+        "hip-30343",
+        "hip-29655"
+      ],
+      [
+        "hip-29655",
+        "hip-28734"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The Twins",
+      "shortDescription": "Gemini represents Castor and Pollux, twin brothers who were inseparable even in death.",
+      "fullStory": "Gemini represents the twin brothers Castor and Pollux (known as the Dioscuri). Though twins, only Pollux was immortal, being the son of Zeus, while Castor was mortal. The brothers were inseparable, sailing with Jason and the Argonauts and participating in many adventures. When Castor was killed in battle, Pollux was devastated. He begged Zeus to let him share his immortality with his brother. Moved by this love, Zeus placed both brothers in the sky, where they remain together forever. Sailors considered the twins their patrons, and the appearance of their stars was thought to calm rough seas."
+    }
+  },
+  {
+    "id": "lyra",
+    "name": "Lyra",
+    "latinName": "Lyra",
+    "abbreviation": "Lyr",
+    "hemisphere": "northern",
+    "tier": 2,
+    "difficulty": 8,
+    "stars": [
+      {
+        "id": "hip-91262",
+        "name": "HIP 91262",
+        "hip": 91262,
+        "position": {
+          "x": 416.4496107680762,
+          "y": 50
+        },
+        "magnitude": 0.03,
+        "color": "#ffffff",
+        "ra": 279.234125,
+        "dec": 38.783
+      },
+      {
+        "id": "hip-91971",
+        "name": "HIP 91971",
+        "hip": 91971,
+        "position": {
+          "x": 285.9722022703811,
+          "y": 146.6566984555348
+        },
+        "magnitude": 4.34,
+        "color": "#d0d0d0",
+        "ra": 281.19308333333333,
+        "dec": 37.60505555555556
+      },
+      {
+        "id": "hip-92420",
+        "name": "HIP 92420",
+        "hip": 92420,
+        "position": {
+          "x": 197.59502320818754,
+          "y": 494.76760088255077
+        },
+        "magnitude": 3.52,
+        "color": "#d0d0d0",
+        "ra": 282.5199583333333,
+        "dec": 33.36266666666667
+      },
+      {
+        "id": "hip-93194",
+        "name": "HIP 93194",
+        "hip": 93194,
+        "position": {
+          "x": 50,
+          "y": 550
+        },
+        "magnitude": 3.25,
+        "color": "#d0d0d0",
+        "ra": 284.73591666666664,
+        "dec": 32.68955555555555
+      },
+      {
+        "id": "hip-92791",
+        "name": "HIP 92791",
+        "hip": 92791,
+        "position": {
+          "x": 123.9126836226557,
+          "y": 204.62427745664755
+        },
+        "magnitude": 4.22,
+        "color": "#d0d0d0",
+        "ra": 283.6262083333333,
+        "dec": 36.89861111111111
+      }
+    ],
+    "connections": [
+      [
+        "hip-91262",
+        "hip-91971"
+      ],
+      [
+        "hip-91971",
+        "hip-92420"
+      ],
+      [
+        "hip-92420",
+        "hip-93194"
+      ],
+      [
+        "hip-93194",
+        "hip-92791"
+      ],
+      [
+        "hip-92791",
+        "hip-91971"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The Lyre",
+      "shortDescription": "Lyra represents the musical instrument of Orpheus, the legendary musician who could charm all living things.",
+      "fullStory": "Lyra represents the lyre of Orpheus, the legendary musician whose songs could charm all living things and even stones. Apollo gave Orpheus the lyre, and he became the most talented musician in the world. When his wife Eurydice died, Orpheus descended to the underworld, and his music moved even Hades. The god of death agreed to return Eurydice on one condition: Orpheus must not look back at her until they reached the surface. Tragically, Orpheus looked back too soon, losing Eurydice forever. After his death, Zeus placed his lyre in the sky. The constellation contains Vega, one of the brightest stars in the night sky."
+    }
+  },
+  {
+    "id": "cygnus",
+    "name": "Cygnus",
+    "latinName": "Cygnus",
+    "abbreviation": "Cyg",
+    "hemisphere": "northern",
+    "tier": 2,
+    "difficulty": 9,
+    "stars": [
+      {
+        "id": "hip-94779",
+        "name": "HIP 94779",
+        "hip": 94779,
+        "position": {
+          "x": 598.7098029486126,
+          "y": 50
+        },
+        "magnitude": 3.8,
+        "color": "#d0d0d0",
+        "ra": 289.27545833333335,
+        "dec": 53.36816666666667
+      },
+      {
+        "id": "hip-95853",
+        "name": "HIP 95853",
+        "hip": 95853,
+        "position": {
+          "x": 551.6754372358748,
+          "y": 82.24700859840047
+        },
+        "magnitude": 3.76,
+        "color": "#d0d0d0",
+        "ra": 292.4264166666667,
+        "dec": 51.72947222222223
+      },
+      {
+        "id": "hip-97165",
+        "name": "HIP 97165",
+        "hip": 97165,
+        "position": {
+          "x": 494.69782139223116,
+          "y": 212.10089591726296
+        },
+        "magnitude": 2.86,
+        "color": "#ffffff",
+        "ra": 296.2435,
+        "dec": 45.130694444444444
+      },
+      {
+        "id": "hip-100453",
+        "name": "HIP 100453",
+        "hip": 100453,
+        "position": {
+          "x": 355.67393143407804,
+          "y": 308.01378586538834
+        },
+        "magnitude": 2.23,
+        "color": "#ffffff",
+        "ra": 305.5570833333333,
+        "dec": 40.25669444444444
+      },
+      {
+        "id": "hip-102098",
+        "name": "HIP 102098",
+        "hip": 102098,
+        "position": {
+          "x": 284.0112540503802,
+          "y": 209.15623069732868
+        },
+        "magnitude": 1.25,
+        "color": "#e8f4f8",
+        "ra": 310.35795833333333,
+        "dec": 45.28033333333333
+      },
+      {
+        "id": "hip-102488",
+        "name": "HIP 102488",
+        "hip": 102488,
+        "position": {
+          "x": 266.1908998406643,
+          "y": 431.73728141859937
+        },
+        "magnitude": 2.48,
+        "color": "#ffffff",
+        "ra": 311.55179166666665,
+        "dec": 33.96944444444445
+      },
+      {
+        "id": "hip-104732",
+        "name": "HIP 104732",
+        "hip": 104732,
+        "position": {
+          "x": 166.44430950200626,
+          "y": 505.38124313303194
+        },
+        "magnitude": 3.21,
+        "color": "#d0d0d0",
+        "ra": 318.23408333333333,
+        "dec": 30.227083333333333
+      },
+      {
+        "id": "hip-107310",
+        "name": "HIP 107310",
+        "hip": 107310,
+        "position": {
+          "x": 50,
+          "y": 534.5813677633773
+        },
+        "magnitude": 4.49,
+        "color": "#d0d0d0",
+        "ra": 326.035,
+        "dec": 28.743222222222222
+      },
+      {
+        "id": "hip-98110",
+        "name": "HIP 98110",
+        "hip": 98110,
+        "position": {
+          "x": 452.40713296406267,
+          "y": 409.8143663804177
+        },
+        "magnitude": 3.89,
+        "color": "#d0d0d0",
+        "ra": 299.0766666666667,
+        "dec": 35.0835
+      },
+      {
+        "id": "hip-95947",
+        "name": "HIP 95947",
+        "hip": 95947,
+        "position": {
+          "x": 547.8846003341498,
+          "y": 550
+        },
+        "magnitude": 3.05,
+        "color": "#d0d0d0",
+        "ra": 292.680375,
+        "dec": 27.959694444444445
+      }
+    ],
+    "connections": [
+      [
+        "hip-94779",
+        "hip-95853"
+      ],
+      [
+        "hip-95853",
+        "hip-97165"
+      ],
+      [
+        "hip-97165",
+        "hip-100453"
+      ],
+      [
+        "hip-100453",
+        "hip-102098"
+      ],
+      [
+        "hip-100453",
+        "hip-102488"
+      ],
+      [
+        "hip-102488",
+        "hip-104732"
+      ],
+      [
+        "hip-104732",
+        "hip-107310"
+      ],
+      [
+        "hip-100453",
+        "hip-98110"
+      ],
+      [
+        "hip-98110",
+        "hip-95947"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The Swan",
+      "shortDescription": "Cygnus represents the form Zeus took to seduce Leda, or alternatively, the tragic Phaethon.",
+      "fullStory": "Cygnus has multiple origin stories in Greek mythology. Most commonly, it represents Zeus in the form of a swan, who seduced Leda, the queen of Sparta. From this union came Helen of Troy and Pollux. Alternatively, Cygnus represents Phaethon's friend Cycnus, who searched the river Eridanus so devotedly for Phaethon's body that the gods transformed him into a swan. The constellation is also known as the Northern Cross due to its distinctive cross shape. It contains the star Deneb, one of the brightest stars visible from Earth and the most distant first-magnitude star, located about 2,600 light-years away."
+    }
+  },
+  {
+    "id": "orion",
+    "name": "Orion",
+    "latinName": "Orion",
+    "abbreviation": "Ori",
+    "hemisphere": "both",
+    "tier": 3,
+    "difficulty": 10,
+    "stars": [
+      {
+        "id": "hip-26727",
+        "name": "HIP 26727",
+        "hip": 26727,
+        "position": {
+          "x": 180.07580105958766,
+          "y": 420.9840945330349
+        },
+        "magnitude": 1.74,
+        "color": "#e8f4f8",
+        "ra": 85.18966666666668,
+        "dec": -1.9425833333333333
+      },
+      {
+        "id": "hip-26311",
+        "name": "HIP 26311",
+        "hip": 26311,
+        "position": {
+          "x": 198.96691158860153,
+          "y": 408.6174014917579
+        },
+        "magnitude": 1.69,
+        "color": "#e8f4f8",
+        "ra": 84.05337499999999,
+        "dec": -1.2019166666666665
+      },
+      {
+        "id": "hip-25930",
+        "name": "HIP 25930",
+        "hip": 25930,
+        "position": {
+          "x": 216.45180473013733,
+          "y": 393.5430594115154
+        },
+        "magnitude": 2.25,
+        "color": "#ffffff",
+        "ra": 83.00166666666667,
+        "dec": -0.2990833333333333
+      },
+      {
+        "id": "hip-29434",
+        "name": "HIP 29434",
+        "hip": 29434,
+        "position": {
+          "x": 50,
+          "y": 119.22407627797043
+        },
+        "magnitude": 4.95,
+        "color": "#d0d0d0",
+        "ra": 93.01366666666667,
+        "dec": 16.130444444444446
+      },
+      {
+        "id": "hip-29426",
+        "name": "HIP 29426",
+        "hip": 29426,
+        "position": {
+          "x": 50.476589932307604,
+          "y": 151.3091144531319
+        },
+        "magnitude": 4.45,
+        "color": "#d0d0d0",
+        "ra": 92.985,
+        "dec": 14.208805555555555
+      },
+      {
+        "id": "hip-28716",
+        "name": "HIP 28716",
+        "hip": 28716,
+        "position": {
+          "x": 83.81156191269665,
+          "y": 52.30321773338513
+        },
+        "magnitude": 4.64,
+        "color": "#d0d0d0",
+        "ra": 90.97991666666665,
+        "dec": 20.138472222222223
+      },
+      {
+        "id": "hip-27913",
+        "name": "HIP 27913",
+        "hip": 27913,
+        "position": {
+          "x": 123.44195439426488,
+          "y": 50
+        },
+        "magnitude": 4.39,
+        "color": "#d0d0d0",
+        "ra": 88.59616666666668,
+        "dec": 20.276416666666666
+      },
+      {
+        "id": "hip-29038",
+        "name": "HIP 29038",
+        "hip": 29038,
+        "position": {
+          "x": 68.6313413071887,
+          "y": 141.96359747211883
+        },
+        "magnitude": 4.42,
+        "color": "#d0d0d0",
+        "ra": 91.893,
+        "dec": 14.768527777777779
+      },
+      {
+        "id": "hip-28614",
+        "name": "HIP 28614",
+        "hip": 28614,
+        "position": {
+          "x": 90.19772846203354,
+          "y": 227.47020797601613
+        },
+        "magnitude": 4.12,
+        "color": "#d0d0d0",
+        "ra": 90.59579166666667,
+        "dec": 9.647361111111111
+      },
+      {
+        "id": "hip-27989",
+        "name": "HIP 27989",
+        "hip": 27989,
+        "position": {
+          "x": 120.17163307097374,
+          "y": 264.87639336324514
+        },
+        "magnitude": 0.45,
+        "color": "#ffffff",
+        "ra": 88.79287500000001,
+        "dec": 7.407027777777778
+      },
+      {
+        "id": "hip-27366",
+        "name": "HIP 27366",
+        "hip": 27366,
+        "position": {
+          "x": 150.9906535482503,
+          "y": 550
+        },
+        "magnitude": 2.07,
+        "color": "#ffffff",
+        "ra": 86.939125,
+        "dec": -9.669611111111111
+      },
+      {
+        "id": "hip-24436",
+        "name": "HIP 24436",
+        "hip": 24436,
+        "position": {
+          "x": 289.05764858908924,
+          "y": 525.4897004518314
+        },
+        "magnitude": 0.18,
+        "color": "#ffffff",
+        "ra": 78.63445833333334,
+        "dec": -8.201638888888889
+      },
+      {
+        "id": "hip-25336",
+        "name": "HIP 25336",
+        "hip": 25336,
+        "position": {
+          "x": 245.0284972846231,
+          "y": 282.52991261129984
+        },
+        "magnitude": 1.64,
+        "color": "#e8f4f8",
+        "ra": 81.28279166666668,
+        "dec": 6.349722222222222
+      },
+      {
+        "id": "hip-26207",
+        "name": "HIP 26207",
+        "hip": 26207,
+        "position": {
+          "x": 203.43702035776,
+          "y": 222.6815001433134
+        },
+        "magnitude": 3.39,
+        "color": "#d0d0d0",
+        "ra": 83.7845,
+        "dec": 9.934166666666666
+      },
+      {
+        "id": "hip-22449",
+        "name": "HIP 22449",
+        "hip": 22449,
+        "position": {
+          "x": 391.72745038721433,
+          "y": 272.3194135375031
+        },
+        "magnitude": 3.19,
+        "color": "#d0d0d0",
+        "ra": 72.45891666666667,
+        "dec": 6.961250000000001
+      },
+      {
+        "id": "hip-22549",
+        "name": "HIP 22549",
+        "hip": 22549,
+        "position": {
+          "x": 386.03123089104344,
+          "y": 294.9624648789443
+        },
+        "magnitude": 3.68,
+        "color": "#d0d0d0",
+        "ra": 72.80154166666667,
+        "dec": 5.6051111111111105
+      },
+      {
+        "id": "hip-22730",
+        "name": "HIP 22730",
+        "hip": 22730,
+        "position": {
+          "x": 376.99888186871925,
+          "y": 346.6693783352829
+        },
+        "magnitude": 5.33,
+        "color": "#d0d0d0",
+        "ra": 73.34483333333333,
+        "dec": 2.508277777777778
+      },
+      {
+        "id": "hip-23123",
+        "name": "HIP 23123",
+        "hip": 23123,
+        "position": {
+          "x": 355.5149281469332,
+          "y": 359.9307365009457
+        },
+        "magnitude": 4.47,
+        "color": "#d0d0d0",
+        "ra": 74.63708333333334,
+        "dec": 1.7140277777777777
+      },
+      {
+        "id": "hip-22509",
+        "name": "HIP 22509",
+        "hip": 22509,
+        "position": {
+          "x": 388.50077029318993,
+          "y": 239.94450200685128
+        },
+        "magnitude": 4.35,
+        "color": "#d0d0d0",
+        "ra": 72.65299999999999,
+        "dec": 8.90025
+      },
+      {
+        "id": "hip-22845",
+        "name": "HIP 22845",
+        "hip": 22845,
+        "position": {
+          "x": 370.69930505999025,
+          "y": 219.0587788957356
+        },
+        "magnitude": 4.64,
+        "color": "#d0d0d0",
+        "ra": 73.72375,
+        "dec": 10.15113888888889
+      }
+    ],
+    "connections": [
+      [
+        "hip-26727",
+        "hip-26311"
+      ],
+      [
+        "hip-26311",
+        "hip-25930"
+      ],
+      [
+        "hip-29434",
+        "hip-29426"
+      ],
+      [
+        "hip-29434",
+        "hip-28716"
+      ],
+      [
+        "hip-28716",
+        "hip-27913"
+      ],
+      [
+        "hip-29426",
+        "hip-29038"
+      ],
+      [
+        "hip-29038",
+        "hip-27913"
+      ],
+      [
+        "hip-29426",
+        "hip-28614"
+      ],
+      [
+        "hip-28614",
+        "hip-27989"
+      ],
+      [
+        "hip-27989",
+        "hip-26727"
+      ],
+      [
+        "hip-26727",
+        "hip-27366"
+      ],
+      [
+        "hip-27366",
+        "hip-24436"
+      ],
+      [
+        "hip-24436",
+        "hip-25930"
+      ],
+      [
+        "hip-25930",
+        "hip-25336"
+      ],
+      [
+        "hip-25336",
+        "hip-26207"
+      ],
+      [
+        "hip-26207",
+        "hip-27989"
+      ],
+      [
+        "hip-25336",
+        "hip-22449"
+      ],
+      [
+        "hip-22449",
+        "hip-22549"
+      ],
+      [
+        "hip-22549",
+        "hip-22730"
+      ],
+      [
+        "hip-22730",
+        "hip-23123"
+      ],
+      [
+        "hip-22449",
+        "hip-22509"
+      ],
+      [
+        "hip-22509",
+        "hip-22845"
+      ],
+      [
+        "hip-29038",
+        "hip-28614"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The Hunter",
+      "shortDescription": "Orion was a legendary hunter who boasted he could kill any creature on Earth.",
+      "fullStory": "In Greek mythology, Orion was a giant huntsman whom Zeus placed among the stars. He is often depicted as holding a club and shield, with a sword hanging from his belt (represented by the three stars of Orion's Belt). According to legend, Orion boasted that he could kill any animal on Earth. This angered Gaia, who sent a scorpion to kill him. Both Orion and the scorpion were placed in the sky, but on opposite sides, so when Scorpius rises in the east, Orion flees below the western horizon. Orion is one of the most recognizable constellations and has been identified by cultures worldwide throughout history."
+    }
+  },
+  {
+    "id": "scorpius",
+    "name": "Scorpius",
+    "latinName": "Scorpius",
+    "abbreviation": "Sco",
+    "hemisphere": "southern",
+    "tier": 3,
+    "difficulty": 11,
+    "stars": [
+      {
+        "id": "hip-85927",
+        "name": "HIP 85927",
+        "hip": 85927,
+        "position": {
+          "x": 113.55088254305697,
+          "y": 419.1008212500829
+        },
+        "magnitude": 1.62,
+        "color": "#e8f4f8",
+        "ra": 263.40220833333336,
+        "dec": -37.10375
+      },
+      {
+        "id": "hip-86670",
+        "name": "HIP 86670",
+        "hip": 86670,
+        "position": {
+          "x": 73.17555289686564,
+          "y": 460.2000730210812
+        },
+        "magnitude": 2.39,
+        "color": "#ffffff",
+        "ra": 265.622,
+        "dec": -39.029916666666665
+      },
+      {
+        "id": "hip-87073",
+        "name": "HIP 87073",
+        "hip": 87073,
+        "position": {
+          "x": 50,
+          "y": 483.60830828172857
+        },
+        "magnitude": 2.99,
+        "color": "#ffffff",
+        "ra": 266.89616666666666,
+        "dec": -40.12697222222222
+      },
+      {
+        "id": "hip-86228",
+        "name": "HIP 86228",
+        "hip": 86228,
+        "position": {
+          "x": 96.68077765475702,
+          "y": 544.8648161670569
+        },
+        "magnitude": 1.86,
+        "color": "#e8f4f8",
+        "ra": 264.3297083333333,
+        "dec": -42.99783333333333
+      },
+      {
+        "id": "hip-84143",
+        "name": "HIP 84143",
+        "hip": 84143,
+        "position": {
+          "x": 211.11480674770266,
+          "y": 550
+        },
+        "magnitude": 3.32,
+        "color": "#d0d0d0",
+        "ra": 258.03825,
+        "dec": -43.2385
+      },
+      {
+        "id": "hip-82671",
+        "name": "HIP 82671",
+        "hip": 82671,
+        "position": {
+          "x": 293.68055594159,
+          "y": 531.2984238826351
+        },
+        "magnitude": 4.7,
+        "color": "#d0d0d0",
+        "ra": 253.498875,
+        "dec": -42.362027777777776
+      },
+      {
+        "id": "hip-82514",
+        "name": "HIP 82514",
+        "hip": 82514,
+        "position": {
+          "x": 303.3425940018295,
+          "y": 439.23436922114007
+        },
+        "magnitude": 3,
+        "color": "#d0d0d0",
+        "ra": 252.9676666666667,
+        "dec": -38.047333333333334
+      },
+      {
+        "id": "hip-82396",
+        "name": "HIP 82396",
+        "hip": 82396,
+        "position": {
+          "x": 311.07283074310016,
+          "y": 359.1186260656809
+        },
+        "magnitude": 2.29,
+        "color": "#ffffff",
+        "ra": 252.54266666666666,
+        "dec": -34.29261111111111
+      },
+      {
+        "id": "hip-81266",
+        "name": "HIP 81266",
+        "hip": 81266,
+        "position": {
+          "x": 376.04319695443223,
+          "y": 229.45938320894456
+        },
+        "magnitude": 2.82,
+        "color": "#ffffff",
+        "ra": 248.97066666666666,
+        "dec": -28.21597222222222
+      },
+      {
+        "id": "hip-80763",
+        "name": "HIP 80763",
+        "hip": 80763,
+        "position": {
+          "x": 405.4855466761572,
+          "y": 191.39299566615145
+        },
+        "magnitude": 1.06,
+        "color": "#e8f4f8",
+        "ra": 247.35195833333333,
+        "dec": -26.431944444444447
+      },
+      {
+        "id": "hip-78401",
+        "name": "HIP 78401",
+        "hip": 78401,
+        "position": {
+          "x": 537.6922994768995,
+          "y": 110.09065993987615
+        },
+        "magnitude": 2.29,
+        "color": "#ffffff",
+        "ra": 240.083375,
+        "dec": -22.62161111111111
+      },
+      {
+        "id": "hip-78265",
+        "name": "HIP 78265",
+        "hip": 78265,
+        "position": {
+          "x": 544.4289734370113,
+          "y": 184.6100958757314
+        },
+        "magnitude": 2.89,
+        "color": "#ffffff",
+        "ra": 239.71300000000002,
+        "dec": -26.114055555555556
+      },
+      {
+        "id": "hip-78820",
+        "name": "HIP 78820",
+        "hip": 78820,
+        "position": {
+          "x": 514.4849161934518,
+          "y": 50
+        },
+        "magnitude": 2.56,
+        "color": "#ffffff",
+        "ra": 241.35929166666665,
+        "dec": -19.80538888888889
+      }
+    ],
+    "connections": [
+      [
+        "hip-85927",
+        "hip-86670"
+      ],
+      [
+        "hip-86670",
+        "hip-87073"
+      ],
+      [
+        "hip-87073",
+        "hip-86228"
+      ],
+      [
+        "hip-86228",
+        "hip-84143"
+      ],
+      [
+        "hip-84143",
+        "hip-82671"
+      ],
+      [
+        "hip-82671",
+        "hip-82514"
+      ],
+      [
+        "hip-82514",
+        "hip-82396"
+      ],
+      [
+        "hip-82396",
+        "hip-81266"
+      ],
+      [
+        "hip-81266",
+        "hip-80763"
+      ],
+      [
+        "hip-80763",
+        "hip-78401"
+      ],
+      [
+        "hip-80763",
+        "hip-78265"
+      ],
+      [
+        "hip-80763",
+        "hip-78820"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The Scorpion",
+      "shortDescription": "The deadly scorpion sent by Gaia to kill the boastful hunter Orion.",
+      "fullStory": "Scorpius represents the scorpion that killed Orion. When the great hunter Orion boasted that he could kill any creature on Earth, the goddess Gaia became angry at his pride. She sent a giant scorpion to humble him. Despite Orion's great strength and skill, the scorpion's deadly sting proved fatal. Both were placed in the heavens, but as a reminder of their eternal chase, when Scorpius rises in the east, Orion sets in the west, fleeing his ancient enemy. The constellation contains Antares, a red supergiant star whose name means \"rival of Mars\" due to its distinctive red color."
+    }
+  },
+  {
+    "id": "sagittarius",
+    "name": "Sagittarius",
+    "latinName": "Sagittarius",
+    "abbreviation": "Sgr",
+    "hemisphere": "southern",
+    "tier": 3,
+    "difficulty": 12,
+    "stars": [
+      {
+        "id": "hip-89931",
+        "name": "HIP 89931",
+        "hip": 89931,
+        "position": {
+          "x": 452.7754461633754,
+          "y": 272.2581795470614
+        },
+        "magnitude": 2.72,
+        "color": "#ffffff",
+        "ra": 275.2484166666667,
+        "dec": -29.828027777777777
+      },
+      {
+        "id": "hip-90496",
+        "name": "HIP 90496",
+        "hip": 90496,
+        "position": {
+          "x": 425.13178001208354,
+          "y": 190.5070257635378
+        },
+        "magnitude": 2.82,
+        "color": "#ffffff",
+        "ra": 276.9927916666667,
+        "dec": -25.42125
+      },
+      {
+        "id": "hip-89642",
+        "name": "HIP 89642",
+        "hip": 89642,
+        "position": {
+          "x": 466.106342519005,
+          "y": 400.8785038638092
+        },
+        "magnitude": 3.1,
+        "color": "#d0d0d0",
+        "ra": 274.40720833333336,
+        "dec": -36.76127777777778
+      },
+      {
+        "id": "hip-90185",
+        "name": "HIP 90185",
+        "hip": 90185,
+        "position": {
+          "x": 440.1814501164732,
+          "y": 356.78274240790864
+        },
+        "magnitude": 1.79,
+        "color": "#e8f4f8",
+        "ra": 276.043125,
+        "dec": -34.38430555555556
+      },
+      {
+        "id": "hip-88635",
+        "name": "HIP 88635",
+        "hip": 88635,
+        "position": {
+          "x": 512.9358288946365,
+          "y": 283.30749902606044
+        },
+        "magnitude": 2.98,
+        "color": "#ffffff",
+        "ra": 271.45216666666664,
+        "dec": -30.423638888888892
+      },
+      {
+        "id": "hip-87072",
+        "name": "HIP 87072",
+        "hip": 87072,
+        "position": {
+          "x": 585.2319560471216,
+          "y": 235.20621754822804
+        },
+        "magnitude": 4.53,
+        "color": "#d0d0d0",
+        "ra": 266.890125,
+        "dec": -27.83075
+      },
+      {
+        "id": "hip-93506",
+        "name": "HIP 93506",
+        "hip": 93506,
+        "position": {
+          "x": 287.8907005611031,
+          "y": 273.22438950989715
+        },
+        "magnitude": 2.6,
+        "color": "#ffffff",
+        "ra": 285.653,
+        "dec": -29.880111111111113
+      },
+      {
+        "id": "hip-92041",
+        "name": "HIP 92041",
+        "hip": 92041,
+        "position": {
+          "x": 355.06814384866993,
+          "y": 219.6236985795941
+        },
+        "magnitude": 3.17,
+        "color": "#d0d0d0",
+        "ra": 281.41395833333337,
+        "dec": -26.99077777777778
+      },
+      {
+        "id": "hip-89341",
+        "name": "HIP 89341",
+        "hip": 89341,
+        "position": {
+          "x": 481.4201345978492,
+          "y": 109.57882521236007
+        },
+        "magnitude": 3.84,
+        "color": "#d0d0d0",
+        "ra": 273.44087499999995,
+        "dec": -21.058833333333332
+      },
+      {
+        "id": "hip-93864",
+        "name": "HIP 93864",
+        "hip": 93864,
+        "position": {
+          "x": 270.7412607598043,
+          "y": 232.2204999350707
+        },
+        "magnitude": 3.32,
+        "color": "#d0d0d0",
+        "ra": 286.7351666666667,
+        "dec": -27.669805555555556
+      },
+      {
+        "id": "hip-92855",
+        "name": "HIP 92855",
+        "hip": 92855,
+        "position": {
+          "x": 316.99694214593467,
+          "y": 206.74553688293972
+        },
+        "magnitude": 2.05,
+        "color": "#ffffff",
+        "ra": 283.8163333333333,
+        "dec": -26.296583333333334
+      },
+      {
+        "id": "hip-93085",
+        "name": "HIP 93085",
+        "hip": 93085,
+        "position": {
+          "x": 307.23367336024245,
+          "y": 110.46516181826809
+        },
+        "magnitude": 3.52,
+        "color": "#d0d0d0",
+        "ra": 284.43241666666665,
+        "dec": -21.106611111111114
+      },
+      {
+        "id": "hip-93683",
+        "name": "HIP 93683",
+        "hip": 93683,
+        "position": {
+          "x": 279.68905294937025,
+          "y": 122.24055587733928
+        },
+        "magnitude": 3.76,
+        "color": "#d0d0d0",
+        "ra": 286.1705416666667,
+        "dec": -21.74136111111111
+      },
+      {
+        "id": "hip-94820",
+        "name": "HIP 94820",
+        "hip": 94820,
+        "position": {
+          "x": 228.37279453270162,
+          "y": 70.51096274706636
+        },
+        "magnitude": 4.88,
+        "color": "#d0d0d0",
+        "ra": 289.4087083333334,
+        "dec": -18.95288888888889
+      },
+      {
+        "id": "hip-95168",
+        "name": "HIP 95168",
+        "hip": 95168,
+        "position": {
+          "x": 212.37426623508725,
+          "y": 50
+        },
+        "magnitude": 3.92,
+        "color": "#d0d0d0",
+        "ra": 290.41825,
+        "dec": -17.84725
+      },
+      {
+        "id": "hip-96406",
+        "name": "HIP 96406",
+        "hip": 96406,
+        "position": {
+          "x": 155.50418300058703,
+          "y": 177.4799389046116
+        },
+        "magnitude": 5.64,
+        "color": "#d0d0d0",
+        "ra": 294.00687500000004,
+        "dec": -24.719027777777775
+      },
+      {
+        "id": "hip-98688",
+        "name": "HIP 98688",
+        "hip": 98688,
+        "position": {
+          "x": 50,
+          "y": 232.96409512246902
+        },
+        "magnitude": 4.43,
+        "color": "#d0d0d0",
+        "ra": 300.6644166666667,
+        "dec": -27.709888888888887
+      },
+      {
+        "id": "hip-98412",
+        "name": "HIP 98412",
+        "hip": 98412,
+        "position": {
+          "x": 61.574485225510216,
+          "y": 373.32941009145753
+        },
+        "magnitude": 4.37,
+        "color": "#d0d0d0",
+        "ra": 299.9340416666667,
+        "dec": -35.27625
+      },
+      {
+        "id": "hip-98032",
+        "name": "HIP 98032",
+        "hip": 98032,
+        "position": {
+          "x": 79.30301245579939,
+          "y": 495.62221860358704
+        },
+        "magnitude": 4.12,
+        "color": "#d0d0d0",
+        "ra": 298.81533333333334,
+        "dec": -41.86841666666667
+      },
+      {
+        "id": "hip-95347",
+        "name": "HIP 95347",
+        "hip": 95347,
+        "position": {
+          "x": 203.60739759802308,
+          "y": 472.3816482975123
+        },
+        "magnitude": 3.96,
+        "color": "#d0d0d0",
+        "ra": 290.9714583333333,
+        "dec": -40.61563888888889
+      },
+      {
+        "id": "hip-95294",
+        "name": "HIP 95294",
+        "hip": 95294,
+        "position": {
+          "x": 206.25456008698893,
+          "y": 550
+        },
+        "magnitude": 4.27,
+        "color": "#d0d0d0",
+        "ra": 290.8044166666666,
+        "dec": -44.799638888888886
+      }
+    ],
+    "connections": [
+      [
+        "hip-89931",
+        "hip-90496"
+      ],
+      [
+        "hip-89642",
+        "hip-90185"
+      ],
+      [
+        "hip-90185",
+        "hip-88635"
+      ],
+      [
+        "hip-88635",
+        "hip-87072"
+      ],
+      [
+        "hip-88635",
+        "hip-89931"
+      ],
+      [
+        "hip-89931",
+        "hip-90185"
+      ],
+      [
+        "hip-90185",
+        "hip-93506"
+      ],
+      [
+        "hip-93506",
+        "hip-92041"
+      ],
+      [
+        "hip-92041",
+        "hip-89931"
+      ],
+      [
+        "hip-92041",
+        "hip-90496"
+      ],
+      [
+        "hip-90496",
+        "hip-89341"
+      ],
+      [
+        "hip-93506",
+        "hip-93864"
+      ],
+      [
+        "hip-93864",
+        "hip-92855"
+      ],
+      [
+        "hip-92855",
+        "hip-92041"
+      ],
+      [
+        "hip-92855",
+        "hip-93085"
+      ],
+      [
+        "hip-93085",
+        "hip-93683"
+      ],
+      [
+        "hip-93683",
+        "hip-94820"
+      ],
+      [
+        "hip-94820",
+        "hip-95168"
+      ],
+      [
+        "hip-93864",
+        "hip-96406"
+      ],
+      [
+        "hip-96406",
+        "hip-98688"
+      ],
+      [
+        "hip-98688",
+        "hip-98412"
+      ],
+      [
+        "hip-98412",
+        "hip-98032"
+      ],
+      [
+        "hip-98032",
+        "hip-95347"
+      ],
+      [
+        "hip-98032",
+        "hip-95294"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The Archer",
+      "shortDescription": "Sagittarius represents Chiron, the wise centaur who trained many Greek heroes.",
+      "fullStory": "Sagittarius is often associated with Chiron, the wisest and most civilized of the centaurs. Unlike his wild brethren, Chiron was a scholar, physician, and teacher who mentored many Greek heroes including Achilles, Jason, and Hercules. Tragically, Chiron was accidentally wounded by one of Hercules' poisoned arrows. Being immortal, he could not die but suffered eternal agony. He eventually gave up his immortality to end his suffering, and Zeus honored him by placing him among the stars. The constellation points toward the center of our Milky Way galaxy and is best known for the \"Teapot\" asterism formed by its brightest stars."
+    }
+  },
+  {
+    "id": "perseus",
+    "name": "Perseus",
+    "latinName": "Perseus",
+    "abbreviation": "Per",
+    "hemisphere": "northern",
+    "tier": 3,
+    "difficulty": 13,
+    "stars": [
+      {
+        "id": "hip-17448",
+        "name": "HIP 17448",
+        "hip": 17448,
+        "position": {
+          "x": 104.94761184595932,
+          "y": 541.5747657118529
+        },
+        "magnitude": 3.84,
+        "color": "#d0d0d0",
+        "ra": 56.079708333333336,
+        "dec": 32.28827777777778
+      },
+      {
+        "id": "hip-18246",
+        "name": "HIP 18246",
+        "hip": 18246,
+        "position": {
+          "x": 68.13183026627138,
+          "y": 550
+        },
+        "magnitude": 2.84,
+        "color": "#ffffff",
+        "ra": 58.533,
+        "dec": 31.883666666666667
+      },
+      {
+        "id": "hip-18614",
+        "name": "HIP 18614",
+        "hip": 18614,
+        "position": {
+          "x": 50,
+          "y": 468.6368542398606
+        },
+        "magnitude": 3.98,
+        "color": "#d0d0d0",
+        "ra": 59.74125,
+        "dec": 35.79102777777778
+      },
+      {
+        "id": "hip-18532",
+        "name": "HIP 18532",
+        "hip": 18532,
+        "position": {
+          "x": 54.169358032122844,
+          "y": 380.77923294853116
+        },
+        "magnitude": 2.9,
+        "color": "#ffffff",
+        "ra": 59.46341666666667,
+        "dec": 40.01027777777778
+      },
+      {
+        "id": "hip-17358",
+        "name": "HIP 17358",
+        "hip": 17358,
+        "position": {
+          "x": 110.17806774558544,
+          "y": 218.8303350080458
+        },
+        "magnitude": 3.01,
+        "color": "#d0d0d0",
+        "ra": 55.731166666666674,
+        "dec": 47.78766666666667
+      },
+      {
+        "id": "hip-15863",
+        "name": "HIP 15863",
+        "hip": 15863,
+        "position": {
+          "x": 179.96729360631204,
+          "y": 175.65202151251646
+        },
+        "magnitude": 1.79,
+        "color": "#e8f4f8",
+        "ra": 51.080625,
+        "dec": 49.86125
+      },
+      {
+        "id": "hip-14328",
+        "name": "HIP 14328",
+        "hip": 14328,
+        "position": {
+          "x": 253.2224390189366,
+          "y": 99.74798334619345
+        },
+        "magnitude": 2.91,
+        "color": "#ffffff",
+        "ra": 46.199125,
+        "dec": 53.50644444444445
+      },
+      {
+        "id": "hip-13268",
+        "name": "HIP 13268",
+        "hip": 13268,
+        "position": {
+          "x": 306.1210127318326,
+          "y": 50
+        },
+        "magnitude": 3.77,
+        "color": "#d0d0d0",
+        "ra": 42.674125000000004,
+        "dec": 55.89552777777778
+      },
+      {
+        "id": "hip-14576",
+        "name": "HIP 14576",
+        "hip": 14576,
+        "position": {
+          "x": 240.57055083327776,
+          "y": 361.09393852806534
+        },
+        "magnitude": 2.09,
+        "color": "#ffffff",
+        "ra": 47.042208333333335,
+        "dec": 40.95563888888889
+      },
+      {
+        "id": "hip-14354",
+        "name": "HIP 14354",
+        "hip": 14354,
+        "position": {
+          "x": 251.80243120685637,
+          "y": 405.13698669754643
+        },
+        "magnitude": 3.32,
+        "color": "#d0d0d0",
+        "ra": 46.29375,
+        "dec": 38.84052777777778
+      },
+      {
+        "id": "hip-13254",
+        "name": "HIP 13254",
+        "hip": 13254,
+        "position": {
+          "x": 306.5512044424056,
+          "y": 415.99851693665283
+        },
+        "magnitude": 4.22,
+        "color": "#d0d0d0",
+        "ra": 42.64545833333333,
+        "dec": 38.31891666666667
+      }
+    ],
+    "connections": [
+      [
+        "hip-17448",
+        "hip-18246"
+      ],
+      [
+        "hip-18246",
+        "hip-18614"
+      ],
+      [
+        "hip-18614",
+        "hip-18532"
+      ],
+      [
+        "hip-18532",
+        "hip-17358"
+      ],
+      [
+        "hip-17358",
+        "hip-15863"
+      ],
+      [
+        "hip-15863",
+        "hip-14328"
+      ],
+      [
+        "hip-14328",
+        "hip-13268"
+      ],
+      [
+        "hip-15863",
+        "hip-14576"
+      ],
+      [
+        "hip-14576",
+        "hip-14354"
+      ],
+      [
+        "hip-14354",
+        "hip-13254"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The Hero",
+      "shortDescription": "Perseus, the hero who slew Medusa and rescued Andromeda from a sea monster.",
+      "fullStory": "Perseus was one of the greatest heroes of Greek mythology. His most famous feat was slaying Medusa, one of the three Gorgons, whose gaze could turn people to stone. Using a polished shield to view her reflection, Perseus beheaded Medusa. On his journey home, he rescued Andromeda, who had been chained to a rock as a sacrifice to a sea monster. Perseus used Medusa's head to turn the monster to stone. He married Andromeda, and after their deaths, the gods placed them both in the sky along with Cassiopeia, Cepheus, and the sea monster Cetus. The constellation contains the famous variable star Algol, known as the \"Demon Star.\""
+    }
+  },
+  {
+    "id": "aquila",
+    "name": "Aquila",
+    "latinName": "Aquila",
+    "abbreviation": "Aql",
+    "hemisphere": "both",
+    "tier": 3,
+    "difficulty": 14,
+    "stars": [
+      {
+        "id": "hip-98036",
+        "name": "HIP 98036",
+        "hip": 98036,
+        "position": {
+          "x": 149.79774055453237,
+          "y": 267.047069945658
+        },
+        "magnitude": 3.71,
+        "color": "#d0d0d0",
+        "ra": 298.82820833333335,
+        "dec": 6.407944444444444
+      },
+      {
+        "id": "hip-97649",
+        "name": "HIP 97649",
+        "hip": 97649,
+        "position": {
+          "x": 178.09815767975846,
+          "y": 205.40934715807907
+        },
+        "magnitude": 0.76,
+        "color": "#ffffff",
+        "ra": 297.6945,
+        "dec": 8.86738888888889
+      },
+      {
+        "id": "hip-97278",
+        "name": "HIP 97278",
+        "hip": 97278,
+        "position": {
+          "x": 206.2966437939847,
+          "y": 161.65450016638144
+        },
+        "magnitude": 2.72,
+        "color": "#ffffff",
+        "ra": 296.56487500000003,
+        "dec": 10.613277777777778
+      },
+      {
+        "id": "hip-95501",
+        "name": "HIP 95501",
+        "hip": 95501,
+        "position": {
+          "x": 335.8759214703012,
+          "y": 349.584115929599
+        },
+        "magnitude": 3.36,
+        "color": "#d0d0d0",
+        "ra": 291.37395833333335,
+        "dec": 3.1145833333333335
+      },
+      {
+        "id": "hip-97804",
+        "name": "HIP 97804",
+        "hip": 97804,
+        "position": {
+          "x": 167.52229523243176,
+          "y": 402.43703609851457
+        },
+        "magnitude": 3.87,
+        "color": "#d0d0d0",
+        "ra": 298.1181666666667,
+        "dec": 1.0056666666666667
+      },
+      {
+        "id": "hip-99473",
+        "name": "HIP 99473",
+        "hip": 99473,
+        "position": {
+          "x": 50,
+          "y": 448.22814172081604
+        },
+        "magnitude": 3.24,
+        "color": "#d0d0d0",
+        "ra": 302.8260833333333,
+        "dec": -0.8214722222222222
+      },
+      {
+        "id": "hip-93747",
+        "name": "HIP 93747",
+        "hip": 93747,
+        "position": {
+          "x": 461.22402207780226,
+          "y": 80.19301643347728
+        },
+        "magnitude": 2.99,
+        "color": "#ffffff",
+        "ra": 286.35254166666664,
+        "dec": 13.863722222222222
+      },
+      {
+        "id": "hip-93244",
+        "name": "HIP 93244",
+        "hip": 93244,
+        "position": {
+          "x": 497.33880334216553,
+          "y": 50
+        },
+        "magnitude": 4.02,
+        "color": "#d0d0d0",
+        "ra": 284.9057916666667,
+        "dec": 15.068472222222223
+      },
+      {
+        "id": "hip-93805",
+        "name": "HIP 93805",
+        "hip": 93805,
+        "position": {
+          "x": 455.98809647199334,
+          "y": 550
+        },
+        "magnitude": 3.43,
+        "color": "#d0d0d0",
+        "ra": 286.56229166666674,
+        "dec": -4.882333333333333
+      }
+    ],
+    "connections": [
+      [
+        "hip-98036",
+        "hip-97649"
+      ],
+      [
+        "hip-97649",
+        "hip-97278"
+      ],
+      [
+        "hip-97649",
+        "hip-95501"
+      ],
+      [
+        "hip-95501",
+        "hip-97804"
+      ],
+      [
+        "hip-99473",
+        "hip-97804"
+      ],
+      [
+        "hip-95501",
+        "hip-93747"
+      ],
+      [
+        "hip-93747",
+        "hip-93244"
+      ],
+      [
+        "hip-95501",
+        "hip-93805"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The Eagle",
+      "shortDescription": "Aquila represents the eagle of Zeus, who carried the god's thunderbolts and performed his tasks.",
+      "fullStory": "Aquila represents the eagle of Zeus, king of the gods. This mighty bird served as Zeus's messenger and the bearer of his thunderbolts. In one tale, Zeus sent the eagle to abduct Ganymede, the most beautiful youth in the world, to serve as cupbearer to the gods. In another story, Aquila represents the eagle that daily tormented Prometheus, eating his liver as punishment for giving fire to humanity. Each night Prometheus's liver would regenerate, only to be eaten again the next day, until Hercules finally freed him. The constellation contains Altair, one of the brightest stars in the sky and one of the vertices of the Summer Triangle."
+    }
+  },
+  {
+    "id": "eridanus",
+    "name": "Eridanus",
+    "latinName": "Eridanus",
+    "abbreviation": "Eri",
+    "hemisphere": "southern",
+    "tier": 4,
+    "difficulty": 15,
+    "stars": [
+      {
+        "id": "hip-7588",
+        "name": "HIP 7588",
+        "hip": 7588,
+        "position": {
+          "x": 472.94647101805214,
+          "y": 550
+        },
+        "magnitude": 0.45,
+        "color": "#ffffff",
+        "ra": 24.428125,
+        "dec": -57.236666666666665
+      },
+      {
+        "id": "hip-9007",
+        "name": "HIP 9007",
+        "hip": 9007,
+        "position": {
+          "x": 436.4703413690264,
+          "y": 497.8800568501673
+        },
+        "magnitude": 3.69,
+        "color": "#d0d0d0",
+        "ra": 28.986791666666665,
+        "dec": -51.60958333333333
+      },
+      {
+        "id": "hip-10602",
+        "name": "HIP 10602",
+        "hip": 10602,
+        "position": {
+          "x": 395.3403446008617,
+          "y": 496.9772362626676
+        },
+        "magnitude": 3.56,
+        "color": "#d0d0d0",
+        "ra": 34.12708333333333,
+        "dec": -51.51211111111111
+      },
+      {
+        "id": "hip-11407",
+        "name": "HIP 11407",
+        "hip": 11407,
+        "position": {
+          "x": 374.3831064671076,
+          "y": 461.7036834256652
+        },
+        "magnitude": 4.24,
+        "color": "#d0d0d0",
+        "ra": 36.74625,
+        "dec": -47.703833333333336
+      },
+      {
+        "id": "hip-12413",
+        "name": "HIP 12413",
+        "hip": 12413,
+        "position": {
+          "x": 348.75099730071764,
+          "y": 417.1315159255597
+        },
+        "magnitude": 4.74,
+        "color": "#d0d0d0",
+        "ra": 39.949666666666666,
+        "dec": -42.89163888888889
+      },
+      {
+        "id": "hip-12486",
+        "name": "HIP 12486",
+        "hip": 12486,
+        "position": {
+          "x": 347.01700755312527,
+          "y": 389.00797281401134
+        },
+        "magnitude": 4.11,
+        "color": "#d0d0d0",
+        "ra": 40.166375,
+        "dec": -39.85530555555556
+      },
+      {
+        "id": "hip-13847",
+        "name": "HIP 13847",
+        "hip": 13847,
+        "position": {
+          "x": 311.81744909108875,
+          "y": 393.170621513116
+        },
+        "magnitude": 2.88,
+        "color": "#ffffff",
+        "ra": 44.56550000000001,
+        "dec": -40.30472222222222
+      },
+      {
+        "id": "hip-15510",
+        "name": "HIP 15510",
+        "hip": 15510,
+        "position": {
+          "x": 268.55938915067225,
+          "y": 418.7979647557779
+        },
+        "magnitude": 4.26,
+        "color": "#d0d0d0",
+        "ra": 49.97175,
+        "dec": -43.071555555555555
+      },
+      {
+        "id": "hip-17797",
+        "name": "HIP 17797",
+        "hip": 17797,
+        "position": {
+          "x": 211.12868853151113,
+          "y": 368.3051055031662
+        },
+        "magnitude": 4.3,
+        "color": "#d0d0d0",
+        "ra": 57.149249999999995,
+        "dec": -37.62013888888889
+      },
+      {
+        "id": "hip-17874",
+        "name": "HIP 17874",
+        "hip": 17874,
+        "position": {
+          "x": 209.41303553379723,
+          "y": 355.15232942634236
+        },
+        "magnitude": 4.17,
+        "color": "#d0d0d0",
+        "ra": 57.36366666666666,
+        "dec": -36.20011111111111
+      },
+      {
+        "id": "hip-20042",
+        "name": "HIP 20042",
+        "hip": 20042,
+        "position": {
+          "x": 152.52443592013213,
+          "y": 332.90625382714626
+        },
+        "magnitude": 3.55,
+        "color": "#d0d0d0",
+        "ra": 64.47341666666667,
+        "dec": -33.79833333333333
+      },
+      {
+        "id": "hip-20535",
+        "name": "HIP 20535",
+        "hip": 20535,
+        "position": {
+          "x": 140.23714652433978,
+          "y": 334.93161822292797
+        },
+        "magnitude": 3.97,
+        "color": "#d0d0d0",
+        "ra": 66.00904166666668,
+        "dec": -34.016999999999996
+      },
+      {
+        "id": "hip-21393",
+        "name": "HIP 21393",
+        "hip": 21393,
+        "position": {
+          "x": 117.2028547225412,
+          "y": 302.93307343901324
+        },
+        "magnitude": 3.81,
+        "color": "#d0d0d0",
+        "ra": 68.88779166666666,
+        "dec": -30.562305555555557
+      },
+      {
+        "id": "hip-17651",
+        "name": "HIP 17651",
+        "hip": 17651,
+        "position": {
+          "x": 214.62367305833484,
+          "y": 235.18962577070366
+        },
+        "magnitude": 4.22,
+        "color": "#d0d0d0",
+        "ra": 56.71245833333334,
+        "dec": -23.248444444444445
+      },
+      {
+        "id": "hip-16611",
+        "name": "HIP 16611",
+        "hip": 16611,
+        "position": {
+          "x": 240.75320823960817,
+          "y": 220.22503362742972
+        },
+        "magnitude": 4.26,
+        "color": "#d0d0d0",
+        "ra": 53.446875,
+        "dec": -21.632805555555557
+      },
+      {
+        "id": "hip-15474",
+        "name": "HIP 15474",
+        "hip": 15474,
+        "position": {
+          "x": 269.30119403211677,
+          "y": 221.38411221012748
+        },
+        "magnitude": 3.7,
+        "color": "#d0d0d0",
+        "ra": 49.879041666666666,
+        "dec": -21.757944444444444
+      },
+      {
+        "id": "hip-14146",
+        "name": "HIP 14146",
+        "hip": 14146,
+        "position": {
+          "x": 303.5535760140706,
+          "y": 238.67123540024104
+        },
+        "magnitude": 4.08,
+        "color": "#d0d0d0",
+        "ra": 45.59829166666667,
+        "dec": -23.624333333333333
+      },
+      {
+        "id": "hip-12843",
+        "name": "HIP 12843",
+        "hip": 12843,
+        "position": {
+          "x": 338.14702154376283,
+          "y": 191.880738146524
+        },
+        "magnitude": 4.47,
+        "color": "#d0d0d0",
+        "ra": 41.27491666666666,
+        "dec": -18.57263888888889
+      },
+      {
+        "id": "hip-13701",
+        "name": "HIP 13701",
+        "hip": 13701,
+        "position": {
+          "x": 315.48879981219756,
+          "y": 102.2673686832147
+        },
+        "magnitude": 3.89,
+        "color": "#d0d0d0",
+        "ra": 44.10666666666667,
+        "dec": -8.897611111111111
+      },
+      {
+        "id": "hip-15197",
+        "name": "HIP 15197",
+        "hip": 15197,
+        "position": {
+          "x": 276.6672331559978,
+          "y": 101.54696468065008
+        },
+        "magnitude": 4.8,
+        "color": "#d0d0d0",
+        "ra": 48.95845833333333,
+        "dec": -8.819833333333333
+      },
+      {
+        "id": "hip-16537",
+        "name": "HIP 16537",
+        "hip": 16537,
+        "position": {
+          "x": 242.447857323825,
+          "y": 107.46070968027442
+        },
+        "magnitude": 3.72,
+        "color": "#d0d0d0",
+        "ra": 53.235083333333336,
+        "dec": -9.458305555555555
+      },
+      {
+        "id": "hip-17378",
+        "name": "HIP 17378",
+        "hip": 17378,
+        "position": {
+          "x": 221.82601501511962,
+          "y": 110.30321804467948
+        },
+        "magnitude": 3.52,
+        "color": "#d0d0d0",
+        "ra": 55.812333333333335,
+        "dec": -9.765194444444445
+      },
+      {
+        "id": "hip-21444",
+        "name": "HIP 21444",
+        "hip": 21444,
+        "position": {
+          "x": 115.66690187363561,
+          "y": 50.906165320368814
+        },
+        "magnitude": 3.93,
+        "color": "#d0d0d0",
+        "ra": 69.07974999999999,
+        "dec": -3.3524444444444446
+      },
+      {
+        "id": "hip-22109",
+        "name": "HIP 22109",
+        "hip": 22109,
+        "position": {
+          "x": 97.2968124499981,
+          "y": 50
+        },
+        "magnitude": 4.01,
+        "color": "#d0d0d0",
+        "ra": 71.37558333333334,
+        "dec": -3.254611111111111
+      },
+      {
+        "id": "hip-22701",
+        "name": "HIP 22701",
+        "hip": 22701,
+        "position": {
+          "x": 82.50939055714848,
+          "y": 70.35990354819558
+        },
+        "magnitude": 4.36,
+        "color": "#d0d0d0",
+        "ra": 73.22366666666667,
+        "dec": -5.45275
+      },
+      {
+        "id": "hip-23875",
+        "name": "HIP 23875",
+        "hip": 23875,
+        "position": {
+          "x": 52.59214964190182,
+          "y": 66.96525697325346
+        },
+        "magnitude": 2.78,
+        "color": "#ffffff",
+        "ra": 76.96262499999999,
+        "dec": -5.08625
+      },
+      {
+        "id": "hip-23972",
+        "name": "HIP 23972",
+        "hip": 23972,
+        "position": {
+          "x": 50,
+          "y": 100.93796601133917
+        },
+        "magnitude": 4.25,
+        "color": "#d0d0d0",
+        "ra": 77.28658333333334,
+        "dec": -8.754083333333334
+      },
+      {
+        "id": "hip-21594",
+        "name": "HIP 21594",
+        "hip": 21594,
+        "position": {
+          "x": 111.94187448470093,
+          "y": 152.3393061686137
+        },
+        "magnitude": 3.86,
+        "color": "#d0d0d0",
+        "ra": 69.54529166666666,
+        "dec": -14.303583333333334
+      }
+    ],
+    "connections": [
+      [
+        "hip-7588",
+        "hip-9007"
+      ],
+      [
+        "hip-9007",
+        "hip-10602"
+      ],
+      [
+        "hip-10602",
+        "hip-11407"
+      ],
+      [
+        "hip-11407",
+        "hip-12413"
+      ],
+      [
+        "hip-12413",
+        "hip-12486"
+      ],
+      [
+        "hip-12486",
+        "hip-13847"
+      ],
+      [
+        "hip-13847",
+        "hip-15510"
+      ],
+      [
+        "hip-15510",
+        "hip-17797"
+      ],
+      [
+        "hip-17797",
+        "hip-17874"
+      ],
+      [
+        "hip-17874",
+        "hip-20042"
+      ],
+      [
+        "hip-20042",
+        "hip-20535"
+      ],
+      [
+        "hip-20535",
+        "hip-21393"
+      ],
+      [
+        "hip-21393",
+        "hip-17651"
+      ],
+      [
+        "hip-17651",
+        "hip-16611"
+      ],
+      [
+        "hip-16611",
+        "hip-15474"
+      ],
+      [
+        "hip-15474",
+        "hip-14146"
+      ],
+      [
+        "hip-14146",
+        "hip-12843"
+      ],
+      [
+        "hip-12843",
+        "hip-13701"
+      ],
+      [
+        "hip-13701",
+        "hip-15197"
+      ],
+      [
+        "hip-15197",
+        "hip-16537"
+      ],
+      [
+        "hip-16537",
+        "hip-17378"
+      ],
+      [
+        "hip-17378",
+        "hip-21444"
+      ],
+      [
+        "hip-21444",
+        "hip-22109"
+      ],
+      [
+        "hip-22109",
+        "hip-22701"
+      ],
+      [
+        "hip-22701",
+        "hip-23875"
+      ],
+      [
+        "hip-23875",
+        "hip-23972"
+      ],
+      [
+        "hip-23972",
+        "hip-21594"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The River",
+      "shortDescription": "Eridanus represents the river where Phaethon fell after losing control of the sun chariot.",
+      "fullStory": "Eridanus represents the river into which Phaethon fell when he lost control of his father Helios's sun chariot. Phaethon, son of the sun god Helios, demanded to drive his father's chariot across the sky to prove his divine parentage. Despite warnings, Helios reluctantly agreed. Phaethon quickly lost control of the powerful horses, careening wildly across the sky, scorching the earth and creating the Sahara desert. To prevent further destruction, Zeus struck Phaethon down with a thunderbolt, and he fell into the river Eridanus. Phaethon's sisters, the Heliades, mourned him so greatly that they were transformed into poplar trees, their tears becoming amber. Eridanus is the longest constellation in the sky, winding from Orion down to the southern horizon."
+    }
+  },
+  {
+    "id": "draco",
+    "name": "Draco",
+    "latinName": "Draco",
+    "abbreviation": "Dra",
+    "hemisphere": "northern",
+    "tier": 4,
+    "difficulty": 16,
+    "stars": [
+      {
+        "id": "hip-87585",
+        "name": "HIP 87585",
+        "hip": 87585,
+        "position": {
+          "x": 211.5452903315855,
+          "y": 250.6776033701909
+        },
+        "magnitude": 3.73,
+        "color": "#d0d0d0",
+        "ra": 268.38179166666663,
+        "dec": 56.87244444444445
+      },
+      {
+        "id": "hip-87833",
+        "name": "HIP 87833",
+        "hip": 87833,
+        "position": {
+          "x": 207.2063871875118,
+          "y": 316.22164529739314
+        },
+        "magnitude": 2.24,
+        "color": "#ffffff",
+        "ra": 269.15158333333335,
+        "dec": 51.48894444444444
+      },
+      {
+        "id": "hip-85670",
+        "name": "HIP 85670",
+        "hip": 85670,
+        "position": {
+          "x": 244.0876510438196,
+          "y": 306.3304830307715
+        },
+        "magnitude": 2.79,
+        "color": "#ffffff",
+        "ra": 262.60825,
+        "dec": 52.301361111111106
+      },
+      {
+        "id": "hip-85829",
+        "name": "HIP 85829",
+        "hip": 85829,
+        "position": {
+          "x": 241.50662016136403,
+          "y": 271.37068456169027
+        },
+        "magnitude": 4.86,
+        "color": "#d0d0d0",
+        "ra": 263.0661666666667,
+        "dec": 55.172805555555556
+      },
+      {
+        "id": "hip-94376",
+        "name": "HIP 94376",
+        "hip": 94376,
+        "position": {
+          "x": 100.18942545641951,
+          "y": 119.32336077458801
+        },
+        "magnitude": 3.07,
+        "color": "#d0d0d0",
+        "ra": 288.138125,
+        "dec": 67.66130555555556
+      },
+      {
+        "id": "hip-97433",
+        "name": "HIP 97433",
+        "hip": 97433,
+        "position": {
+          "x": 50,
+          "y": 87.58891924935656
+        },
+        "magnitude": 3.84,
+        "color": "#d0d0d0",
+        "ra": 297.0425416666667,
+        "dec": 70.26783333333333
+      },
+      {
+        "id": "hip-94648",
+        "name": "HIP 94648",
+        "hip": 94648,
+        "position": {
+          "x": 95.95878939485863,
+          "y": 50
+        },
+        "magnitude": 4.45,
+        "color": "#d0d0d0",
+        "ra": 288.88870833333334,
+        "dec": 73.35522222222221
+      },
+      {
+        "id": "hip-89937",
+        "name": "HIP 89937",
+        "hip": 89937,
+        "position": {
+          "x": 172.77792465389413,
+          "y": 57.567092546779435
+        },
+        "magnitude": 3.55,
+        "color": "#d0d0d0",
+        "ra": 275.25975000000005,
+        "dec": 72.73369444444444
+      },
+      {
+        "id": "hip-83895",
+        "name": "HIP 83895",
+        "hip": 83895,
+        "position": {
+          "x": 274.58914202279277,
+          "y": 143.02400192222194
+        },
+        "magnitude": 3.17,
+        "color": "#d0d0d0",
+        "ra": 257.1967916666667,
+        "dec": 65.71463888888889
+      },
+      {
+        "id": "hip-80331",
+        "name": "HIP 80331",
+        "hip": 80331,
+        "position": {
+          "x": 337.71096480162356,
+          "y": 194.1657107456408
+        },
+        "magnitude": 2.73,
+        "color": "#ffffff",
+        "ra": 245.99795833333332,
+        "dec": 61.51408333333333
+      },
+      {
+        "id": "hip-78527",
+        "name": "HIP 78527",
+        "hip": 78527,
+        "position": {
+          "x": 368.8479671152578,
+          "y": 230.07752555077496
+        },
+        "magnitude": 4.01,
+        "color": "#d0d0d0",
+        "ra": 240.47375,
+        "dec": 58.56444444444444
+      },
+      {
+        "id": "hip-75458",
+        "name": "HIP 75458",
+        "hip": 75458,
+        "position": {
+          "x": 420.9364112901062,
+          "y": 225.18825373183446
+        },
+        "magnitude": 3.29,
+        "color": "#d0d0d0",
+        "ra": 231.23241666666667,
+        "dec": 58.96602777777778
+      },
+      {
+        "id": "hip-68756",
+        "name": "HIP 68756",
+        "hip": 68756,
+        "position": {
+          "x": 534.4254429992433,
+          "y": 159.3242802046658
+        },
+        "magnitude": 3.67,
+        "color": "#d0d0d0",
+        "ra": 211.097625,
+        "dec": 64.37580555555554
+      },
+      {
+        "id": "hip-61281",
+        "name": "HIP 61281",
+        "hip": 61281,
+        "position": {
+          "x": 662.5232504146827,
+          "y": 93.42817823986809
+        },
+        "magnitude": 3.85,
+        "color": "#d0d0d0",
+        "ra": 188.371,
+        "dec": 69.78822222222222
+      },
+      {
+        "id": "hip-56211",
+        "name": "HIP 56211",
+        "hip": 56211,
+        "position": {
+          "x": 750,
+          "y": 98.99350002533407
+        },
+        "magnitude": 3.82,
+        "color": "#d0d0d0",
+        "ra": 172.85120833333335,
+        "dec": 69.33111111111111
+      }
+    ],
+    "connections": [
+      [
+        "hip-87585",
+        "hip-87833"
+      ],
+      [
+        "hip-87833",
+        "hip-85670"
+      ],
+      [
+        "hip-85670",
+        "hip-85829"
+      ],
+      [
+        "hip-85829",
+        "hip-87585"
+      ],
+      [
+        "hip-87585",
+        "hip-94376"
+      ],
+      [
+        "hip-94376",
+        "hip-97433"
+      ],
+      [
+        "hip-97433",
+        "hip-94648"
+      ],
+      [
+        "hip-94648",
+        "hip-89937"
+      ],
+      [
+        "hip-89937",
+        "hip-83895"
+      ],
+      [
+        "hip-83895",
+        "hip-80331"
+      ],
+      [
+        "hip-80331",
+        "hip-78527"
+      ],
+      [
+        "hip-78527",
+        "hip-75458"
+      ],
+      [
+        "hip-75458",
+        "hip-68756"
+      ],
+      [
+        "hip-68756",
+        "hip-61281"
+      ],
+      [
+        "hip-61281",
+        "hip-56211"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The Dragon",
+      "shortDescription": "Draco represents Ladon, the hundred-headed dragon who guarded the golden apples of the Hesperides.",
+      "fullStory": "Draco represents Ladon, the fearsome dragon with one hundred heads who never slept. Ladon guarded the golden apples in the Garden of the Hesperides, which Gaia gave to Hera as a wedding present. As one of his twelve labors, Hercules was tasked with stealing these apples. He either slew Ladon with poisoned arrows or convinced Atlas to get the apples while he held up the sky. Hera, saddened by the death of her faithful guardian, placed Ladon in the sky as the constellation Draco. The constellation winds around the north celestial pole, and thousands of years ago, the star Thuban in Draco served as the pole star, used by the ancient Egyptians to align the pyramids."
+    }
+  },
+  {
+    "id": "hydra",
+    "name": "Hydra",
+    "latinName": "Hydra",
+    "abbreviation": "Hya",
+    "hemisphere": "southern",
+    "tier": 4,
+    "difficulty": 17,
+    "stars": [
+      {
+        "id": "hip-42799",
+        "name": "HIP 42799",
+        "hip": 42799,
+        "position": {
+          "x": 736.1425564594118,
+          "y": 80.95313083958906
+        },
+        "magnitude": 4.3,
+        "color": "#d0d0d0",
+        "ra": 130.80620833333333,
+        "dec": 3.3986666666666667
+      },
+      {
+        "id": "hip-42402",
+        "name": "HIP 42402",
+        "hip": 42402,
+        "position": {
+          "x": 747.2606993192636,
+          "y": 81.53928997283512
+        },
+        "magnitude": 4.45,
+        "color": "#d0d0d0",
+        "ra": 129.68937499999998,
+        "dec": 3.3414722222222224
+      },
+      {
+        "id": "hip-42313",
+        "name": "HIP 42313",
+        "hip": 42313,
+        "position": {
+          "x": 750,
+          "y": 57.328839595088546
+        },
+        "magnitude": 4.14,
+        "color": "#d0d0d0",
+        "ra": 129.41420833333333,
+        "dec": 5.703805555555555
+      },
+      {
+        "id": "hip-43109",
+        "name": "HIP 43109",
+        "hip": 43109,
+        "position": {
+          "x": 727.3008039896088,
+          "y": 50
+        },
+        "magnitude": 3.38,
+        "color": "#d0d0d0",
+        "ra": 131.694375,
+        "dec": 6.418916666666667
+      },
+      {
+        "id": "hip-43234",
+        "name": "HIP 43234",
+        "hip": 43234,
+        "position": {
+          "x": 723.1806535259875,
+          "y": 55.954682171009416
+        },
+        "magnitude": 4.35,
+        "color": "#d0d0d0",
+        "ra": 132.10825,
+        "dec": 5.837888888888888
+      },
+      {
+        "id": "hip-43813",
+        "name": "HIP 43813",
+        "hip": 43813,
+        "position": {
+          "x": 705.8547011585794,
+          "y": 54.85154150013592
+        },
+        "magnitude": 3.11,
+        "color": "#d0d0d0",
+        "ra": 133.84866666666667,
+        "dec": 5.945527777777778
+      },
+      {
+        "id": "hip-45336",
+        "name": "HIP 45336",
+        "hip": 45336,
+        "position": {
+          "x": 658.6465621859417,
+          "y": 92.05883941028505
+        },
+        "magnitude": 3.89,
+        "color": "#d0d0d0",
+        "ra": 138.59079166666666,
+        "dec": 2.3150277777777775
+      },
+      {
+        "id": "hip-46776",
+        "name": "HIP 46776",
+        "hip": 46776,
+        "position": {
+          "x": 614.7970115857934,
+          "y": 127.92557230904232
+        },
+        "magnitude": 4.54,
+        "color": "#d0d0d0",
+        "ra": 142.9955416666667,
+        "dec": -1.1846666666666668
+      },
+      {
+        "id": "hip-46509",
+        "name": "HIP 46509",
+        "hip": 46509,
+        "position": {
+          "x": 621.8522455771094,
+          "y": 144.1620948955199
+        },
+        "magnitude": 4.59,
+        "color": "#d0d0d0",
+        "ra": 142.2868333333333,
+        "dec": -2.768944444444444
+      },
+      {
+        "id": "hip-46390",
+        "name": "HIP 46390",
+        "hip": 46390,
+        "position": {
+          "x": 625.7343041887101,
+          "y": 204.5233902725481
+        },
+        "magnitude": 1.99,
+        "color": "#e8f4f8",
+        "ra": 141.896875,
+        "dec": -8.658694444444444
+      },
+      {
+        "id": "hip-48356",
+        "name": "HIP 48356",
+        "hip": 48356,
+        "position": {
+          "x": 566.2764638678728,
+          "y": 267.93988711533495
+        },
+        "magnitude": 4.11,
+        "color": "#d0d0d0",
+        "ra": 147.8695,
+        "dec": -14.846555555555556
+      },
+      {
+        "id": "hip-49841",
+        "name": "HIP 49841",
+        "hip": 49841,
+        "position": {
+          "x": 518.7111871172045,
+          "y": 242.3931419481483
+        },
+        "magnitude": 3.61,
+        "color": "#d0d0d0",
+        "ra": 152.64749999999998,
+        "dec": -12.353833333333332
+      },
+      {
+        "id": "hip-51069",
+        "name": "HIP 51069",
+        "hip": 51069,
+        "position": {
+          "x": 480.13076682405136,
+          "y": 288.32962757210254
+        },
+        "magnitude": 3.83,
+        "color": "#d0d0d0",
+        "ra": 156.52295833333335,
+        "dec": -16.83608333333333
+      },
+      {
+        "id": "hip-52943",
+        "name": "HIP 52943",
+        "hip": 52943,
+        "position": {
+          "x": 421.5651487570398,
+          "y": 281.7506389517446
+        },
+        "magnitude": 3.11,
+        "color": "#d0d0d0",
+        "ra": 162.40595833333333,
+        "dec": -16.19413888888889
+      },
+      {
+        "id": "hip-56343",
+        "name": "HIP 56343",
+        "hip": 56343,
+        "position": {
+          "x": 313.6012785141362,
+          "y": 442.2773919255523
+        },
+        "magnitude": 3.54,
+        "color": "#d0d0d0",
+        "ra": 173.25108333333336,
+        "dec": -31.85752777777778
+      },
+      {
+        "id": "hip-57936",
+        "name": "HIP 57936",
+        "hip": 57936,
+        "position": {
+          "x": 264.0624111155357,
+          "y": 463.2931469204491
+        },
+        "magnitude": 4.29,
+        "color": "#d0d0d0",
+        "ra": 178.22733333333335,
+        "dec": -33.908138888888885
+      },
+      {
+        "id": "hip-64166",
+        "name": "HIP 64166",
+        "hip": 64166,
+        "position": {
+          "x": 74.55457032064783,
+          "y": 352.7097711686718
+        },
+        "magnitude": 4.94,
+        "color": "#d0d0d0",
+        "ra": 197.2636666666667,
+        "dec": -23.11797222222222
+      },
+      {
+        "id": "hip-64962",
+        "name": "HIP 64962",
+        "hip": 64962,
+        "position": {
+          "x": 50,
+          "y": 353.257498304352
+        },
+        "magnitude": 2.99,
+        "color": "#ffffff",
+        "ra": 199.73020833333337,
+        "dec": -23.17141666666667
+      }
+    ],
+    "connections": [
+      [
+        "hip-42799",
+        "hip-42402"
+      ],
+      [
+        "hip-42402",
+        "hip-42313"
+      ],
+      [
+        "hip-42313",
+        "hip-43109"
+      ],
+      [
+        "hip-43109",
+        "hip-43234"
+      ],
+      [
+        "hip-43234",
+        "hip-42799"
+      ],
+      [
+        "hip-43234",
+        "hip-43813"
+      ],
+      [
+        "hip-43813",
+        "hip-45336"
+      ],
+      [
+        "hip-45336",
+        "hip-46776"
+      ],
+      [
+        "hip-46776",
+        "hip-46509"
+      ],
+      [
+        "hip-46509",
+        "hip-46390"
+      ],
+      [
+        "hip-46390",
+        "hip-48356"
+      ],
+      [
+        "hip-48356",
+        "hip-49841"
+      ],
+      [
+        "hip-49841",
+        "hip-51069"
+      ],
+      [
+        "hip-51069",
+        "hip-52943"
+      ],
+      [
+        "hip-52943",
+        "hip-56343"
+      ],
+      [
+        "hip-56343",
+        "hip-57936"
+      ],
+      [
+        "hip-57936",
+        "hip-64166"
+      ],
+      [
+        "hip-64166",
+        "hip-64962"
+      ]
+    ],
+    "mythology": {
+      "culture": "Greek",
+      "title": "The Water Serpent",
+      "shortDescription": "Hydra represents the nine-headed serpent slain by Hercules as one of his twelve labors.",
+      "fullStory": "Hydra represents the Lernaean Hydra, a monstrous serpent with nine heads that grew two more whenever one was cut off. Its breath and blood were so poisonous that even its scent was deadly. As the second of his twelve labors, Hercules was sent to kill this creature. Each time he cut off a head, two more grew back. Hercules realized he needed help and called upon his nephew Iolaus, who cauterized each neck stump with fire as Hercules cut off the heads, preventing them from regenerating. Hercules buried the final, immortal head under a massive rock. Hera, who sent the Hydra, placed it in the sky. Hydra is the largest constellation in the night sky, stretching across more than a quarter of the celestial sphere."
+    }
+  }
+]

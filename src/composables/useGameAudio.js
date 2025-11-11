@@ -8,6 +8,8 @@ export function useGameAudio() {
   const isInitialized = ref(false)
   const bellBuffers = ref([])
   const bellsLoaded = ref(false)
+  const backgroundMusic = ref(null)
+  const isMusicPlaying = ref(false)
 
   // Bell sound paths in musical order (C major scale)
   // Using public folder paths (served directly, not processed by Vite)
@@ -276,6 +278,140 @@ export function useGameAudio() {
     playTone(600, 0.05, 0.1)
   }
 
+  // Space ambient music tracks
+  const musicTracks = [
+    '/audio/space - music/calm-space-music-312291.mp3',
+    '/audio/space - music/ambient-background-music-312295.mp3',
+    '/audio/space - music/cinematic-304561.mp3',
+    '/audio/space - music/doomed-calm-dark-ambient-music-318236.mp3',
+    '/audio/space - music/nwhere-calm-ambient-music-by-vvk-305850.mp3',
+    '/audio/space - music/solas-x-interstellar-piano-223676.mp3',
+  ]
+
+  // Play background music (randomly select a track)
+  function playBackgroundMusic(trackIndex = null) {
+    if (!settingsStore.settings.musicEnabled) return
+    if (!isInitialized.value) init()
+
+    try {
+      // Stop current music if playing
+      if (backgroundMusic.value) {
+        backgroundMusic.value.pause()
+        backgroundMusic.value.currentTime = 0
+      }
+
+      // Select a random track if not specified
+      const selectedTrack = trackIndex !== null
+        ? musicTracks[trackIndex]
+        : musicTracks[Math.floor(Math.random() * musicTracks.length)]
+
+      // Create audio element
+      backgroundMusic.value = new Audio(selectedTrack)
+      backgroundMusic.value.loop = true
+      backgroundMusic.value.volume = settingsStore.settings.musicVolume
+
+      // Play the music
+      backgroundMusic.value.play()
+        .then(() => {
+          isMusicPlaying.value = true
+          console.log('Background music started:', selectedTrack)
+        })
+        .catch((error) => {
+          console.error('Failed to play background music:', error)
+          isMusicPlaying.value = false
+        })
+
+      // Handle track ending (though loop should prevent this)
+      backgroundMusic.value.addEventListener('ended', () => {
+        isMusicPlaying.value = false
+      })
+    } catch (error) {
+      console.error('Failed to initialize background music:', error)
+    }
+  }
+
+  // Pause background music
+  function pauseBackgroundMusic() {
+    if (backgroundMusic.value && isMusicPlaying.value) {
+      backgroundMusic.value.pause()
+      isMusicPlaying.value = false
+    }
+  }
+
+  // Resume background music
+  function resumeBackgroundMusic() {
+    if (backgroundMusic.value && !isMusicPlaying.value) {
+      backgroundMusic.value.play()
+        .then(() => {
+          isMusicPlaying.value = true
+        })
+        .catch((error) => {
+          console.error('Failed to resume background music:', error)
+        })
+    }
+  }
+
+  // Stop background music completely
+  function stopBackgroundMusic() {
+    if (backgroundMusic.value) {
+      backgroundMusic.value.pause()
+      backgroundMusic.value.currentTime = 0
+      isMusicPlaying.value = false
+    }
+  }
+
+  // Update music volume
+  function setMusicVolume(volume) {
+    if (backgroundMusic.value) {
+      backgroundMusic.value.volume = Math.max(0, Math.min(1, volume))
+    }
+  }
+
+  // Play a soft "twinkle" sound for star connections
+  function playStarConnect() {
+    if (!settingsStore.settings.soundEffectsEnabled) return
+    if (!isInitialized.value) init()
+
+    resume()
+
+    try {
+      const ctx = audioContext.value
+      const volume = 0.12 * settingsStore.settings.soundEffectsVolume
+
+      // Create a gentle ascending chime
+      const notes = [523.25, 659.25, 783.99] // C5, E5, G5
+      const noteDuration = 0.08
+
+      notes.forEach((frequency, index) => {
+        const oscillator = ctx.createOscillator()
+        const gainNode = ctx.createGain()
+
+        oscillator.connect(gainNode)
+        gainNode.connect(ctx.destination)
+
+        oscillator.frequency.value = frequency
+        oscillator.type = 'sine'
+
+        const startTime = ctx.currentTime + index * 0.05
+        const endTime = startTime + noteDuration
+
+        gainNode.gain.setValueAtTime(volume, startTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.01, endTime)
+
+        oscillator.start(startTime)
+        oscillator.stop(endTime)
+      })
+    } catch (error) {
+      console.error('Failed to play star connect:', error)
+    }
+  }
+
+  // Play a gentle shimmer for selecting a star
+  function playStarSelect() {
+    if (!settingsStore.settings.soundEffectsEnabled) return
+    playTone(800, 0.05, 0.08)
+  }
+
   return {
     init,
     playTone,
@@ -285,5 +421,15 @@ export function useGameAudio() {
     playLevelFailed,
     playClick,
     resetBellSequence,
+    // Background music
+    playBackgroundMusic,
+    pauseBackgroundMusic,
+    resumeBackgroundMusic,
+    stopBackgroundMusic,
+    setMusicVolume,
+    isMusicPlaying,
+    // Constellation-specific sounds
+    playStarConnect,
+    playStarSelect,
   }
 }
