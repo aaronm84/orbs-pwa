@@ -1,6 +1,6 @@
-# Zenith (zenith-app)
+# Orbs
 
-Premium relaxing puzzle games
+A relaxing chain reaction puzzle game
 
 ## Install the dependencies
 

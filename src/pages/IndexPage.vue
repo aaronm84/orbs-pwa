@@ -348,9 +348,9 @@
       <!-- App Title - Show after loading transition -->
       <div class="title-container" :class="{ 'title-hidden': !showTitle }">
         <h1 class="app-title">
-          <span class="zen-emphasis">Zen</span><span class="ith-subtle">ith</span>
+          <span class="orbs-emphasis">Orbs</span>
         </h1>
-        <p class="subtitle">Relaxing games for mindful moments</p>
+        <p class="subtitle">A relaxing chain reaction puzzle game</p>
       </div>
 
       <!-- Game Cards -->
@@ -385,15 +385,7 @@
       </div>
 
       <!-- Footer Actions -->
-      <div class="footer-actions">
-        <q-btn
-          flat
-          color="white"
-          label="Statistics"
-          icon="bar_chart"
-          @click="navigateTo('stats')"
-        />
-      </div>
+      <!-- Footer actions removed for single-game app -->
     </div>
   </q-page>
 </template>
@@ -432,36 +424,12 @@ onMounted(() => {
 
 const games = ref([
   {
-    id: 'chain-reaction',
+    id: 'orbs',
     name: 'Orbs',
     description: 'Create mesmerizing chain reactions',
     available: true,
     progress: 0,
     currentLevel: 1,
-  },
-  {
-    id: 'solitaire',
-    name: 'Solitude',
-    description: "It's Solitaire, but even more zen",
-    available: true,
-    progress: 0,
-    currentLevel: null,
-  },
-  {
-    id: 'ripple',
-    name: 'Ripple',
-    description: 'Create waves to reach lotus flowers',
-    available: true,
-    progress: 0,
-    currentLevel: 1,
-  },
-  {
-    id: 'constellation',
-    name: 'Constellation',
-    description: 'Connect the stars and learn their stories',
-    available: true,
-    progress: 0,
-    currentLevel: null,
   },
 ])
 
@@ -1167,25 +1135,11 @@ onMounted(async () => {
 })
 
 function updateGameProgress() {
-  // Update Chain Reaction (Orbs)
-  const chainReactionGame = games.value.find((g) => g.id === 'chain-reaction')
-  if (chainReactionGame) {
-    chainReactionGame.currentLevel = progressStore.chainReaction.currentLevel
-    chainReactionGame.progress = progressStore.chainReactionProgress
-  }
-
-  // Update Ripple
-  const rippleGame = games.value.find((g) => g.id === 'ripple')
-  if (rippleGame) {
-    rippleGame.currentLevel = progressStore.ripple.currentLevel
-    rippleGame.progress = progressStore.rippleProgress
-  }
-
-  // Update Solitaire - show win rate instead of level
-  const solitaireGame = games.value.find((g) => g.id === 'solitaire')
-  if (solitaireGame && progressStore.solitaire.gamesPlayed > 0) {
-    solitaireGame.currentLevel = `${progressStore.solitaire.gamesWon}/${progressStore.solitaire.gamesPlayed} wins`
-    solitaireGame.progress = progressStore.solitaireWinRate
+  // Update Orbs progress
+  const orbsGame = games.value.find((g) => g.id === 'orbs')
+  if (orbsGame) {
+    orbsGame.currentLevel = progressStore.orbs.currentLevel
+    orbsGame.progress = progressStore.orbsProgress
   }
 }
 

@@ -6,12 +6,12 @@
       :style="{ background: isTransitioning ? 'transparent' : themeStore.colors.gradient }"
     >
       <div class="loading-content">
-        <!-- ZENith Logo with Animation -->
-        <div class="logo-container" :class="{ 'moving-up': isTransitioning }">
+        <!-- Orbs Logo with Animation -->
+        <div v-if="!isTransitioning" class="logo-container">
           <h1 class="app-title">
-            <span class="zen-emphasis">Zen</span><span class="ith-subtle">ith</span>
+            <span class="orbs-emphasis">Orbs</span>
           </h1>
-          <div v-if="!isTransitioning" class="tagline">It's time to relax</div>
+          <div class="tagline">A relaxing chain reaction puzzle game</div>
         </div>
 
         <!-- Animated Zen Circle (Enso) - instantly hide during transition -->
@@ -48,13 +48,13 @@ import { useThemeStore } from 'src/stores/theme'
 const themeStore = useThemeStore()
 const isLoading = ref(true)
 const isTransitioning = ref(false)
-const loadingMessage = ref('Preparing your sanctuary...')
+const loadingMessage = ref('Initializing orbs...')
 
 const loadingMessages = [
-  'Preparing your sanctuary...',
-  'Finding inner peace...',
-  'Balancing the elements...',
-  'Aligning the stars...',
+  'Initializing orbs...',
+  'Preparing chain reactions...',
+  'Calibrating explosions...',
+  'Setting up collisions...',
 ]
 
 let messageIndex = 0
@@ -141,32 +141,11 @@ defineExpose({ hide })
 
 .logo-container {
   text-align: center;
-  position: relative; // For glow positioning
-  // Only transition top and margin-top
-  transition:
-    top 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-    margin-top 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 1s ease-out;
-
-  // Always centered horizontally
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  z-index: 1; // Below page content when scrolling
-
-  // Start above center, with spinner below
-  top: 30%;
-  margin-top: 0;
+  position: relative;
 
   // Initial fade in
   opacity: 0;
   animation: fadeIn 1s ease-out forwards;
-
-  &.moving-up {
-    top: 76px; // Match the IndexPage padding-top
-    margin-top: 0;
-  }
 }
 
 .title-glow {
@@ -232,35 +211,26 @@ defineExpose({ hide })
 }
 
 .app-title {
-  font-size: 64px;
-  font-weight: 300;
+  font-size: 4rem;
+  font-weight: 800;
   margin: 0;
   padding: 0;
-  letter-spacing: 4px;
+  letter-spacing: -0.02em;
   color: white;
-  text-shadow: none;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   line-height: 1;
-  position: relative;
-  z-index: 1; // Above the glow
 
-  .zen-emphasis {
-    font-weight: 700;
-    letter-spacing: 8px;
-  }
-
-  .ith-subtle {
-    font-weight: 200;
-    letter-spacing: 2px;
+  .orbs-emphasis {
+    color: white;
   }
 }
 
 .tagline {
-  font-size: 16px;
-  font-weight: 300;
+  font-size: 1.1rem;
+  font-weight: 400;
   color: rgba(255, 255, 255, 0.8);
-  margin-top: 8px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .zen-circle-container {

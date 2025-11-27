@@ -17,8 +17,6 @@ export const useSettingsStore = defineStore('settings', () => {
     reducedMotion: false,
     showTutorials: true,
     confirmations: true,
-    solitaireDealCount: 1,
-    solitaireDrawMode: 'zen',
   })
 
   function updateSetting(key, value) {

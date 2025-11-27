@@ -5,8 +5,8 @@ import { useGameStorage } from 'src/composables/useGameStorage'
 export const useProgressStore = defineStore('progress', () => {
   const storage = useGameStorage()
 
-  // Chain Reaction (Orbs) progress
-  const chainReaction = ref({
+  // Orbs progress
+  const orbs = ref({
     currentLevel: 1,
     highestLevel: 1,
     bestScore: 0,
@@ -14,80 +14,19 @@ export const useProgressStore = defineStore('progress', () => {
     perfectLevels: [],
   })
 
-  const chainReactionProgress = computed(() => {
-    return (chainReaction.value.currentLevel / 100) * 100
+  const orbsProgress = computed(() => {
+    return (orbs.value.currentLevel / 100) * 100
   })
 
-  // Solitaire progress
-  const solitaire = ref({
-    gamesPlayed: 0,
-    gamesWon: 0,
-    fastestTime: null, // in seconds
-    totalMoves: 0,
-    bestMoveCount: null, // fewest moves to win
-  })
+  // Orbs methods
+  function updateOrbsLevel(level, score, perfect) {
+    orbs.value.currentLevel = level
+    orbs.value.highestLevel = Math.max(orbs.value.highestLevel, level)
+    orbs.value.bestScore = Math.max(orbs.value.bestScore, score)
+    orbs.value.totalPlays++
 
-  const solitaireWinRate = computed(() => {
-    if (solitaire.value.gamesPlayed === 0) return 0
-    return (solitaire.value.gamesWon / solitaire.value.gamesPlayed) * 100
-  })
-
-  // Ripple progress
-  const ripple = ref({
-    currentLevel: 1,
-    highestLevel: 1,
-    totalPlays: 0,
-    perfectLevels: [], // levels completed with minimum taps
-  })
-
-  const rippleProgress = computed(() => {
-    return (ripple.value.currentLevel / 100) * 100
-  })
-
-  // Chain Reaction methods
-  function updateChainReactionLevel(level, score, perfect) {
-    chainReaction.value.currentLevel = level
-    chainReaction.value.highestLevel = Math.max(chainReaction.value.highestLevel, level)
-    chainReaction.value.bestScore = Math.max(chainReaction.value.bestScore, score)
-    chainReaction.value.totalPlays++
-
-    if (perfect && !chainReaction.value.perfectLevels.includes(level)) {
-      chainReaction.value.perfectLevels.push(level)
-    }
-
-    saveToStorage()
-  }
-
-  // Solitaire methods
-  function updateSolitaireStats(won, timeInSeconds, moveCount) {
-    solitaire.value.gamesPlayed++
-
-    if (won) {
-      solitaire.value.gamesWon++
-
-      // Update fastest time
-      if (!solitaire.value.fastestTime || timeInSeconds < solitaire.value.fastestTime) {
-        solitaire.value.fastestTime = timeInSeconds
-      }
-
-      // Update best move count
-      if (!solitaire.value.bestMoveCount || moveCount < solitaire.value.bestMoveCount) {
-        solitaire.value.bestMoveCount = moveCount
-      }
-    }
-
-    solitaire.value.totalMoves += moveCount
-    saveToStorage()
-  }
-
-  // Ripple methods
-  function updateRippleLevel(level, perfect) {
-    ripple.value.currentLevel = level
-    ripple.value.highestLevel = Math.max(ripple.value.highestLevel, level)
-    ripple.value.totalPlays++
-
-    if (perfect && !ripple.value.perfectLevels.includes(level)) {
-      ripple.value.perfectLevels.push(level)
+    if (perfect && !orbs.value.perfectLevels.includes(level)) {
+      orbs.value.perfectLevels.push(level)
     }
 
     saveToStorage()
@@ -96,9 +35,7 @@ export const useProgressStore = defineStore('progress', () => {
   async function saveToStorage() {
     try {
       const progressData = {
-        chainReaction: chainReaction.value,
-        solitaire: solitaire.value,
-        ripple: ripple.value,
+        orbs: orbs.value,
       }
       await storage.saveProgress(progressData)
       console.log('Progress saved successfully')
@@ -111,14 +48,11 @@ export const useProgressStore = defineStore('progress', () => {
     try {
       const progressData = await storage.loadProgress()
       if (progressData) {
-        if (progressData.chainReaction) {
-          chainReaction.value = progressData.chainReaction
-        }
-        if (progressData.solitaire) {
-          solitaire.value = progressData.solitaire
-        }
-        if (progressData.ripple) {
-          ripple.value = progressData.ripple
+        if (progressData.orbs) {
+          orbs.value = progressData.orbs
+        } else if (progressData.chainReaction) {
+          // Migrate old chainReaction data to orbs
+          orbs.value = progressData.chainReaction
         }
         console.log('Progress loaded successfully')
       } else {
@@ -130,20 +64,10 @@ export const useProgressStore = defineStore('progress', () => {
   }
 
   return {
-    // Chain Reaction
-    chainReaction,
-    chainReactionProgress,
-    updateChainReactionLevel,
-
-    // Solitaire
-    solitaire,
-    solitaireWinRate,
-    updateSolitaireStats,
-
-    // Ripple
-    ripple,
-    rippleProgress,
-    updateRippleLevel,
+    // Orbs
+    orbs,
+    orbsProgress,
+    updateOrbsLevel,
 
     // Common
     saveToStorage,

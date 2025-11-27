@@ -5,38 +5,27 @@ const routes = [
     children: [
       {
         path: '',
-        name: 'home',
-        component: () => import('pages/IndexPage.vue'),
+        redirect: '/menu',
       },
       {
-        path: 'chain-reaction',
-        name: 'chain-reaction',
+        path: 'menu',
+        name: 'menu',
+        component: () => import('pages/MenuPage.vue'),
+      },
+      {
+        path: 'orbs',
+        name: 'orbs',
         component: () => import('pages/ChainReactionPage.vue'),
       },
       {
-        path: 'solitaire',
-        name: 'solitaire',
-        component: () => import('pages/SolitairePage.vue'),
-      },
-      {
-        path: 'ripple',
-        name: 'ripple',
-        component: () => import('pages/RipplePage.vue'),
-      },
-      {
-        path: 'constellation',
-        name: 'constellation',
-        component: () => import('pages/ConstellationPage.vue'),
+        path: 'how-to-play',
+        name: 'how-to-play',
+        component: () => import('pages/HowToPlayPage.vue'),
       },
       {
         path: 'settings',
         name: 'settings',
         component: () => import('pages/SettingsPage.vue'),
-      },
-      {
-        path: 'stats',
-        name: 'stats',
-        component: () => import('pages/StatsPage.vue'),
       },
     ],
   },

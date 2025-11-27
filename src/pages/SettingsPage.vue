@@ -76,7 +76,7 @@
           <div class="text-h6 q-mb-md text-white">Display</div>
 
           <div class="text-caption text-white q-mb-md" style="opacity: 0.8;">
-            ZENith's theme automatically changes throughout the day based on the time. However, feel free to change it to whatever theme fits your mood.
+            Orbs' theme automatically changes throughout the day based on the time. However, feel free to change it to whatever theme fits your mood.
           </div>
 
           <q-select

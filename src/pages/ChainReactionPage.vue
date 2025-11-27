@@ -73,13 +73,13 @@
         <q-card-section>
           <div class="text-h6 q-mb-sm">Select Level</div>
           <div class="text-caption text-grey-7">
-            Highest level reached: {{ progressStore.chainReaction.highestLevel }}
+            Highest level reached: {{ progressStore.orbs.highestLevel }}
           </div>
         </q-card-section>
 
         <q-card-section class="level-grid q-pt-none">
           <q-btn
-            v-for="level in progressStore.chainReaction.highestLevel"
+            v-for="level in progressStore.orbs.highestLevel"
             :key="level"
             :label="level"
             :color="level === currentLevel ? 'primary' : 'grey-5'"
@@ -173,7 +173,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useThemeStore } from 'src/stores/theme'
 import { useProgressStore } from 'src/stores/progress'
@@ -183,6 +183,7 @@ import { useGameAudio } from 'src/composables/useGameAudio'
 const $q = useQuasar()
 
 const router = useRouter()
+const route = useRoute()
 const themeStore = useThemeStore()
 const progressStore = useProgressStore()
 const haptics = useHaptics()
@@ -194,7 +195,7 @@ let ctx = null
 let animationId = null
 
 // Game state
-const currentLevel = ref(progressStore.chainReaction.currentLevel)
+const currentLevel = ref(progressStore.orbs.currentLevel)
 const capturedCount = ref(0)
 const clicksRemaining = ref(1)
 const isPlaying = ref(false)
@@ -264,8 +265,12 @@ onMounted(() => {
   // Initialize audio context (required by browser autoplay policies)
   audio.init()
 
+  // Check if level select was requested via query param
+  if (route.query.selectLevel === 'true') {
+    showLevelSelect.value = true
+  }
   // Show instructions on first play
-  if (progressStore.chainReaction.totalPlays === 0) {
+  else if (progressStore.orbs.totalPlays === 0) {
     showInstructions.value = true
   }
 
@@ -296,7 +301,7 @@ function setupCanvas() {
 }
 
 function loadProgress() {
-  currentLevel.value = progressStore.chainReaction.currentLevel
+  currentLevel.value = progressStore.orbs.currentLevel
 }
 
 function stopGameLoop() {
@@ -560,7 +565,7 @@ function checkGameEnd() {
 
     // Update progress - move to next level
     const nextLevelNumber = currentLevel.value + 1
-    progressStore.updateChainReactionLevel(nextLevelNumber, capturedCount.value, isPerfect.value)
+    progressStore.updateOrbsLevel(nextLevelNumber, capturedCount.value, isPerfect.value)
   } else {
     // Lose - keep game animating for a less abrupt feel
     haptics.warning()
@@ -635,11 +640,11 @@ function confirmReset() {
 function resetProgress() {
   haptics.heavy()
   // Reset progress store
-  progressStore.chainReaction.currentLevel = 1
-  progressStore.chainReaction.highestLevel = 1
-  progressStore.chainReaction.bestScore = 0
-  progressStore.chainReaction.totalPlays = 0
-  progressStore.chainReaction.perfectLevels = []
+  progressStore.orbs.currentLevel = 1
+  progressStore.orbs.highestLevel = 1
+  progressStore.orbs.bestScore = 0
+  progressStore.orbs.totalPlays = 0
+  progressStore.orbs.perfectLevels = []
   progressStore.saveToStorage()
 
   // Reset current game

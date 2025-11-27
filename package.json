@@ -1,8 +1,8 @@
 {
-  "name": "zenith-app",
-  "version": "0.0.1",
-  "description": "Premium relaxing puzzle games",
-  "productName": "Zenith",
+  "name": "orbs-app",
+  "version": "1.0.0",
+  "description": "Orbs - A relaxing chain reaction puzzle game",
+  "productName": "Orbs",
   "author": "Aaron Middleton <aaronmiddleton@gmail.com>",
   "type": "module",
   "private": true,

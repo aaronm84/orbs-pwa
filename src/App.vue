@@ -33,9 +33,7 @@ onMounted(async () => {
     console.log('[App] Data loaded successfully')
     console.log('[App] Current settings:', JSON.stringify(settingsStore.settings))
     console.log('[App] Current progress:', JSON.stringify({
-      chainReaction: progressStore.chainReaction,
-      solitaire: progressStore.solitaire,
-      ripple: progressStore.ripple
+      orbs: progressStore.orbs
     }))
 
     // Restore theme override preference
@@ -55,13 +53,6 @@ onMounted(async () => {
     if (loadingScreen.value) {
       loadingScreen.value.hide()
     }
-
-    // Reveal index page title right when loading title reaches position (0.8s transition)
-    setTimeout(() => {
-      if (currentPage.value && currentPage.value.revealTitle) {
-        currentPage.value.revealTitle()
-      }
-    }, 800) // Start fading in exactly when loading title stops moving
   } catch (error) {
     console.error('[App] Error during app initialization:', error)
     // Hide loading screen even if there's an error

@@ -2,9 +2,9 @@ import { Preferences } from '@capacitor/preferences'
 
 export function useGameStorage() {
   const KEYS = {
-    SETTINGS: 'zenith_settings',
-    PROGRESS: 'zenith_progress',
-    STATS: 'zenith_stats',
+    SETTINGS: 'orbs_settings',
+    PROGRESS: 'orbs_progress',
+    STATS: 'orbs_stats',
   }
 
   async function saveSettings(settings) {

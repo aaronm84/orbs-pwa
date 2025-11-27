@@ -45,7 +45,7 @@ const showBackButton = computed(() => {
 
 const isGamePage = computed(() => {
   // Hide header for game pages that have their own custom header
-  return route.name === 'chain-reaction'
+  return route.name === 'orbs'
 })
 
 function goBack() {

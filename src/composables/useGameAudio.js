@@ -367,51 +367,6 @@ export function useGameAudio() {
     }
   }
 
-  // Play a soft "twinkle" sound for star connections
-  function playStarConnect() {
-    if (!settingsStore.settings.soundEffectsEnabled) return
-    if (!isInitialized.value) init()
-
-    resume()
-
-    try {
-      const ctx = audioContext.value
-      const volume = 0.12 * settingsStore.settings.soundEffectsVolume
-
-      // Create a gentle ascending chime
-      const notes = [523.25, 659.25, 783.99] // C5, E5, G5
-      const noteDuration = 0.08
-
-      notes.forEach((frequency, index) => {
-        const oscillator = ctx.createOscillator()
-        const gainNode = ctx.createGain()
-
-        oscillator.connect(gainNode)
-        gainNode.connect(ctx.destination)
-
-        oscillator.frequency.value = frequency
-        oscillator.type = 'sine'
-
-        const startTime = ctx.currentTime + index * 0.05
-        const endTime = startTime + noteDuration
-
-        gainNode.gain.setValueAtTime(volume, startTime)
-        gainNode.gain.exponentialRampToValueAtTime(0.01, endTime)
-
-        oscillator.start(startTime)
-        oscillator.stop(endTime)
-      })
-    } catch (error) {
-      console.error('Failed to play star connect:', error)
-    }
-  }
-
-  // Play a gentle shimmer for selecting a star
-  function playStarSelect() {
-    if (!settingsStore.settings.soundEffectsEnabled) return
-    playTone(800, 0.05, 0.08)
-  }
-
   return {
     init,
     playTone,
@@ -428,8 +383,5 @@ export function useGameAudio() {
     stopBackgroundMusic,
     setMusicVolume,
     isMusicPlaying,
-    // Constellation-specific sounds
-    playStarConnect,
-    playStarSelect,
   }
 }
