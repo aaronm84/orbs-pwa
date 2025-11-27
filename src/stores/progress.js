@@ -37,10 +37,12 @@ export const useProgressStore = defineStore('progress', () => {
       const progressData = {
         orbs: orbs.value,
       }
+      console.log('[Progress Store] Saving to storage:', JSON.stringify(progressData))
       await storage.saveProgress(progressData)
-      console.log('Progress saved successfully')
+      console.log('[Progress Store] Progress saved successfully')
     } catch (error) {
-      console.error('Failed to save progress:', error)
+      console.error('[Progress Store] Failed to save progress:', error)
+      throw error
     }
   }
 
@@ -63,11 +65,44 @@ export const useProgressStore = defineStore('progress', () => {
     }
   }
 
+  async function resetOrbsProgress() {
+    try {
+      console.log('[Progress Store] Resetting orbs progress...')
+      console.log('[Progress Store] Before reset:', JSON.stringify(orbs.value))
+
+      // Reset to default values
+      const defaultProgress = {
+        currentLevel: 1,
+        highestLevel: 1,
+        bestScore: 0,
+        totalPlays: 0,
+        perfectLevels: [],
+      }
+
+      orbs.value = defaultProgress
+
+      console.log('[Progress Store] After reset:', JSON.stringify(orbs.value))
+
+      // Force save to storage
+      await saveToStorage()
+
+      // Verify the save worked by reloading
+      await loadFromStorage()
+
+      console.log('[Progress Store] After reload:', JSON.stringify(orbs.value))
+      console.log('[Progress Store] Orbs progress reset and saved successfully')
+    } catch (error) {
+      console.error('[Progress Store] Failed to reset progress:', error)
+      throw error
+    }
+  }
+
   return {
     // Orbs
     orbs,
     orbsProgress,
     updateOrbsLevel,
+    resetOrbsProgress,
 
     // Common
     saveToStorage,

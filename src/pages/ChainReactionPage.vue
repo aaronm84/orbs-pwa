@@ -99,7 +99,7 @@
             label="Reset All Progress"
             icon="restart_alt"
             class="full-width"
-            @click="confirmReset"
+            @click="() => { console.log('BUTTON CLICKED!'); confirmReset(); }"
           />
         </q-card-section>
 
@@ -618,6 +618,7 @@ function selectLevel(level) {
 }
 
 function confirmReset() {
+  console.log('[Game] confirmReset called')
   haptics.warning()
   $q.dialog({
     title: 'Reset Progress',
@@ -632,25 +633,50 @@ function confirmReset() {
       label: 'Reset',
       color: 'negative',
     },
-  }).onOk(() => {
-    resetProgress()
+  }).onOk(async () => {
+    console.log('[Game] Reset confirmed by user')
+    await resetProgress()
   })
 }
 
-function resetProgress() {
+async function resetProgress() {
+  console.log('[Game] resetProgress function called')
   haptics.heavy()
-  // Reset progress store
-  progressStore.orbs.currentLevel = 1
-  progressStore.orbs.highestLevel = 1
-  progressStore.orbs.bestScore = 0
-  progressStore.orbs.totalPlays = 0
-  progressStore.orbs.perfectLevels = []
-  progressStore.saveToStorage()
 
-  // Reset current game
-  currentLevel.value = 1
+  // Close the level select dialog first
   showLevelSelect.value = false
-  initLevel()
+  console.log('[Game] Level select dialog closed')
+
+  try {
+    console.log('[Game] Calling progressStore.resetOrbsProgress()')
+    // Reset progress store using the proper method
+    await progressStore.resetOrbsProgress()
+
+    // Reset current game state
+    currentLevel.value = 1
+
+    // Reinitialize the level with fresh state
+    initLevel()
+
+    // Show success notification
+    $q.notify({
+      type: 'positive',
+      message: 'Progress reset to Level 1',
+      position: 'top',
+      timeout: 2000,
+    })
+
+    console.log('[Game] Reset complete. Current level:', currentLevel.value)
+    console.log('[Game] Highest level:', progressStore.orbs.highestLevel)
+  } catch (error) {
+    console.error('[Game] Failed to reset progress:', error)
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to reset progress. Please try again.',
+      position: 'top',
+      timeout: 3000,
+    })
+  }
 }
 
 function goBack() {

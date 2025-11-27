@@ -138,6 +138,7 @@ function openSettings() {
 .menu-page {
   position: relative;
   overflow: hidden;
+  min-height: 100vh;
 }
 
 .menu-content {
@@ -149,6 +150,7 @@ function openSettings() {
   justify-content: center;
   min-height: 100vh;
   padding: 32px 24px;
+  padding-bottom: max(32px, env(safe-area-inset-bottom));
   gap: 48px;
 }
 
@@ -158,8 +160,9 @@ function openSettings() {
 }
 
 .game-title {
+  font-family: 'Quicksand', sans-serif;
   font-size: 4rem;
-  font-weight: 800;
+  font-weight: 600;
   margin: 0 0 8px 0;
   color: white;
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);

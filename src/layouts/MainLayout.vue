@@ -40,7 +40,7 @@ const route = useRoute()
 const haptics = useHaptics()
 
 const showBackButton = computed(() => {
-  return route.name !== 'home'
+  return route.name !== 'home' && route.name !== 'menu'
 })
 
 const isGamePage = computed(() => {
@@ -60,9 +60,14 @@ function goToSettings() {
 </script>
 
 <style lang="scss">
-// Force layout to be transparent
+// Force layout to be transparent and fill screen
 .q-layout {
   background: transparent !important;
+  min-height: 100vh;
+}
+
+.q-page-container {
+  min-height: 100vh;
 }
 
 .main-header {

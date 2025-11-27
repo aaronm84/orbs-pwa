@@ -1,5 +1,14 @@
 // Orbs - Global Styles
 
+// Font Face
+@font-face {
+  font-family: 'Quicksand';
+  src: url('/fonts/Quicksand-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 // Color Variables
 $primary: #667eea;
 $secondary: #764ba2;
@@ -11,10 +20,29 @@ $dark: #1a1a2e;
   box-sizing: border-box;
 }
 
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
 body {
   font-family: 'Roboto', '-apple-system', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+#q-app {
+  width: 100%;
+  min-height: 100vh;
+  height: 100%;
+  position: relative;
 }
 
 // Utility classes

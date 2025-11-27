@@ -211,8 +211,9 @@ defineExpose({ hide })
 }
 
 .app-title {
+  font-family: 'Quicksand', sans-serif;
   font-size: 4rem;
-  font-weight: 800;
+  font-weight: 600;
   margin: 0;
   padding: 0;
   letter-spacing: -0.02em;
