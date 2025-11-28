@@ -215,6 +215,32 @@ const showMenu = ref(false)
 // Game objects
 let orbs = []
 let explosions = []
+let projectiles = [] // For special orb projectiles
+
+// Special orb types
+const SPECIAL_TYPES = {
+  NONE: 'none',
+  BIG_EXPLOSION: 'bigExplosion', // Larger explosion radius
+  SPIKE_BURST: 'spikeBurst', // 12 directional spikes
+  RANDOM_SHOT: 'randomShot', // Single projectile in random direction
+  MINI_ORBS: 'miniOrbs', // Spawns smaller bouncing orbs
+  CHAIN_BOOST: 'chainBoost', // Subsequent chain explosions linger longer
+  MAGNET: 'magnet', // Pulls nearby orbs towards it
+}
+
+// Special orb morphing state
+let morphState = {
+  specialOrbs: [], // Array of { orbId, morphTimer, flickerStart }
+  nextMorphTimer: null, // Timer for next morph event
+  maxSimultaneousSpecial: 2, // Maximum special orbs at once
+  multiMorphChance: 0.08, // 8% chance to allow a second morph while one exists
+}
+
+// Chain boost state - when active, all explosions linger longer
+let chainBoostActive = false
+
+// Active magnet effects
+let magnetEffects = [] // Array of { x, y, color, startTime, duration, range, strength }
 
 // Level configuration
 const levelConfig = computed(() => {
@@ -229,6 +255,18 @@ const levelConfig = computed(() => {
   const radiusPercent = 0.22 - (level - 1) * 0.007 // Decreases by 0.7% per level
   const baseRadius = screenSize * Math.max(radiusPercent, 0.08) // Min 8% of screen
 
+  // Special orbs start at level 10
+  const specialOrbsEnabled = level >= 10
+
+  // Morph timing scales with difficulty (less frequent at higher levels)
+  // Base: 8-15 seconds between morphs at level 10, scaling to 12-20 seconds at level 20+
+  const difficultyScale = Math.min((level - 10) / 10, 1) // 0 at level 10, 1 at level 20+
+  const morphIntervalMin = 8000 + difficultyScale * 4000 // 8s to 12s
+  const morphIntervalMax = 15000 + difficultyScale * 5000 // 15s to 20s
+
+  // Morph duration is random between 5-7 seconds
+  const morphDuration = 5000 + Math.random() * 2000
+
   return {
     level: currentLevel.value,
     totalOrbs: 5 + (currentLevel.value - 1) * 5,
@@ -238,6 +276,24 @@ const levelConfig = computed(() => {
     explosionMaxRadius: baseRadius,
     explosionGrowthRate: 2.5,
     clicksAllowed: 1,
+    // Special orb config
+    specialOrbsEnabled,
+    morphIntervalMin,
+    morphIntervalMax,
+    morphDuration, // 5-7 seconds
+    flickerWarningTime: 1000, // Start flickering 1s before morph ends
+    bigExplosionMultiplier: 2.5, // 2.5x larger explosion
+    bigExplosionLingerMultiplier: 3, // 3x slower fade (lingers much longer)
+    spikeCount: 12, // 12 directions like a clock
+    spikeRange: baseRadius * 5, // 5x explosion radius
+    spikeSpeed: 15, // Fast moving spikes
+    randomShotSpeed: 12, // Slightly slower for visibility
+    miniOrbCount: 8, // Number of mini orbs to spawn
+    miniOrbDuration: 2000, // 2 seconds before mini orbs expire
+    chainBoostLingerMultiplier: 1.5, // 50% longer explosions during chain boost
+    magnetPullStrength: 0.5, // Base pull strength for magnet
+    magnetRange: baseRadius * 4, // How far the magnet effect reaches
+    magnetDuration: 4500, // How long the magnet effect lasts (ms)
   }
 })
 
@@ -281,6 +337,7 @@ onMounted(() => {
 onUnmounted(() => {
   // Clean up
   stopGameLoop()
+  stopMorphSystem()
   window.removeEventListener('resize', handleResize)
 })
 
@@ -315,15 +372,22 @@ function stopGameLoop() {
 function initLevel() {
   // IMPORTANT: Stop any existing game loop first
   stopGameLoop()
+  stopMorphSystem()
 
   // Reset state completely
   orbs = []
   explosions = []
+  projectiles = []
   capturedCount.value = 0
   clicksRemaining.value = levelConfig.value.clicksAllowed
   gameStarted.value = false
   gameEnded.value = false // Reset the game ended flag
   showTapHint.value = true
+
+  // Reset morph state
+  morphState.specialOrbs = []
+  chainBoostActive = false
+  magnetEffects = []
 
   // Reset bell sequence for musical chimes
   audio.resetBellSequence()
@@ -337,17 +401,19 @@ function initLevel() {
   const config = levelConfig.value
 
   for (let i = 0; i < config.totalOrbs; i++) {
-    orbs.push(createOrb(i, config)) // ← Removed canvas parameter
+    orbs.push(createOrb(i, config))
   }
 
   // Start game loop
   isPlaying.value = true
   gameLoop()
+
+  // Start special orb morphing system (level 10+)
+  startMorphSystem()
 }
 
 function createOrb(index, config) {
-  // ← Removed canvas parameter
-  const canvas = gameCanvas.value // ← Access canvas here instead
+  const canvas = gameCanvas.value
 
   // Add margin to keep orbs away from edges
   const margin = config.orbRadius * 3
@@ -361,7 +427,221 @@ function createOrb(index, config) {
     radius: config.orbRadius,
     color: orbColors[index % orbColors.length],
     captured: false,
+    // Special orb properties
+    specialType: SPECIAL_TYPES.NONE,
+    morphStartTime: null, // When the orb morphed into special
+    shotAngle: Math.random() * Math.PI * 2, // Pre-determined shot direction for RANDOM_SHOT
+    isMiniOrb: false, // Flag for mini orbs spawned by MINI_ORBS type
+    expiresAt: null, // When mini orbs should expire
   }
+}
+
+// === SPECIAL ORB MORPHING SYSTEM ===
+
+function startMorphSystem() {
+  const config = levelConfig.value
+  if (!config.specialOrbsEnabled) return
+
+  // Start morphing quickly (1-3 seconds after level starts)
+  const initialDelay = 1000 + Math.random() * 2000
+  morphState.nextMorphTimer = setTimeout(() => {
+    morphRandomOrb()
+  }, initialDelay)
+}
+
+function stopMorphSystem() {
+  // Clear next morph timer
+  if (morphState.nextMorphTimer) {
+    clearTimeout(morphState.nextMorphTimer)
+    morphState.nextMorphTimer = null
+  }
+
+  // Clear all special orb timers and revert them
+  morphState.specialOrbs.forEach((special) => {
+    if (special.morphTimer) {
+      clearTimeout(special.morphTimer)
+    }
+    const orb = orbs.find((o) => o.id === special.orbId)
+    if (orb) {
+      orb.specialType = SPECIAL_TYPES.NONE
+      orb.morphStartTime = null
+    }
+  })
+  morphState.specialOrbs = []
+}
+
+function scheduleNextMorph() {
+  const config = levelConfig.value
+  if (!config.specialOrbsEnabled || !isPlaying.value) return
+
+  // Random delay before next morph
+  const delay =
+    config.morphIntervalMin + Math.random() * (config.morphIntervalMax - config.morphIntervalMin)
+
+  morphState.nextMorphTimer = setTimeout(() => {
+    morphRandomOrb()
+  }, delay)
+}
+
+function morphRandomOrb() {
+  const config = levelConfig.value
+  if (!isPlaying.value || gameEnded.value) return
+
+  // Check if we already have max special orbs
+  if (morphState.specialOrbs.length >= morphState.maxSimultaneousSpecial) {
+    scheduleNextMorph()
+    return
+  }
+
+  // If we already have a special orb, only allow another with small chance
+  if (morphState.specialOrbs.length > 0 && Math.random() > morphState.multiMorphChance) {
+    scheduleNextMorph()
+    return
+  }
+
+  // Get uncaptured orbs that aren't already special
+  const availableOrbs = orbs.filter((o) => !o.captured && o.specialType === SPECIAL_TYPES.NONE)
+  if (availableOrbs.length === 0) {
+    // No orbs available, try again later
+    scheduleNextMorph()
+    return
+  }
+
+  // Pick a random orb
+  const orb = availableOrbs[Math.floor(Math.random() * availableOrbs.length)]
+
+  // Pick a random special type
+  const specialTypes = [
+    SPECIAL_TYPES.BIG_EXPLOSION,
+    SPECIAL_TYPES.SPIKE_BURST,
+    SPECIAL_TYPES.RANDOM_SHOT,
+    SPECIAL_TYPES.MINI_ORBS,
+    SPECIAL_TYPES.CHAIN_BOOST,
+    SPECIAL_TYPES.MAGNET,
+  ]
+  orb.specialType = specialTypes[Math.floor(Math.random() * specialTypes.length)]
+  orb.morphStartTime = Date.now()
+
+  const flickerStart = Date.now() + config.morphDuration - config.flickerWarningTime
+
+  // Schedule revert back to normal
+  const morphTimer = setTimeout(() => {
+    revertSpecialOrb(orb.id)
+  }, config.morphDuration)
+
+  // Track this special orb
+  morphState.specialOrbs.push({
+    orbId: orb.id,
+    morphTimer,
+    flickerStart,
+  })
+
+  // Schedule next morph
+  scheduleNextMorph()
+}
+
+function revertSpecialOrb(orbId) {
+  const orb = orbs.find((o) => o.id === orbId)
+  if (orb && !orb.captured) {
+    orb.specialType = SPECIAL_TYPES.NONE
+    orb.morphStartTime = null
+  }
+
+  // Remove from special orbs tracking
+  const specialIndex = morphState.specialOrbs.findIndex((s) => s.orbId === orbId)
+  if (specialIndex !== -1) {
+    morphState.specialOrbs.splice(specialIndex, 1)
+  }
+}
+
+// === PROJECTILE CREATION ===
+
+function createSpikeBurst(x, y, color) {
+  const config = levelConfig.value
+
+  // Create 12 spikes in clock directions - they stop after traveling a set distance
+  for (let i = 0; i < config.spikeCount; i++) {
+    const angle = (i / config.spikeCount) * Math.PI * 2 - Math.PI / 2 // Start at 12 o'clock
+    projectiles.push({
+      id: `spike-${Date.now()}-${i}`,
+      type: 'spike',
+      x,
+      y,
+      startX: x,
+      startY: y,
+      vx: Math.cos(angle) * config.spikeSpeed,
+      vy: Math.sin(angle) * config.spikeSpeed,
+      maxDistance: config.spikeRange,
+      color,
+      alpha: 1,
+      trail: [], // For visual trail effect
+    })
+  }
+}
+
+function createRandomShot(x, y, color, angle) {
+  const config = levelConfig.value
+
+  projectiles.push({
+    id: `shot-${Date.now()}`,
+    type: 'randomShot',
+    x,
+    y,
+    startX: x,
+    startY: y,
+    vx: Math.cos(angle) * config.randomShotSpeed,
+    vy: Math.sin(angle) * config.randomShotSpeed,
+    maxDistance: Infinity, // Travels until hitting orb or wall
+    color,
+    alpha: 1,
+    trail: [], // For comet tail effect
+  })
+}
+
+function createMiniOrbs(x, y, color) {
+  const config = levelConfig.value
+  const now = Date.now()
+
+  // Create mini orbs that bounce around
+  for (let i = 0; i < config.miniOrbCount; i++) {
+    const angle = (i / config.miniOrbCount) * Math.PI * 2 + Math.random() * 0.5
+    const speed = config.orbSpeed * 1.5 // Slightly faster than normal orbs
+
+    orbs.push({
+      id: `mini-orb-${now}-${i}`,
+      x: x + Math.cos(angle) * 15,
+      y: y + Math.sin(angle) * 15,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      radius: config.orbRadius * 0.6, // Smaller than normal
+      color: color,
+      captured: false,
+      specialType: SPECIAL_TYPES.NONE,
+      morphStartTime: null,
+      shotAngle: 0,
+      isMiniOrb: true,
+      expiresAt: now + config.miniOrbDuration,
+    })
+  }
+}
+
+function createMagnetEffect(x, y, color) {
+  const config = levelConfig.value
+  const now = Date.now()
+
+  magnetEffects.push({
+    x,
+    y,
+    color,
+    startTime: now,
+    duration: config.magnetDuration,
+    range: config.magnetRange,
+    strength: config.magnetPullStrength,
+  })
+}
+
+function activateChainBoost() {
+  chainBoostActive = true
 }
 
 function handleCanvasClick(event) {
@@ -384,19 +664,28 @@ function handleCanvasClick(event) {
   hasSeenTapHint.value = true
 }
 
-function createExplosion(x, y, color = '#ffffff') {
+function createExplosion(x, y, color = '#ffffff', radiusMultiplier = 1, lingerMultiplier = 1) {
   const config = levelConfig.value
+
+  // Apply chain boost if active
+  let effectiveLingerMultiplier = lingerMultiplier
+  if (chainBoostActive) {
+    effectiveLingerMultiplier *= config.chainBoostLingerMultiplier
+  }
 
   explosions.push({
     id: `explosion-${Date.now()}-${Math.random()}`,
     x,
     y,
     radius: 0,
-    maxRadius: config.explosionMaxRadius,
-    growthRate: config.explosionGrowthRate,
+    maxRadius: config.explosionMaxRadius * radiusMultiplier,
+    growthRate: config.explosionGrowthRate * (radiusMultiplier > 1 ? 1.2 : 1), // Slightly faster growth for big explosions
     active: true,
     alpha: 1,
-    color: color, // Store the color for this explosion
+    color: color,
+    isBigExplosion: radiusMultiplier > 1, // Track for special rendering
+    fadeRate: 0.05 / effectiveLingerMultiplier, // Slower fade for lingering explosions
+    isChainBoosted: chainBoostActive, // Track for visual effect
   })
 }
 
@@ -409,12 +698,122 @@ function gameLoop() {
   animationId = requestAnimationFrame(gameLoop)
 }
 
+// === ORB CAPTURE WITH SPECIAL ABILITIES ===
+
+function captureOrb(orb) {
+  if (orb.captured) return
+
+  const config = levelConfig.value
+
+  orb.captured = true
+  capturedCount.value++
+  haptics.light()
+  audio.playCapture()
+
+  // Clear morph state if this was a special orb
+  const specialIndex = morphState.specialOrbs.findIndex((s) => s.orbId === orb.id)
+  if (specialIndex !== -1) {
+    const special = morphState.specialOrbs[specialIndex]
+    if (special.morphTimer) {
+      clearTimeout(special.morphTimer)
+    }
+    morphState.specialOrbs.splice(specialIndex, 1)
+  }
+
+  // Handle special orb abilities
+  switch (orb.specialType) {
+    case SPECIAL_TYPES.BIG_EXPLOSION:
+      // Create a larger explosion that lingers longer
+      createExplosion(orb.x, orb.y, orb.color, config.bigExplosionMultiplier, config.bigExplosionLingerMultiplier)
+      haptics.medium() // Extra feedback for special
+      break
+
+    case SPECIAL_TYPES.SPIKE_BURST:
+      // Create normal explosion + 12 directional spikes
+      createExplosion(orb.x, orb.y, orb.color)
+      createSpikeBurst(orb.x, orb.y, orb.color)
+      haptics.medium()
+      break
+
+    case SPECIAL_TYPES.RANDOM_SHOT:
+      // Create normal explosion + directional projectile (uses pre-determined angle)
+      createExplosion(orb.x, orb.y, orb.color)
+      createRandomShot(orb.x, orb.y, orb.color, orb.shotAngle)
+      haptics.medium()
+      break
+
+    case SPECIAL_TYPES.MINI_ORBS:
+      // Create normal explosion + spawn mini bouncing orbs
+      createExplosion(orb.x, orb.y, orb.color)
+      createMiniOrbs(orb.x, orb.y, orb.color)
+      haptics.medium()
+      break
+
+    case SPECIAL_TYPES.CHAIN_BOOST:
+      // Activate chain boost - all subsequent explosions linger longer
+      activateChainBoost()
+      createExplosion(orb.x, orb.y, orb.color)
+      haptics.medium()
+      break
+
+    case SPECIAL_TYPES.MAGNET:
+      // Create normal explosion + magnet effect that pulls orbs
+      createExplosion(orb.x, orb.y, orb.color)
+      createMagnetEffect(orb.x, orb.y, orb.color)
+      haptics.medium()
+      break
+
+    default:
+      // Normal orb - just create explosion
+      createExplosion(orb.x, orb.y, orb.color)
+  }
+}
+
 function update() {
   const canvas = gameCanvas.value
+  const now = Date.now()
+
+  // Update magnet effects - remove expired ones
+  magnetEffects = magnetEffects.filter((magnet) => {
+    return now - magnet.startTime < magnet.duration
+  })
 
   // Update orbs
   orbs.forEach((orb) => {
     if (orb.captured) return
+
+    // Check if mini orb has expired
+    if (orb.isMiniOrb && orb.expiresAt && now >= orb.expiresAt) {
+      orb.captured = true // Mark as captured so it's removed
+      return
+    }
+
+    // Apply magnet pull effects
+    magnetEffects.forEach((magnet) => {
+      const dx = magnet.x - orb.x
+      const dy = magnet.y - orb.y
+      const distance = Math.sqrt(dx * dx + dy * dy)
+
+      // Check if orb reached the center - trigger capture/explosion
+      const captureRadius = 15 // Orbs within this distance get captured
+      if (distance < captureRadius) {
+        captureOrb(orb)
+        return
+      }
+
+      if (distance < magnet.range) {
+        // Calculate pull strength - stronger when closer (inverse square with cap)
+        const normalizedDist = distance / magnet.range
+        const pullIntensity = magnet.strength * (1 - normalizedDist) * (1 - normalizedDist)
+
+        // Apply pull towards magnet center
+        const pullX = (dx / distance) * pullIntensity
+        const pullY = (dy / distance) * pullIntensity
+
+        orb.vx += pullX
+        orb.vy += pullY
+      }
+    })
 
     // Move orb
     orb.x += orb.vx
@@ -429,13 +828,31 @@ function update() {
       orb.vy *= -1
       orb.y = Math.max(orb.radius, Math.min(canvas.height - orb.radius, orb.y))
     }
+
+    // Mini orbs can trigger other orbs on collision
+    if (orb.isMiniOrb && !orb.captured) {
+      orbs.forEach((targetOrb) => {
+        if (targetOrb.captured || targetOrb.isMiniOrb || targetOrb.id === orb.id) return
+
+        const dx = targetOrb.x - orb.x
+        const dy = targetOrb.y - orb.y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+
+        if (distance < orb.radius + targetOrb.radius) {
+          // Mini orb triggers the target orb
+          captureOrb(targetOrb)
+          // Mini orb is also consumed
+          orb.captured = true
+        }
+      })
+    }
   })
 
   // Update explosions
   explosions.forEach((explosion) => {
     if (!explosion.active) {
       // Fade out
-      explosion.alpha = Math.max(0, explosion.alpha - 0.05)
+      explosion.alpha = Math.max(0, explosion.alpha - (explosion.fadeRate || 0.05))
       return
     }
 
@@ -456,16 +873,7 @@ function update() {
       const distance = Math.sqrt(dx * dx + dy * dy)
 
       if (distance < explosion.radius + orb.radius) {
-        // Orb captured!
-        orb.captured = true
-        capturedCount.value++
-        haptics.light()
-
-        // Play bell chime sound (cycles through musical notes)
-        audio.playCapture()
-
-        // Create new explosion at orb position with the orb's color
-        createExplosion(orb.x, orb.y, orb.color)
+        captureOrb(orb)
       }
     })
   })
@@ -473,36 +881,118 @@ function update() {
   // Remove fully faded explosions
   explosions = explosions.filter((e) => e.active || e.alpha > 0)
 
+  // Remove expired magnet effects
+  magnetEffects = magnetEffects.filter((m) => now - m.startTime < m.duration)
+
+  // === UPDATE PROJECTILES ===
+  projectiles.forEach((proj) => {
+    if (proj.alpha <= 0) return
+
+    // Store trail position
+    proj.trail.unshift({ x: proj.x, y: proj.y, alpha: 1 })
+    if (proj.trail.length > 8) proj.trail.pop()
+
+    // Fade trail
+    proj.trail.forEach((t, i) => {
+      t.alpha = 1 - i / proj.trail.length
+    })
+
+    // Move projectile
+    proj.x += proj.vx
+    proj.y += proj.vy
+
+    // Check wall collision - all projectiles end at walls
+    if (proj.x < 0 || proj.x > canvas.width || proj.y < 0 || proj.y > canvas.height) {
+      proj.alpha = 0
+      return
+    }
+
+    // Spikes have max distance limit
+    if (proj.type === 'spike' && proj.maxDistance) {
+      const distX = proj.x - proj.startX
+      const distY = proj.y - proj.startY
+      const distTraveled = Math.sqrt(distX * distX + distY * distY)
+      if (distTraveled >= proj.maxDistance) {
+        proj.alpha = 0
+        return
+      }
+    }
+
+    // Check collision with orbs
+    orbs.forEach((orb) => {
+      if (orb.captured || proj.alpha <= 0) return
+
+      const dx = orb.x - proj.x
+      const dy = orb.y - proj.y
+      const distance = Math.sqrt(dx * dx + dy * dy)
+
+      if (distance < orb.radius + 4) {
+        // 4px projectile collision radius
+        captureOrb(orb)
+        // Spikes stop on first orb hit
+        if (proj.type === 'spike') {
+          proj.alpha = 0
+        }
+        // Random shot cuts through - continues until hitting a wall
+      }
+    })
+  })
+
+  // Remove dead projectiles
+  projectiles = projectiles.filter((p) => p.alpha > 0)
+
   // Check win/lose conditions (only once)
-  if (gameStarted.value && !gameEnded.value && explosions.length === 0) {
+  // Must wait for ALL chain reaction elements to complete:
+  // - No active explosions (still growing or fading)
+  // - No projectiles in flight
+  // - No active magnet effects (can still pull and capture orbs)
+  // - No mini orbs still bouncing (can trigger other orbs)
+  const hasActiveExplosions = explosions.length > 0
+  const hasActiveProjectiles = projectiles.length > 0
+  const hasActiveMagnets = magnetEffects.length > 0
+  const hasActiveMiniOrbs = orbs.some((o) => o.isMiniOrb && !o.captured)
+
+  const allChainReactionsComplete =
+    !hasActiveExplosions && !hasActiveProjectiles && !hasActiveMagnets && !hasActiveMiniOrbs
+
+  if (gameStarted.value && !gameEnded.value && allChainReactionsComplete) {
     checkGameEnd()
   }
+}
+
+// Helper function to convert hex to RGB
+function hexToRgb(hex) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : { r: 255, g: 255, b: 255 }
 }
 
 function render() {
   if (!ctx) return
 
   const canvas = gameCanvas.value
+  const now = Date.now()
 
   // Clear canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
   // Draw explosions with graceful, colored animations
   explosions.forEach((explosion) => {
-    // Convert hex color to RGB for alpha manipulation
-    const hexToRgb = (hex) => {
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-      return result
-        ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16),
-          }
-        : { r: 255, g: 255, b: 255 }
-    }
-
     const rgb = hexToRgb(explosion.color)
     const growthProgress = explosion.radius / explosion.maxRadius
+
+    // Extra glow for big explosions
+    if (explosion.isBigExplosion) {
+      ctx.beginPath()
+      ctx.arc(explosion.x, explosion.y, explosion.radius * 1.1, 0, Math.PI * 2)
+      ctx.fillStyle = `rgba(255, 255, 255, ${explosion.alpha * 0.15})`
+      ctx.fill()
+    }
 
     // Inner fill - fades faster
     ctx.beginPath()
@@ -516,8 +1006,8 @@ function render() {
     ctx.arc(explosion.x, explosion.y, explosion.radius, 0, Math.PI * 2)
     const strokeAlpha = explosion.alpha * (1 - growthProgress * 0.5)
     ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${strokeAlpha})`
-    ctx.lineWidth = 3
-    ctx.shadowBlur = 15
+    ctx.lineWidth = explosion.isBigExplosion ? 4 : 3
+    ctx.shadowBlur = explosion.isBigExplosion ? 25 : 15
     ctx.shadowColor = explosion.color
     ctx.stroke()
     ctx.shadowBlur = 0
@@ -532,16 +1022,179 @@ function render() {
     }
   })
 
-  // Draw orbs with enhanced glow
+  // === DRAW CHAIN BOOST INDICATOR ===
+  if (chainBoostActive) {
+    // Subtle golden shimmer at edges to indicate chain boost is active
+    const shimmerPhase = (now % 2000) / 2000
+    const shimmerAlpha = 0.1 + Math.sin(shimmerPhase * Math.PI * 2) * 0.05
+
+    // Draw corner accents
+    const cornerSize = 60
+    ctx.strokeStyle = `rgba(255, 215, 0, ${shimmerAlpha})`
+    ctx.lineWidth = 3
+    ctx.shadowBlur = 10
+    ctx.shadowColor = 'rgba(255, 215, 0, 0.5)'
+
+    // Top-left corner
+    ctx.beginPath()
+    ctx.moveTo(0, cornerSize)
+    ctx.lineTo(0, 0)
+    ctx.lineTo(cornerSize, 0)
+    ctx.stroke()
+
+    // Top-right corner
+    ctx.beginPath()
+    ctx.moveTo(canvas.width - cornerSize, 0)
+    ctx.lineTo(canvas.width, 0)
+    ctx.lineTo(canvas.width, cornerSize)
+    ctx.stroke()
+
+    // Bottom-left corner
+    ctx.beginPath()
+    ctx.moveTo(0, canvas.height - cornerSize)
+    ctx.lineTo(0, canvas.height)
+    ctx.lineTo(cornerSize, canvas.height)
+    ctx.stroke()
+
+    // Bottom-right corner
+    ctx.beginPath()
+    ctx.moveTo(canvas.width - cornerSize, canvas.height)
+    ctx.lineTo(canvas.width, canvas.height)
+    ctx.lineTo(canvas.width, canvas.height - cornerSize)
+    ctx.stroke()
+
+    ctx.shadowBlur = 0
+  }
+
+  // === DRAW MAGNET EFFECTS ===
+  magnetEffects.forEach((magnet) => {
+    const elapsed = now - magnet.startTime
+    const progress = elapsed / magnet.duration
+    const fadeAlpha = 1 - progress // Fade out over time
+
+    // Draw concentric rings being pulled inward (visual representation of pull field)
+    for (let i = 0; i < 4; i++) {
+      const ringProgress = ((progress * 3 + i / 4) % 1)
+      const ringRadius = magnet.range * (1 - ringProgress * 0.8)
+      const ringAlpha = fadeAlpha * 0.4 * (1 - ringProgress)
+
+      if (ringAlpha > 0.02 && ringRadius > 10) {
+        ctx.beginPath()
+        ctx.arc(magnet.x, magnet.y, ringRadius, 0, Math.PI * 2)
+        ctx.strokeStyle = `rgba(150, 200, 255, ${ringAlpha})`
+        ctx.lineWidth = 2
+        ctx.stroke()
+      }
+    }
+
+    // Draw central glow
+    const glowRadius = 20 + Math.sin(elapsed / 100) * 5
+    const gradient = ctx.createRadialGradient(magnet.x, magnet.y, 0, magnet.x, magnet.y, glowRadius)
+    gradient.addColorStop(0, `rgba(150, 200, 255, ${fadeAlpha * 0.5})`)
+    gradient.addColorStop(1, 'rgba(150, 200, 255, 0)')
+    ctx.beginPath()
+    ctx.arc(magnet.x, magnet.y, glowRadius, 0, Math.PI * 2)
+    ctx.fillStyle = gradient
+    ctx.fill()
+  })
+
+  // === DRAW PROJECTILES ===
+  projectiles.forEach((proj) => {
+    if (proj.alpha <= 0) return
+
+    const rgb = hexToRgb(proj.color)
+
+    // Draw trail (comet tail effect)
+    proj.trail.forEach((t, i) => {
+      const trailAlpha = t.alpha * proj.alpha * 0.6
+      const trailSize = proj.type === 'randomShot' ? 4 - i * 0.4 : 3 - i * 0.3
+      if (trailSize > 0) {
+        ctx.beginPath()
+        ctx.arc(t.x, t.y, trailSize, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${trailAlpha})`
+        ctx.fill()
+      }
+    })
+
+    // Draw projectile head
+    ctx.beginPath()
+    const headSize = proj.type === 'randomShot' ? 5 : 4
+    ctx.arc(proj.x, proj.y, headSize, 0, Math.PI * 2)
+    ctx.shadowBlur = 10
+    ctx.shadowColor = proj.color
+    ctx.fillStyle = proj.color
+    ctx.fill()
+
+    // Bright center
+    ctx.shadowBlur = 0
+    ctx.beginPath()
+    ctx.arc(proj.x, proj.y, headSize * 0.5, 0, Math.PI * 2)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+    ctx.fill()
+  })
+
+  // === DRAW ORBS ===
   orbs.forEach((orb) => {
     if (orb.captured) return
 
+    const isSpecial = orb.specialType !== SPECIAL_TYPES.NONE
+
+    // Handle mini orb fade-out as they approach expiration
+    let miniOrbAlpha = 1
+    if (orb.isMiniOrb && orb.expiresAt) {
+      const timeLeft = orb.expiresAt - now
+      const config = levelConfig.value
+      // Start fading in the last 500ms
+      if (timeLeft < 500) {
+        miniOrbAlpha = Math.max(0.2, timeLeft / 500)
+      }
+      // Flicker rapidly in the last 300ms
+      if (timeLeft < 300) {
+        miniOrbAlpha *= Math.floor((now / 50) % 2) === 0 ? 1 : 0.5
+      }
+      ctx.globalAlpha = miniOrbAlpha
+    }
+
+    // Check if flickering (warning before morph ends)
+    let shouldFlicker = false
+    if (isSpecial) {
+      const specialState = morphState.specialOrbs.find((s) => s.orbId === orb.id)
+      if (specialState && specialState.flickerStart && now >= specialState.flickerStart) {
+        // Flicker at ~10Hz
+        shouldFlicker = Math.floor((now - specialState.flickerStart) / 50) % 2 === 0
+      }
+    }
+
+    // Skip drawing on flicker-off frames
+    if (shouldFlicker) {
+      // Draw dimmed version during flicker
+      ctx.globalAlpha = 0.3
+    }
+
+    // Special orb enhanced glow
+    if (isSpecial) {
+      // Outer pulsing glow
+      const pulsePhase = (now % 1000) / 1000
+      const pulseScale = 1 + Math.sin(pulsePhase * Math.PI * 2) * 0.2
+
+      ctx.beginPath()
+      ctx.arc(orb.x, orb.y, orb.radius * 2 * pulseScale, 0, Math.PI * 2)
+      ctx.fillStyle = `rgba(255, 255, 255, 0.15)`
+      ctx.fill()
+
+      ctx.beginPath()
+      ctx.arc(orb.x, orb.y, orb.radius * 1.5 * pulseScale, 0, Math.PI * 2)
+      ctx.fillStyle = `rgba(255, 255, 255, 0.2)`
+      ctx.fill()
+    }
+
+    // Main orb
     ctx.beginPath()
     ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2)
 
-    // Glow effect
-    ctx.shadowBlur = 15
-    ctx.shadowColor = orb.color
+    // Enhanced glow for special orbs, extra sparkle for mini orbs
+    ctx.shadowBlur = isSpecial ? 30 : (orb.isMiniOrb ? 20 : 15)
+    ctx.shadowColor = isSpecial ? '#ffffff' : orb.color
     ctx.fillStyle = orb.color
     ctx.fill()
 
@@ -549,8 +1202,154 @@ function render() {
     ctx.shadowBlur = 0
     ctx.beginPath()
     ctx.arc(orb.x - orb.radius * 0.3, orb.y - orb.radius * 0.3, orb.radius * 0.4, 0, Math.PI * 2)
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'
+    ctx.fillStyle = isSpecial ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.4)'
     ctx.fill()
+
+    // Draw special orb indicator
+    if (isSpecial) {
+      ctx.globalAlpha = 1 // Reset for indicator
+
+      switch (orb.specialType) {
+        case SPECIAL_TYPES.BIG_EXPLOSION:
+          // Draw expanding rings indicator
+          const ringPhase = (now % 800) / 800
+          ctx.beginPath()
+          ctx.arc(orb.x, orb.y, orb.radius * (1.3 + ringPhase * 0.5), 0, Math.PI * 2)
+          ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 * (1 - ringPhase)})`
+          ctx.lineWidth = 2
+          ctx.stroke()
+          break
+
+        case SPECIAL_TYPES.SPIKE_BURST:
+          // Draw star/rays indicator
+          for (let i = 0; i < 12; i++) {
+            const angle = (i / 12) * Math.PI * 2 - Math.PI / 2
+            const rayLength = orb.radius * 1.8
+            const innerRadius = orb.radius * 1.2
+            ctx.beginPath()
+            ctx.moveTo(orb.x + Math.cos(angle) * innerRadius, orb.y + Math.sin(angle) * innerRadius)
+            ctx.lineTo(orb.x + Math.cos(angle) * rayLength, orb.y + Math.sin(angle) * rayLength)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'
+            ctx.lineWidth = 1.5
+            ctx.stroke()
+          }
+          break
+
+        case SPECIAL_TYPES.RANDOM_SHOT:
+          // Draw single rotating arrow pointing in shot direction
+          // Arrow rotates as orb moves (based on velocity direction)
+          const moveAngle = Math.atan2(orb.vy, orb.vx)
+          const displayAngle = orb.shotAngle + moveAngle * 0.3 // Subtle rotation based on movement
+
+          const arrowDist = orb.radius * 1.8
+          const arrowTipX = orb.x + Math.cos(displayAngle) * arrowDist
+          const arrowTipY = orb.y + Math.sin(displayAngle) * arrowDist
+          const perpAngle = displayAngle + Math.PI / 2
+          const baseOffset = 5
+
+          // Pulsing effect
+          const arrowPulse = 0.6 + Math.sin((now % 500) / 500 * Math.PI * 2) * 0.3
+
+          ctx.beginPath()
+          ctx.moveTo(
+            arrowTipX - Math.cos(displayAngle) * 10 + Math.cos(perpAngle) * baseOffset,
+            arrowTipY - Math.sin(displayAngle) * 10 + Math.sin(perpAngle) * baseOffset,
+          )
+          ctx.lineTo(arrowTipX, arrowTipY)
+          ctx.lineTo(
+            arrowTipX - Math.cos(displayAngle) * 10 - Math.cos(perpAngle) * baseOffset,
+            arrowTipY - Math.sin(displayAngle) * 10 - Math.sin(perpAngle) * baseOffset,
+          )
+          ctx.strokeStyle = `rgba(255, 255, 255, ${arrowPulse})`
+          ctx.lineWidth = 2.5
+          ctx.stroke()
+          break
+
+        case SPECIAL_TYPES.MINI_ORBS:
+          // Draw small orbiting circles to indicate mini orbs will spawn
+          const orbitPhase = (now % 1200) / 1200
+          for (let i = 0; i < 4; i++) {
+            const orbitAngle = orbitPhase * Math.PI * 2 + (i / 4) * Math.PI * 2
+            const orbitDist = orb.radius * 1.6
+            const miniX = orb.x + Math.cos(orbitAngle) * orbitDist
+            const miniY = orb.y + Math.sin(orbitAngle) * orbitDist
+
+            ctx.beginPath()
+            ctx.arc(miniX, miniY, 3, 0, Math.PI * 2)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
+            ctx.fill()
+          }
+          break
+
+        case SPECIAL_TYPES.CHAIN_BOOST:
+          // Draw chain/infinity symbol with energy waves
+          const boostPhase = (now % 1000) / 1000
+          const wavePhase = (now % 600) / 600
+
+          // Draw infinity/chain symbol (two interlocking loops)
+          const loopRadius = orb.radius * 0.5
+          const loopOffset = orb.radius * 0.4
+          ctx.strokeStyle = 'rgba(255, 215, 0, 0.9)'
+          ctx.lineWidth = 2.5
+          ctx.shadowBlur = 8
+          ctx.shadowColor = 'rgba(255, 215, 0, 0.6)'
+
+          // Left loop
+          ctx.beginPath()
+          ctx.arc(orb.x - loopOffset, orb.y, loopRadius, 0, Math.PI * 2)
+          ctx.stroke()
+
+          // Right loop
+          ctx.beginPath()
+          ctx.arc(orb.x + loopOffset, orb.y, loopRadius, 0, Math.PI * 2)
+          ctx.stroke()
+
+          ctx.shadowBlur = 0
+
+          // Energy particles traveling along the infinity path
+          for (let p = 0; p < 3; p++) {
+            const particlePhase = (wavePhase + p / 3) % 1
+            const angle = particlePhase * Math.PI * 2
+            // Figure-8 path
+            const px = orb.x + Math.sin(angle) * loopOffset * 1.2
+            const py = orb.y + Math.sin(angle * 2) * loopRadius * 0.6
+
+            ctx.beginPath()
+            ctx.arc(px, py, 2.5, 0, Math.PI * 2)
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.8 - particlePhase * 0.3})`
+            ctx.fill()
+          }
+
+          // Outer golden glow ring
+          ctx.beginPath()
+          ctx.arc(orb.x, orb.y, orb.radius * (1.4 + boostPhase * 0.3), 0, Math.PI * 2)
+          ctx.strokeStyle = `rgba(255, 215, 0, ${0.5 * (1 - boostPhase)})`
+          ctx.lineWidth = 2
+          ctx.stroke()
+          break
+
+        case SPECIAL_TYPES.MAGNET:
+          // Draw magnet indicator - concentric rings being pulled inward
+          const magnetPhase = (now % 800) / 800
+          for (let i = 0; i < 3; i++) {
+            const ringProgress = (magnetPhase + i / 3) % 1
+            const ringRadius = orb.radius * (2.5 - ringProgress * 1.5) // Rings shrink inward
+            const ringAlpha = ringProgress < 0.8 ? 0.5 * (1 - ringProgress) : 0
+
+            if (ringAlpha > 0) {
+              ctx.beginPath()
+              ctx.arc(orb.x, orb.y, ringRadius, 0, Math.PI * 2)
+              ctx.strokeStyle = `rgba(150, 200, 255, ${ringAlpha})`
+              ctx.lineWidth = 2
+              ctx.stroke()
+            }
+          }
+          break
+      }
+    }
+
+    // Reset alpha
+    ctx.globalAlpha = 1
   })
 }
 
