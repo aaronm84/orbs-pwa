@@ -63,11 +63,11 @@ function goToSettings() {
 // Force layout to be transparent and fill screen
 .q-layout {
   background: transparent !important;
-  min-height: 100vh;
+  height: 100%;
 }
 
 .q-page-container {
-  min-height: 100vh;
+  height: 100%;
 }
 
 .main-header {

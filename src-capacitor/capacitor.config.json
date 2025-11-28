@@ -3,6 +3,9 @@
   "appName": "Orbs",
   "webDir": "www",
   "ios": {
-    "contentInset": "always"
-  }
+    "contentInset": "never",
+    "backgroundColor": "#1a1a2e",
+    "scrollEnabled": false
+  },
+  "backgroundColor": "#1a1a2e"
 }

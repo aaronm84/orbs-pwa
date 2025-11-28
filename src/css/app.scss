@@ -20,29 +20,34 @@ $dark: #1a1a2e;
   box-sizing: border-box;
 }
 
-html,
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: $dark;
+}
+
 body {
   margin: 0;
   padding: 0;
   width: 100%;
-  min-height: 100vh;
-  height: 100%;
+  height: calc(100% + env(safe-area-inset-bottom));
+  min-height: 100%;
   overflow: hidden;
-  position: relative;
-}
-
-body {
+  background: $dark;
   font-family: 'Roboto', '-apple-system', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  padding-bottom: env(safe-area-inset-bottom);
 }
 
 #q-app {
   width: 100%;
-  min-height: 100vh;
   height: 100%;
   position: relative;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 // Utility classes
@@ -61,12 +66,8 @@ body {
   }
 }
 
-.game-canvas {
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 100%;
-  height: auto;
-}
+// Note: .game-canvas styles are defined in component-specific scoped styles
+// to avoid conflicts with canvas dimensions set via JavaScript
 
 // Animations
 @keyframes fadeIn {

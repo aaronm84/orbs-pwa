@@ -1171,7 +1171,8 @@ defineExpose({ revealTitle })
 <style lang="scss" scoped>
 .dynamic-bg {
   background: v-bind('themeStore.colors.gradient');
-  min-height: 100vh;
+  min-height: 100%;
+  height: 100%;
   transition: background 2s ease;
   position: relative;
   overflow: hidden;
