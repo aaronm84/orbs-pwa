@@ -242,6 +242,208 @@ let chainBoostActive = false
 // Active magnet effects
 let magnetEffects = [] // Array of { x, y, color, startTime, duration, range, strength }
 
+// Level structures (walls/barriers that orbs bounce off and explosions can't pass through)
+let structures = [] // Array of { x1, y1, x2, y2, thickness }
+
+// Structure layouts for different levels (defined as percentage of screen dimensions)
+// Each structure is [x1%, y1%, x2%, y2%] where 0-1 represents screen position
+const LEVEL_STRUCTURES = {
+  // Levels 1-14: No structures
+  // Level 15: Opposing ledges from side walls - angled inward like |>    <|
+  15: [
+    // Left wall ledge (pointing right) - two segments forming a ">"
+    [0, 0.4, 0.12, 0.5],    // Top part of left ledge (angled down-right)
+    [0.12, 0.5, 0, 0.6],    // Bottom part of left ledge (angled down-left)
+    // Right wall ledge (pointing left) - two segments forming a "<"
+    [1, 0.4, 0.88, 0.5],    // Top part of right ledge (angled down-left)
+    [0.88, 0.5, 1, 0.6],    // Bottom part of right ledge (angled down-right)
+  ],
+  // Level 16: Side ledges (like level 15) + top and bottom ledges
+  16: [
+    // Left wall ledge (pointing right) - ">"
+    [0, 0.4, 0.12, 0.5],
+    [0.12, 0.5, 0, 0.6],
+    // Right wall ledge (pointing left) - "<"
+    [1, 0.4, 0.88, 0.5],
+    [0.88, 0.5, 1, 0.6],
+    // Top wall ledge (pointing down) - "v"
+    [0.4, 0, 0.5, 0.12],
+    [0.5, 0.12, 0.6, 0],
+    // Bottom wall ledge (pointing up) - "^"
+    [0.4, 1, 0.5, 0.88],
+    [0.5, 0.88, 0.6, 1],
+  ],
+  // Level 17: Corner cutoffs - diagonal lines in each corner (shallow angle)
+  17: [
+    [0, 0.12, 0.22, 0],       // Top-left corner cutoff
+    [0.78, 0, 1, 0.12],       // Top-right corner cutoff
+    [0, 0.88, 0.22, 1],       // Bottom-left corner cutoff
+    [0.78, 1, 1, 0.88],       // Bottom-right corner cutoff
+  ],
+  // Level 18: Combined - side ledges + top/bottom ledges + corner cutoffs
+  18: [
+    // Left wall ledge (pointing right) - ">"
+    [0, 0.4, 0.12, 0.5],
+    [0.12, 0.5, 0, 0.6],
+    // Right wall ledge (pointing left) - "<"
+    [1, 0.4, 0.88, 0.5],
+    [0.88, 0.5, 1, 0.6],
+    // Top wall ledge (pointing down) - "v"
+    [0.4, 0, 0.5, 0.12],
+    [0.5, 0.12, 0.6, 0],
+    // Bottom wall ledge (pointing up) - "^"
+    [0.4, 1, 0.5, 0.88],
+    [0.5, 0.88, 0.6, 1],
+    // Corner cutoffs (shallow angle)
+    [0, 0.12, 0.22, 0],       // Top-left
+    [0.78, 0, 1, 0.12],       // Top-right
+    [0, 0.88, 0.22, 1],       // Bottom-left
+    [0.78, 1, 1, 0.88],       // Bottom-right
+  ],
+  // Level 19: Diagonal deflectors
+  19: [
+    [0.2, 0.3, 0.4, 0.5], // Top-left diagonal
+    [0.8, 0.3, 0.6, 0.5], // Top-right diagonal
+  ],
+  // Level 20: Central pillar with gaps
+  20: [
+    [0.45, 0.2, 0.45, 0.4], // Top of pillar
+    [0.55, 0.2, 0.55, 0.4], // Top of pillar right
+    [0.45, 0.6, 0.45, 0.8], // Bottom of pillar
+    [0.55, 0.6, 0.55, 0.8], // Bottom of pillar right
+    [0.45, 0.4, 0.55, 0.4], // Top cap
+    [0.45, 0.6, 0.55, 0.6], // Bottom cap
+  ],
+  // Level 21+: More complex layouts
+  21: [
+    [0.15, 0.33, 0.4, 0.33], // Top left horizontal
+    [0.6, 0.33, 0.85, 0.33], // Top right horizontal
+    [0.15, 0.67, 0.4, 0.67], // Bottom left horizontal
+    [0.6, 0.67, 0.85, 0.67], // Bottom right horizontal
+  ],
+  22: [
+    [0.5, 0.15, 0.5, 0.35], // Top center
+    [0.25, 0.5, 0.4, 0.5], // Left middle
+    [0.6, 0.5, 0.75, 0.5], // Right middle
+    [0.5, 0.65, 0.5, 0.85], // Bottom center
+  ],
+  23: [
+    [0.2, 0.2, 0.35, 0.35], // Top-left diagonal
+    [0.8, 0.2, 0.65, 0.35], // Top-right diagonal
+    [0.2, 0.8, 0.35, 0.65], // Bottom-left diagonal
+    [0.8, 0.8, 0.65, 0.65], // Bottom-right diagonal
+  ],
+  24: [
+    [0.3, 0.25, 0.3, 0.75], // Left vertical
+    [0.7, 0.25, 0.7, 0.75], // Right vertical
+    [0.3, 0.5, 0.45, 0.5], // Left horizontal connector
+    [0.55, 0.5, 0.7, 0.5], // Right horizontal connector
+  ],
+  25: [
+    [0.5, 0.3, 0.3, 0.5], // Top-left arm
+    [0.5, 0.3, 0.7, 0.5], // Top-right arm
+    [0.5, 0.7, 0.3, 0.5], // Bottom-left arm
+    [0.5, 0.7, 0.7, 0.5], // Bottom-right arm
+  ],
+}
+
+// Get structures for a level (cycles through patterns for levels beyond defined ones)
+function getStructuresForLevel(level) {
+  if (level < 15) return []
+
+  // Direct lookup first
+  if (LEVEL_STRUCTURES[level]) {
+    return LEVEL_STRUCTURES[level]
+  }
+
+  // For levels beyond 25, cycle through patterns 15-25 with increasing complexity
+  const patternKeys = Object.keys(LEVEL_STRUCTURES).map(Number).sort((a, b) => a - b)
+  const cycleIndex = (level - 15) % patternKeys.length
+  return LEVEL_STRUCTURES[patternKeys[cycleIndex]] || []
+}
+
+// Convert percentage-based structure to actual pixel coordinates
+function buildStructures(level, canvasWidth, canvasHeight) {
+  const structurePatterns = getStructuresForLevel(level)
+  const thickness = 6 // Wall thickness in pixels
+
+  return structurePatterns.map(([x1Pct, y1Pct, x2Pct, y2Pct]) => ({
+    x1: x1Pct * canvasWidth,
+    y1: y1Pct * canvasHeight,
+    x2: x2Pct * canvasWidth,
+    y2: y2Pct * canvasHeight,
+    thickness,
+  }))
+}
+
+// === STRUCTURE COLLISION UTILITIES ===
+
+// Get closest point on a line segment to a point
+function closestPointOnSegment(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1
+  const dy = y2 - y1
+  const lengthSq = dx * dx + dy * dy
+
+  if (lengthSq === 0) return { x: x1, y: y1 } // Segment is a point
+
+  // Project point onto line, clamped to segment
+  let t = ((px - x1) * dx + (py - y1) * dy) / lengthSq
+  t = Math.max(0, Math.min(1, t))
+
+  return {
+    x: x1 + t * dx,
+    y: y1 + t * dy,
+  }
+}
+
+// Check if a circle collides with a line segment
+function circleIntersectsSegment(cx, cy, radius, x1, y1, x2, y2) {
+  const closest = closestPointOnSegment(cx, cy, x1, y1, x2, y2)
+  const distX = cx - closest.x
+  const distY = cy - closest.y
+  const distance = Math.sqrt(distX * distX + distY * distY)
+
+  return {
+    collides: distance < radius,
+    distance,
+    closestX: closest.x,
+    closestY: closest.y,
+    normalX: distance > 0 ? distX / distance : 0,
+    normalY: distance > 0 ? distY / distance : 1,
+  }
+}
+
+// Reflect velocity off a surface normal
+function reflectVelocity(vx, vy, normalX, normalY) {
+  const dot = vx * normalX + vy * normalY
+  return {
+    vx: vx - 2 * dot * normalX,
+    vy: vy - 2 * dot * normalY,
+  }
+}
+
+// Check if a line segment intersects with a structure (for explosion blocking)
+function lineIntersectsSegment(ax, ay, bx, by, cx, cy, dx, dy) {
+  // Returns true if line AB intersects line CD
+  const denominator = (bx - ax) * (dy - cy) - (by - ay) * (dx - cx)
+  if (Math.abs(denominator) < 0.0001) return false // Parallel lines
+
+  const t = ((cx - ax) * (dy - cy) - (cy - ay) * (dx - cx)) / denominator
+  const u = -((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) / denominator
+
+  return t >= 0 && t <= 1 && u >= 0 && u <= 1
+}
+
+// Check if explosion at (ex, ey) can reach point (px, py) without hitting structures
+function explosionCanReach(ex, ey, px, py, structureList) {
+  for (const struct of structureList) {
+    if (lineIntersectsSegment(ex, ey, px, py, struct.x1, struct.y1, struct.x2, struct.y2)) {
+      return false
+    }
+  }
+  return true
+}
+
 // Level configuration
 const levelConfig = computed(() => {
   const canvas = gameCanvas.value
@@ -267,10 +469,55 @@ const levelConfig = computed(() => {
   // Morph duration is random between 5-7 seconds
   const morphDuration = 5000 + Math.random() * 2000
 
+  // Multi-morph chance increases after level 15
+  // Level 10-14: 8% chance for second morph
+  // Level 15-19: 15-25% chance (scales up)
+  // Level 20+: 30% chance
+  let multiMorphChance = 0.08
+  if (level >= 20) {
+    multiMorphChance = 0.30
+  } else if (level >= 15) {
+    multiMorphChance = 0.15 + (level - 15) * 0.03 // 15% at level 15, up to 27% at level 19
+  }
+
+  // Structures start at level 15
+  const hasStructures = level >= 15
+
+  // Calculate orb count
+  let totalOrbs = 5 + (level - 1) * 5
+  if (hasStructures) {
+    // Level 15 starts at 35 orbs, can be customized per level
+    // Orb counts for structure levels are more controlled
+    const structureLevelOrbs = {
+      15: 35,
+      16: 38,
+      17: 40,
+      18: 42,
+      // Other levels will be defined as we design them
+    }
+    if (structureLevelOrbs[level]) {
+      totalOrbs = structureLevelOrbs[level]
+    } else {
+      // Default: cap at 40, then slowly increase after level 20
+      totalOrbs = Math.min(40, totalOrbs) + Math.max(0, level - 20) * 2
+      totalOrbs = Math.min(totalOrbs, 60) // Hard cap at 60
+    }
+  }
+
+  // Calculate goal percentage - lower for structure levels since positioning matters more
+  let goalPercent = 0.35 + level * 0.025
+  if (hasStructures) {
+    // Reduce goal requirement for structure levels (structures make it harder)
+    goalPercent = Math.min(goalPercent, 0.55) // Cap at 55% for structure levels
+  }
+
+  const goal = Math.ceil(totalOrbs * goalPercent)
+
   return {
     level: currentLevel.value,
-    totalOrbs: 5 + (currentLevel.value - 1) * 5,
-    goal: Math.ceil((5 + (currentLevel.value - 1) * 5) * (0.35 + currentLevel.value * 0.025)), // Balanced goals
+    totalOrbs,
+    goal,
+    hasStructures,
     orbSpeed: 1.5 + currentLevel.value * 0.1, // Speed increases more noticeably
     orbRadius: 8,
     explosionMaxRadius: baseRadius,
@@ -281,6 +528,7 @@ const levelConfig = computed(() => {
     morphIntervalMin,
     morphIntervalMax,
     morphDuration, // 5-7 seconds
+    multiMorphChance, // Chance for multiple simultaneous morphs
     flickerWarningTime: 1000, // Start flickering 1s before morph ends
     bigExplosionMultiplier: 2.5, // 2.5x larger explosion
     bigExplosionLingerMultiplier: 3, // 3x slower fade (lingers much longer)
@@ -290,7 +538,7 @@ const levelConfig = computed(() => {
     randomShotSpeed: 12, // Slightly slower for visibility
     miniOrbCount: 8, // Number of mini orbs to spawn
     miniOrbDuration: 2000, // 2 seconds before mini orbs expire
-    chainBoostLingerMultiplier: 1.5, // 50% longer explosions during chain boost
+    chainBoostLingerMultiplier: 2, // 2x longer explosions during chain boost
     magnetPullStrength: 0.5, // Base pull strength for magnet
     magnetRange: baseRadius * 4, // How far the magnet effect reaches
     magnetDuration: 4500, // How long the magnet effect lasts (ms)
@@ -388,6 +636,14 @@ function initLevel() {
   morphState.specialOrbs = []
   chainBoostActive = false
   magnetEffects = []
+
+  // Build level structures
+  const canvas = gameCanvas.value
+  if (canvas) {
+    structures = buildStructures(currentLevel.value, canvas.width, canvas.height)
+  } else {
+    structures = []
+  }
 
   // Reset bell sequence for musical chimes
   audio.resetBellSequence()
@@ -493,8 +749,8 @@ function morphRandomOrb() {
     return
   }
 
-  // If we already have a special orb, only allow another with small chance
-  if (morphState.specialOrbs.length > 0 && Math.random() > morphState.multiMorphChance) {
+  // If we already have a special orb, only allow another with level-scaled chance
+  if (morphState.specialOrbs.length > 0 && Math.random() > config.multiMorphChance) {
     scheduleNextMorph()
     return
   }
@@ -602,7 +858,7 @@ function createMiniOrbs(x, y, color) {
   const config = levelConfig.value
   const now = Date.now()
 
-  // Create mini orbs that bounce around
+  // Create mini orbs that bounce around until they trigger other orbs
   for (let i = 0; i < config.miniOrbCount; i++) {
     const angle = (i / config.miniOrbCount) * Math.PI * 2 + Math.random() * 0.5
     const speed = config.orbSpeed * 1.5 // Slightly faster than normal orbs
@@ -620,7 +876,7 @@ function createMiniOrbs(x, y, color) {
       morphStartTime: null,
       shotAngle: 0,
       isMiniOrb: true,
-      expiresAt: now + config.miniOrbDuration,
+      expiresAt: null, // No expiration - bounce until they trigger orbs
     })
   }
 }
@@ -637,6 +893,10 @@ function createMagnetEffect(x, y, color) {
     duration: config.magnetDuration,
     range: config.magnetRange,
     strength: config.magnetPullStrength,
+    // Center stays active until no orbs absorbed for this time after pull ends
+    centerActiveTimeout: 1500, // 1.5 seconds
+    lastAbsorptionTime: now,
+    pullActive: true, // Pull phase is active
   })
 }
 
@@ -700,10 +960,14 @@ function gameLoop() {
 
 // === ORB CAPTURE WITH SPECIAL ABILITIES ===
 
-function captureOrb(orb) {
+// triggerSource: 'explosion' (default), 'spike', 'randomShot', 'miniOrb', 'magnet'
+function captureOrb(orb, triggerSource = 'explosion') {
   if (orb.captured) return
 
   const config = levelConfig.value
+
+  // Projectile/miniOrb/magnet-triggered orbs get extra linger time so they can trigger more orbs
+  const projectileLingerBonus = (triggerSource === 'spike' || triggerSource === 'randomShot' || triggerSource === 'miniOrb' || triggerSource === 'magnet') ? 1.5 : 1
 
   orb.captured = true
   capturedCount.value++
@@ -724,27 +988,27 @@ function captureOrb(orb) {
   switch (orb.specialType) {
     case SPECIAL_TYPES.BIG_EXPLOSION:
       // Create a larger explosion that lingers longer
-      createExplosion(orb.x, orb.y, orb.color, config.bigExplosionMultiplier, config.bigExplosionLingerMultiplier)
+      createExplosion(orb.x, orb.y, orb.color, config.bigExplosionMultiplier, config.bigExplosionLingerMultiplier * projectileLingerBonus)
       haptics.medium() // Extra feedback for special
       break
 
     case SPECIAL_TYPES.SPIKE_BURST:
       // Create normal explosion + 12 directional spikes
-      createExplosion(orb.x, orb.y, orb.color)
+      createExplosion(orb.x, orb.y, orb.color, 1, projectileLingerBonus)
       createSpikeBurst(orb.x, orb.y, orb.color)
       haptics.medium()
       break
 
     case SPECIAL_TYPES.RANDOM_SHOT:
       // Create normal explosion + directional projectile (uses pre-determined angle)
-      createExplosion(orb.x, orb.y, orb.color)
+      createExplosion(orb.x, orb.y, orb.color, 1, projectileLingerBonus)
       createRandomShot(orb.x, orb.y, orb.color, orb.shotAngle)
       haptics.medium()
       break
 
     case SPECIAL_TYPES.MINI_ORBS:
       // Create normal explosion + spawn mini bouncing orbs
-      createExplosion(orb.x, orb.y, orb.color)
+      createExplosion(orb.x, orb.y, orb.color, 1, projectileLingerBonus)
       createMiniOrbs(orb.x, orb.y, orb.color)
       haptics.medium()
       break
@@ -752,20 +1016,20 @@ function captureOrb(orb) {
     case SPECIAL_TYPES.CHAIN_BOOST:
       // Activate chain boost - all subsequent explosions linger longer
       activateChainBoost()
-      createExplosion(orb.x, orb.y, orb.color)
+      createExplosion(orb.x, orb.y, orb.color, 1, projectileLingerBonus)
       haptics.medium()
       break
 
     case SPECIAL_TYPES.MAGNET:
       // Create normal explosion + magnet effect that pulls orbs
-      createExplosion(orb.x, orb.y, orb.color)
+      createExplosion(orb.x, orb.y, orb.color, 1, projectileLingerBonus)
       createMagnetEffect(orb.x, orb.y, orb.color)
       haptics.medium()
       break
 
     default:
-      // Normal orb - just create explosion
-      createExplosion(orb.x, orb.y, orb.color)
+      // Normal orb - just create explosion with projectile linger bonus if applicable
+      createExplosion(orb.x, orb.y, orb.color, 1, projectileLingerBonus)
   }
 }
 
@@ -773,9 +1037,21 @@ function update() {
   const canvas = gameCanvas.value
   const now = Date.now()
 
-  // Update magnet effects - remove expired ones
+  // Update magnet effects - handle pull phase and center-only phase
+  magnetEffects.forEach((magnet) => {
+    const elapsed = now - magnet.startTime
+
+    // Check if pull phase has ended
+    if (elapsed >= magnet.duration && magnet.pullActive) {
+      magnet.pullActive = false
+    }
+  })
+
+  // Remove magnets that have no pull AND center has been inactive for timeout period
   magnetEffects = magnetEffects.filter((magnet) => {
-    return now - magnet.startTime < magnet.duration
+    if (magnet.pullActive) return true // Still in pull phase
+    // In center-only phase - keep active until no absorption for centerActiveTimeout
+    return (now - magnet.lastAbsorptionTime) < magnet.centerActiveTimeout
   })
 
   // Update orbs
@@ -795,13 +1071,17 @@ function update() {
       const distance = Math.sqrt(dx * dx + dy * dy)
 
       // Check if orb reached the center - trigger capture/explosion
+      // Center is active during both pull phase and center-only phase
       const captureRadius = 15 // Orbs within this distance get captured
       if (distance < captureRadius) {
-        captureOrb(orb)
+        captureOrb(orb, 'magnet')
+        // Update last absorption time to keep center active
+        magnet.lastAbsorptionTime = now
         return
       }
 
-      if (distance < magnet.range) {
+      // Only apply pull if in pull phase
+      if (magnet.pullActive && distance < magnet.range) {
         // Calculate pull strength - stronger when closer (inverse square with cap)
         const normalizedDist = distance / magnet.range
         const pullIntensity = magnet.strength * (1 - normalizedDist) * (1 - normalizedDist)
@@ -829,6 +1109,26 @@ function update() {
       orb.y = Math.max(orb.radius, Math.min(canvas.height - orb.radius, orb.y))
     }
 
+    // Bounce off structures
+    for (const struct of structures) {
+      const collision = circleIntersectsSegment(
+        orb.x, orb.y, orb.radius,
+        struct.x1, struct.y1, struct.x2, struct.y2
+      )
+
+      if (collision.collides) {
+        // Reflect velocity off the structure
+        const reflected = reflectVelocity(orb.vx, orb.vy, collision.normalX, collision.normalY)
+        orb.vx = reflected.vx
+        orb.vy = reflected.vy
+
+        // Push orb out of the structure
+        const overlap = orb.radius - collision.distance
+        orb.x += collision.normalX * (overlap + 1)
+        orb.y += collision.normalY * (overlap + 1)
+      }
+    }
+
     // Mini orbs can trigger other orbs on collision
     if (orb.isMiniOrb && !orb.captured) {
       orbs.forEach((targetOrb) => {
@@ -839,8 +1139,8 @@ function update() {
         const distance = Math.sqrt(dx * dx + dy * dy)
 
         if (distance < orb.radius + targetOrb.radius) {
-          // Mini orb triggers the target orb
-          captureOrb(targetOrb)
+          // Mini orb triggers the target orb with linger bonus
+          captureOrb(targetOrb, 'miniOrb')
           // Mini orb is also consumed
           orb.captured = true
         }
@@ -850,32 +1150,37 @@ function update() {
 
   // Update explosions
   explosions.forEach((explosion) => {
-    if (!explosion.active) {
+    if (explosion.active) {
+      // Grow explosion
+      explosion.radius += explosion.growthRate
+
+      // Check if explosion has reached max size
+      if (explosion.radius >= explosion.maxRadius) {
+        explosion.active = false
+      }
+    } else {
       // Fade out
       explosion.alpha = Math.max(0, explosion.alpha - (explosion.fadeRate || 0.05))
-      return
     }
 
-    // Grow explosion
-    explosion.radius += explosion.growthRate
+    // Check collision with orbs - EVEN while fading (as long as visible)
+    // This allows orbs to be triggered by explosions that are still visible
+    if (explosion.alpha > 0.1) {
+      orbs.forEach((orb) => {
+        if (orb.captured) return
 
-    // Check if explosion has reached max size
-    if (explosion.radius >= explosion.maxRadius) {
-      explosion.active = false
+        const dx = orb.x - explosion.x
+        const dy = orb.y - explosion.y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+
+        if (distance < explosion.radius + orb.radius) {
+          // Check if a structure blocks the explosion from reaching this orb
+          if (explosionCanReach(explosion.x, explosion.y, orb.x, orb.y, structures)) {
+            captureOrb(orb)
+          }
+        }
+      })
     }
-
-    // Check collision with orbs
-    orbs.forEach((orb) => {
-      if (orb.captured) return
-
-      const dx = orb.x - explosion.x
-      const dy = orb.y - explosion.y
-      const distance = Math.sqrt(dx * dx + dy * dy)
-
-      if (distance < explosion.radius + orb.radius) {
-        captureOrb(orb)
-      }
-    })
   })
 
   // Remove fully faded explosions
@@ -907,6 +1212,18 @@ function update() {
       return
     }
 
+    // Check structure collision - projectiles end at structures
+    for (const struct of structures) {
+      const collision = circleIntersectsSegment(
+        proj.x, proj.y, 4, // 4px projectile radius
+        struct.x1, struct.y1, struct.x2, struct.y2
+      )
+      if (collision.collides) {
+        proj.alpha = 0
+        return
+      }
+    }
+
     // Spikes have max distance limit
     if (proj.type === 'spike' && proj.maxDistance) {
       const distX = proj.x - proj.startX
@@ -928,7 +1245,8 @@ function update() {
 
       if (distance < orb.radius + 4) {
         // 4px projectile collision radius
-        captureOrb(orb)
+        // Pass trigger source for linger bonus
+        captureOrb(orb, proj.type) // 'spike' or 'randomShot'
         // Spikes stop on first orb hit
         if (proj.type === 'spike') {
           proj.alpha = 0
@@ -980,6 +1298,42 @@ function render() {
 
   // Clear canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+  // === DRAW STRUCTURES ===
+  if (structures.length > 0) {
+    ctx.lineCap = 'round'
+
+    structures.forEach((struct) => {
+      // Outer glow
+      ctx.beginPath()
+      ctx.moveTo(struct.x1, struct.y1)
+      ctx.lineTo(struct.x2, struct.y2)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
+      ctx.lineWidth = struct.thickness + 8
+      ctx.shadowBlur = 15
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.3)'
+      ctx.stroke()
+
+      // Main structure line
+      ctx.beginPath()
+      ctx.moveTo(struct.x1, struct.y1)
+      ctx.lineTo(struct.x2, struct.y2)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'
+      ctx.lineWidth = struct.thickness
+      ctx.shadowBlur = 0
+      ctx.stroke()
+
+      // Inner bright core
+      ctx.beginPath()
+      ctx.moveTo(struct.x1, struct.y1)
+      ctx.lineTo(struct.x2, struct.y2)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)'
+      ctx.lineWidth = struct.thickness * 0.4
+      ctx.stroke()
+    })
+
+    ctx.lineCap = 'butt' // Reset
+  }
 
   // Draw explosions with graceful, colored animations
   explosions.forEach((explosion) => {
@@ -1069,29 +1423,40 @@ function render() {
   // === DRAW MAGNET EFFECTS ===
   magnetEffects.forEach((magnet) => {
     const elapsed = now - magnet.startTime
-    const progress = elapsed / magnet.duration
-    const fadeAlpha = 1 - progress // Fade out over time
 
-    // Draw concentric rings being pulled inward (visual representation of pull field)
-    for (let i = 0; i < 4; i++) {
-      const ringProgress = ((progress * 3 + i / 4) % 1)
-      const ringRadius = magnet.range * (1 - ringProgress * 0.8)
-      const ringAlpha = fadeAlpha * 0.4 * (1 - ringProgress)
+    // Only draw pull rings during pull phase
+    if (magnet.pullActive) {
+      const progress = Math.min(elapsed / magnet.duration, 1)
+      const fadeAlpha = 1 - progress // Fade out over time
 
-      if (ringAlpha > 0.02 && ringRadius > 10) {
-        ctx.beginPath()
-        ctx.arc(magnet.x, magnet.y, ringRadius, 0, Math.PI * 2)
-        ctx.strokeStyle = `rgba(150, 200, 255, ${ringAlpha})`
-        ctx.lineWidth = 2
-        ctx.stroke()
+      // Draw concentric rings being pulled inward (visual representation of pull field)
+      for (let i = 0; i < 4; i++) {
+        const ringProgress = ((progress * 3 + i / 4) % 1)
+        const ringRadius = magnet.range * (1 - ringProgress * 0.8)
+        const ringAlpha = fadeAlpha * 0.4 * (1 - ringProgress)
+
+        if (ringAlpha > 0.02 && ringRadius > 10) {
+          ctx.beginPath()
+          ctx.arc(magnet.x, magnet.y, ringRadius, 0, Math.PI * 2)
+          ctx.strokeStyle = `rgba(150, 200, 255, ${ringAlpha})`
+          ctx.lineWidth = 2
+          ctx.stroke()
+        }
       }
     }
 
-    // Draw central glow
-    const glowRadius = 20 + Math.sin(elapsed / 100) * 5
+    // Draw central glow - always visible while magnet is active (pull or center-only phase)
+    // Pulse faster in center-only phase to indicate it's still active
+    const pulseSpeed = magnet.pullActive ? 100 : 50
+    const glowRadius = magnet.pullActive ? (20 + Math.sin(elapsed / pulseSpeed) * 5) : (15 + Math.sin(elapsed / pulseSpeed) * 8)
+
+    // Center glow is brighter/different color in center-only phase
+    const centerAlpha = magnet.pullActive ? 0.5 : 0.7
+    const centerColor = magnet.pullActive ? '150, 200, 255' : '200, 150, 255' // Purple tint when center-only
+
     const gradient = ctx.createRadialGradient(magnet.x, magnet.y, 0, magnet.x, magnet.y, glowRadius)
-    gradient.addColorStop(0, `rgba(150, 200, 255, ${fadeAlpha * 0.5})`)
-    gradient.addColorStop(1, 'rgba(150, 200, 255, 0)')
+    gradient.addColorStop(0, `rgba(${centerColor}, ${centerAlpha})`)
+    gradient.addColorStop(1, `rgba(${centerColor}, 0)`)
     ctx.beginPath()
     ctx.arc(magnet.x, magnet.y, glowRadius, 0, Math.PI * 2)
     ctx.fillStyle = gradient
