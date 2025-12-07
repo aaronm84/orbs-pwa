@@ -10,6 +10,9 @@ export function useGameAudio() {
   const bellsLoaded = ref(false)
   const backgroundMusic = ref(null)
   const isMusicPlaying = ref(false)
+  let appStateListener = null
+  let capacitorApp = null
+  let capacitorCore = null
 
   // Bell sound paths in musical order (C major scale)
   // Using public folder paths (served directly, not processed by Vite)
@@ -39,8 +42,95 @@ export function useGameAudio() {
 
       // Load bell sounds
       loadBellSounds()
+
+      // Set up app state listener for iOS background/foreground handling
+      setupAppStateListener()
     } catch (error) {
       console.error('Failed to initialize audio context:', error)
+    }
+  }
+
+  // Handle app returning from background on iOS
+  async function setupAppStateListener() {
+    try {
+      // Dynamically import Capacitor modules (only available in native builds)
+      capacitorCore = await import('@capacitor/core').catch(() => null)
+      capacitorApp = await import('@capacitor/app').catch(() => null)
+
+      // Only set up listener on native platforms
+      if (!capacitorCore || !capacitorCore.Capacitor.isNativePlatform()) {
+        console.log('Not a native platform, skipping app state listener')
+        return
+      }
+
+      // Remove existing listener if any
+      if (appStateListener) {
+        appStateListener.remove()
+      }
+
+      appStateListener = await capacitorApp.App.addListener('appStateChange', async ({ isActive }) => {
+        console.log('App state changed, isActive:', isActive)
+
+        if (isActive) {
+          // App returned to foreground - resume audio context
+          await resumeAudioContext()
+
+          // Also resume background music if it was playing
+          if (backgroundMusic.value && settingsStore.settings.musicEnabled) {
+            try {
+              await backgroundMusic.value.play()
+              isMusicPlaying.value = true
+            } catch (error) {
+              console.log('Could not auto-resume music:', error)
+            }
+          }
+        } else {
+          // App going to background - pause music to avoid issues
+          if (backgroundMusic.value && isMusicPlaying.value) {
+            backgroundMusic.value.pause()
+          }
+        }
+      })
+
+      console.log('App state listener set up for audio context management')
+    } catch (error) {
+      console.log('Could not set up app state listener (not in native context):', error)
+    }
+  }
+
+  // Force resume audio context (for iOS background return)
+  async function resumeAudioContext() {
+    if (!audioContext.value) return
+
+    try {
+      if (audioContext.value.state === 'suspended' || audioContext.value.state === 'interrupted') {
+        console.log('Resuming audio context from state:', audioContext.value.state)
+        await audioContext.value.resume()
+        console.log('Audio context resumed, new state:', audioContext.value.state)
+      }
+    } catch (error) {
+      console.error('Failed to resume audio context:', error)
+
+      // If resume fails, try recreating the audio context
+      try {
+        console.log('Attempting to recreate audio context...')
+        const AudioContext = window.AudioContext || window.webkitAudioContext
+        audioContext.value = new AudioContext()
+        // Reload bell sounds with new context
+        bellsLoaded.value = false
+        await loadBellSounds()
+        console.log('Audio context recreated successfully')
+      } catch (recreateError) {
+        console.error('Failed to recreate audio context:', recreateError)
+      }
+    }
+  }
+
+  // Cleanup listener when composable is destroyed
+  function cleanup() {
+    if (appStateListener) {
+      appStateListener.remove()
+      appStateListener = null
     }
   }
 
@@ -67,9 +157,7 @@ export function useGameAudio() {
 
   // Resume audio context if suspended (required by browser autoplay policies)
   async function resume() {
-    if (audioContext.value && audioContext.value.state === 'suspended') {
-      await audioContext.value.resume()
-    }
+    await resumeAudioContext()
   }
 
   // Generate a simple beep/tone sound
@@ -369,6 +457,7 @@ export function useGameAudio() {
 
   return {
     init,
+    cleanup,
     playTone,
     playExplosion,
     playCapture,
@@ -383,5 +472,7 @@ export function useGameAudio() {
     stopBackgroundMusic,
     setMusicVolume,
     isMusicPlaying,
+    // For manual resume (e.g., on user interaction after background)
+    resumeAudioContext,
   }
 }

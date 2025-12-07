@@ -244,112 +244,167 @@ let magnetEffects = [] // Array of { x, y, color, startTime, duration, range, st
 
 // Level structures (walls/barriers that orbs bounce off and explosions can't pass through)
 let structures = [] // Array of { x1, y1, x2, y2, thickness }
+let filledRegions = [] // Array of polygon points for filled areas (for rendering and spawn exclusion)
 
-// Structure layouts for different levels (defined as percentage of screen dimensions)
-// Each structure is [x1%, y1%, x2%, y2%] where 0-1 represents screen position
+// Structure layouts for different levels
+// 'segments' are collision line segments [x1%, y1%, x2%, y2%]
+// 'polygons' are filled regions for rendering and spawn exclusion [[x1%, y1%], [x2%, y2%], ...]
 const LEVEL_STRUCTURES = {
   // Levels 1-14: No structures
-  // Level 15: Opposing ledges from side walls - angled inward like |>    <|
-  15: [
-    // Left wall ledge (pointing right) - two segments forming a ">"
-    [0, 0.4, 0.12, 0.5],    // Top part of left ledge (angled down-right)
-    [0.12, 0.5, 0, 0.6],    // Bottom part of left ledge (angled down-left)
-    // Right wall ledge (pointing left) - two segments forming a "<"
-    [1, 0.4, 0.88, 0.5],    // Top part of right ledge (angled down-left)
-    [0.88, 0.5, 1, 0.6],    // Bottom part of right ledge (angled down-right)
-  ],
-  // Level 16: Side ledges (like level 15) + top and bottom ledges
-  16: [
-    // Left wall ledge (pointing right) - ">"
-    [0, 0.4, 0.12, 0.5],
-    [0.12, 0.5, 0, 0.6],
-    // Right wall ledge (pointing left) - "<"
-    [1, 0.4, 0.88, 0.5],
-    [0.88, 0.5, 1, 0.6],
-    // Top wall ledge (pointing down) - "v"
-    [0.4, 0, 0.5, 0.12],
-    [0.5, 0.12, 0.6, 0],
-    // Bottom wall ledge (pointing up) - "^"
-    [0.4, 1, 0.5, 0.88],
-    [0.5, 0.88, 0.6, 1],
-  ],
-  // Level 17: Corner cutoffs - diagonal lines in each corner (shallow angle)
-  17: [
-    [0, 0.12, 0.22, 0],       // Top-left corner cutoff
-    [0.78, 0, 1, 0.12],       // Top-right corner cutoff
-    [0, 0.88, 0.22, 1],       // Bottom-left corner cutoff
-    [0.78, 1, 1, 0.88],       // Bottom-right corner cutoff
-  ],
+  // Level 15: Opposing ledges from side walls - filled triangles
+  15: {
+    segments: [
+      // Left wall ledge - collision edges (not the wall-touching edge)
+      [0, 0.4, 0.12, 0.5],    // Top edge
+      [0.12, 0.5, 0, 0.6],    // Bottom edge
+      // Right wall ledge
+      [1, 0.4, 0.88, 0.5],    // Top edge
+      [0.88, 0.5, 1, 0.6],    // Bottom edge
+    ],
+    polygons: [
+      // Left ledge triangle (filled)
+      [[0, 0.4], [0.12, 0.5], [0, 0.6]],
+      // Right ledge triangle (filled)
+      [[1, 0.4], [0.88, 0.5], [1, 0.6]],
+    ],
+  },
+  // Level 16: Side ledges + top and bottom ledges
+  16: {
+    segments: [
+      // Left wall ledge
+      [0, 0.4, 0.12, 0.5],
+      [0.12, 0.5, 0, 0.6],
+      // Right wall ledge
+      [1, 0.4, 0.88, 0.5],
+      [0.88, 0.5, 1, 0.6],
+      // Top wall ledge
+      [0.4, 0, 0.5, 0.12],
+      [0.5, 0.12, 0.6, 0],
+      // Bottom wall ledge
+      [0.4, 1, 0.5, 0.88],
+      [0.5, 0.88, 0.6, 1],
+    ],
+    polygons: [
+      [[0, 0.4], [0.12, 0.5], [0, 0.6]],           // Left
+      [[1, 0.4], [0.88, 0.5], [1, 0.6]],           // Right
+      [[0.4, 0], [0.5, 0.12], [0.6, 0]],           // Top
+      [[0.4, 1], [0.5, 0.88], [0.6, 1]],           // Bottom
+    ],
+  },
+  // Level 17: Corner cutoffs - filled triangles in each corner
+  17: {
+    segments: [
+      [0, 0.12, 0.22, 0],       // Top-left corner cutoff
+      [0.78, 0, 1, 0.12],       // Top-right corner cutoff
+      [0, 0.88, 0.22, 1],       // Bottom-left corner cutoff
+      [0.78, 1, 1, 0.88],       // Bottom-right corner cutoff
+    ],
+    polygons: [
+      [[0, 0], [0.22, 0], [0, 0.12]],             // Top-left corner
+      [[0.78, 0], [1, 0], [1, 0.12]],             // Top-right corner
+      [[0, 0.88], [0.22, 1], [0, 1]],             // Bottom-left corner
+      [[1, 0.88], [1, 1], [0.78, 1]],             // Bottom-right corner
+    ],
+  },
   // Level 18: Combined - side ledges + top/bottom ledges + corner cutoffs
-  18: [
-    // Left wall ledge (pointing right) - ">"
-    [0, 0.4, 0.12, 0.5],
-    [0.12, 0.5, 0, 0.6],
-    // Right wall ledge (pointing left) - "<"
-    [1, 0.4, 0.88, 0.5],
-    [0.88, 0.5, 1, 0.6],
-    // Top wall ledge (pointing down) - "v"
-    [0.4, 0, 0.5, 0.12],
-    [0.5, 0.12, 0.6, 0],
-    // Bottom wall ledge (pointing up) - "^"
-    [0.4, 1, 0.5, 0.88],
-    [0.5, 0.88, 0.6, 1],
-    // Corner cutoffs (shallow angle)
-    [0, 0.12, 0.22, 0],       // Top-left
-    [0.78, 0, 1, 0.12],       // Top-right
-    [0, 0.88, 0.22, 1],       // Bottom-left
-    [0.78, 1, 1, 0.88],       // Bottom-right
-  ],
-  // Level 19: Diagonal deflectors
-  19: [
-    [0.2, 0.3, 0.4, 0.5], // Top-left diagonal
-    [0.8, 0.3, 0.6, 0.5], // Top-right diagonal
-  ],
-  // Level 20: Central pillar with gaps
-  20: [
-    [0.45, 0.2, 0.45, 0.4], // Top of pillar
-    [0.55, 0.2, 0.55, 0.4], // Top of pillar right
-    [0.45, 0.6, 0.45, 0.8], // Bottom of pillar
-    [0.55, 0.6, 0.55, 0.8], // Bottom of pillar right
-    [0.45, 0.4, 0.55, 0.4], // Top cap
-    [0.45, 0.6, 0.55, 0.6], // Bottom cap
-  ],
-  // Level 21+: More complex layouts
-  21: [
-    [0.15, 0.33, 0.4, 0.33], // Top left horizontal
-    [0.6, 0.33, 0.85, 0.33], // Top right horizontal
-    [0.15, 0.67, 0.4, 0.67], // Bottom left horizontal
-    [0.6, 0.67, 0.85, 0.67], // Bottom right horizontal
-  ],
-  22: [
-    [0.5, 0.15, 0.5, 0.35], // Top center
-    [0.25, 0.5, 0.4, 0.5], // Left middle
-    [0.6, 0.5, 0.75, 0.5], // Right middle
-    [0.5, 0.65, 0.5, 0.85], // Bottom center
-  ],
-  23: [
-    [0.2, 0.2, 0.35, 0.35], // Top-left diagonal
-    [0.8, 0.2, 0.65, 0.35], // Top-right diagonal
-    [0.2, 0.8, 0.35, 0.65], // Bottom-left diagonal
-    [0.8, 0.8, 0.65, 0.65], // Bottom-right diagonal
-  ],
-  24: [
-    [0.3, 0.25, 0.3, 0.75], // Left vertical
-    [0.7, 0.25, 0.7, 0.75], // Right vertical
-    [0.3, 0.5, 0.45, 0.5], // Left horizontal connector
-    [0.55, 0.5, 0.7, 0.5], // Right horizontal connector
-  ],
-  25: [
-    [0.5, 0.3, 0.3, 0.5], // Top-left arm
-    [0.5, 0.3, 0.7, 0.5], // Top-right arm
-    [0.5, 0.7, 0.3, 0.5], // Bottom-left arm
-    [0.5, 0.7, 0.7, 0.5], // Bottom-right arm
-  ],
+  18: {
+    segments: [
+      // Side ledges
+      [0, 0.4, 0.12, 0.5],
+      [0.12, 0.5, 0, 0.6],
+      [1, 0.4, 0.88, 0.5],
+      [0.88, 0.5, 1, 0.6],
+      // Top/bottom ledges
+      [0.4, 0, 0.5, 0.12],
+      [0.5, 0.12, 0.6, 0],
+      [0.4, 1, 0.5, 0.88],
+      [0.5, 0.88, 0.6, 1],
+      // Corner cutoffs
+      [0, 0.12, 0.22, 0],
+      [0.78, 0, 1, 0.12],
+      [0, 0.88, 0.22, 1],
+      [0.78, 1, 1, 0.88],
+    ],
+    polygons: [
+      [[0, 0.4], [0.12, 0.5], [0, 0.6]],           // Left ledge
+      [[1, 0.4], [0.88, 0.5], [1, 0.6]],           // Right ledge
+      [[0.4, 0], [0.5, 0.12], [0.6, 0]],           // Top ledge
+      [[0.4, 1], [0.5, 0.88], [0.6, 1]],           // Bottom ledge
+      [[0, 0], [0.22, 0], [0, 0.12]],             // Top-left corner
+      [[0.78, 0], [1, 0], [1, 0.12]],             // Top-right corner
+      [[0, 0.88], [0.22, 1], [0, 1]],             // Bottom-left corner
+      [[1, 0.88], [1, 1], [0.78, 1]],             // Bottom-right corner
+    ],
+  },
+  // Level 19+: Placeholder - will be designed later
+  19: {
+    segments: [
+      [0.2, 0.3, 0.4, 0.5],
+      [0.8, 0.3, 0.6, 0.5],
+    ],
+    polygons: [],
+  },
+  20: {
+    segments: [
+      [0.45, 0.2, 0.45, 0.4],
+      [0.55, 0.2, 0.55, 0.4],
+      [0.45, 0.6, 0.45, 0.8],
+      [0.55, 0.6, 0.55, 0.8],
+      [0.45, 0.4, 0.55, 0.4],
+      [0.45, 0.6, 0.55, 0.6],
+    ],
+    polygons: [],
+  },
+  21: {
+    segments: [
+      [0.15, 0.33, 0.4, 0.33],
+      [0.6, 0.33, 0.85, 0.33],
+      [0.15, 0.67, 0.4, 0.67],
+      [0.6, 0.67, 0.85, 0.67],
+    ],
+    polygons: [],
+  },
+  22: {
+    segments: [
+      [0.5, 0.15, 0.5, 0.35],
+      [0.25, 0.5, 0.4, 0.5],
+      [0.6, 0.5, 0.75, 0.5],
+      [0.5, 0.65, 0.5, 0.85],
+    ],
+    polygons: [],
+  },
+  23: {
+    segments: [
+      [0.2, 0.2, 0.35, 0.35],
+      [0.8, 0.2, 0.65, 0.35],
+      [0.2, 0.8, 0.35, 0.65],
+      [0.8, 0.8, 0.65, 0.65],
+    ],
+    polygons: [],
+  },
+  24: {
+    segments: [
+      [0.3, 0.25, 0.3, 0.75],
+      [0.7, 0.25, 0.7, 0.75],
+      [0.3, 0.5, 0.45, 0.5],
+      [0.55, 0.5, 0.7, 0.5],
+    ],
+    polygons: [],
+  },
+  25: {
+    segments: [
+      [0.5, 0.3, 0.3, 0.5],
+      [0.5, 0.3, 0.7, 0.5],
+      [0.5, 0.7, 0.3, 0.5],
+      [0.5, 0.7, 0.7, 0.5],
+    ],
+    polygons: [],
+  },
 }
 
 // Get structures for a level (cycles through patterns for levels beyond defined ones)
 function getStructuresForLevel(level) {
-  if (level < 15) return []
+  if (level < 15) return { segments: [], polygons: [] }
 
   // Direct lookup first
   if (LEVEL_STRUCTURES[level]) {
@@ -359,21 +414,56 @@ function getStructuresForLevel(level) {
   // For levels beyond 25, cycle through patterns 15-25 with increasing complexity
   const patternKeys = Object.keys(LEVEL_STRUCTURES).map(Number).sort((a, b) => a - b)
   const cycleIndex = (level - 15) % patternKeys.length
-  return LEVEL_STRUCTURES[patternKeys[cycleIndex]] || []
+  return LEVEL_STRUCTURES[patternKeys[cycleIndex]] || { segments: [], polygons: [] }
 }
 
 // Convert percentage-based structure to actual pixel coordinates
 function buildStructures(level, canvasWidth, canvasHeight) {
-  const structurePatterns = getStructuresForLevel(level)
+  const structureData = getStructuresForLevel(level)
   const thickness = 6 // Wall thickness in pixels
 
-  return structurePatterns.map(([x1Pct, y1Pct, x2Pct, y2Pct]) => ({
+  // Build collision segments
+  const segments = (structureData.segments || []).map(([x1Pct, y1Pct, x2Pct, y2Pct]) => ({
     x1: x1Pct * canvasWidth,
     y1: y1Pct * canvasHeight,
     x2: x2Pct * canvasWidth,
     y2: y2Pct * canvasHeight,
     thickness,
   }))
+
+  // Build filled polygons for rendering and spawn exclusion
+  const polygons = (structureData.polygons || []).map((points) =>
+    points.map(([xPct, yPct]) => ({
+      x: xPct * canvasWidth,
+      y: yPct * canvasHeight,
+    }))
+  )
+
+  return { segments, polygons }
+}
+
+// Check if a point is inside a polygon using ray casting
+function pointInPolygon(px, py, polygon) {
+  let inside = false
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].x, yi = polygon[i].y
+    const xj = polygon[j].x, yj = polygon[j].y
+
+    if (((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi)) {
+      inside = !inside
+    }
+  }
+  return inside
+}
+
+// Check if a point is inside any filled region
+function pointInAnyFilledRegion(px, py, regions) {
+  for (const polygon of regions) {
+    if (pointInPolygon(px, py, polygon)) {
+      return true
+    }
+  }
+  return false
 }
 
 // === STRUCTURE COLLISION UTILITIES ===
@@ -587,6 +677,7 @@ onUnmounted(() => {
   stopGameLoop()
   stopMorphSystem()
   window.removeEventListener('resize', handleResize)
+  audio.cleanup()
 })
 
 function handleResize() {
@@ -640,9 +731,12 @@ function initLevel() {
   // Build level structures
   const canvas = gameCanvas.value
   if (canvas) {
-    structures = buildStructures(currentLevel.value, canvas.width, canvas.height)
+    const built = buildStructures(currentLevel.value, canvas.width, canvas.height)
+    structures = built.segments
+    filledRegions = built.polygons
   } else {
     structures = []
+    filledRegions = []
   }
 
   // Reset bell sequence for musical chimes
@@ -674,10 +768,21 @@ function createOrb(index, config) {
   // Add margin to keep orbs away from edges
   const margin = config.orbRadius * 3
 
+  // Find a valid spawn position (not inside any filled region)
+  let x, y
+  let attempts = 0
+  const maxAttempts = 100
+
+  do {
+    x = Math.random() * (canvas.width - margin * 2) + margin
+    y = Math.random() * (canvas.height - margin * 2) + margin
+    attempts++
+  } while (pointInAnyFilledRegion(x, y, filledRegions) && attempts < maxAttempts)
+
   return {
     id: `orb-${index}-${Date.now()}`,
-    x: Math.random() * (canvas.width - margin * 2) + margin,
-    y: Math.random() * (canvas.height - margin * 2) + margin,
+    x,
+    y,
     vx: (Math.random() - 0.5) * config.orbSpeed * 2,
     vy: (Math.random() - 0.5) * config.orbSpeed * 2,
     radius: config.orbRadius,
@@ -1300,6 +1405,31 @@ function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
   // === DRAW STRUCTURES ===
+  // Draw filled polygons first (the solid regions)
+  if (filledRegions.length > 0) {
+    filledRegions.forEach((polygon) => {
+      if (polygon.length < 3) return
+
+      // Filled region with gradient
+      ctx.beginPath()
+      ctx.moveTo(polygon[0].x, polygon[0].y)
+      for (let i = 1; i < polygon.length; i++) {
+        ctx.lineTo(polygon[i].x, polygon[i].y)
+      }
+      ctx.closePath()
+
+      // Semi-transparent fill matching the background theme
+      ctx.fillStyle = 'rgba(20, 20, 40, 0.85)'
+      ctx.fill()
+
+      // Subtle inner glow
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
+      ctx.lineWidth = 2
+      ctx.stroke()
+    })
+  }
+
+  // Draw collision edge lines (the visible edges that orbs bounce off)
   if (structures.length > 0) {
     ctx.lineCap = 'round'
 
@@ -1308,17 +1438,17 @@ function render() {
       ctx.beginPath()
       ctx.moveTo(struct.x1, struct.y1)
       ctx.lineTo(struct.x2, struct.y2)
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
-      ctx.lineWidth = struct.thickness + 8
-      ctx.shadowBlur = 15
-      ctx.shadowColor = 'rgba(255, 255, 255, 0.3)'
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'
+      ctx.lineWidth = struct.thickness + 6
+      ctx.shadowBlur = 12
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.4)'
       ctx.stroke()
 
-      // Main structure line
+      // Main edge line
       ctx.beginPath()
       ctx.moveTo(struct.x1, struct.y1)
       ctx.lineTo(struct.x2, struct.y2)
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)'
       ctx.lineWidth = struct.thickness
       ctx.shadowBlur = 0
       ctx.stroke()
@@ -1327,7 +1457,7 @@ function render() {
       ctx.beginPath()
       ctx.moveTo(struct.x1, struct.y1)
       ctx.lineTo(struct.x2, struct.y2)
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)'
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)'
       ctx.lineWidth = struct.thickness * 0.4
       ctx.stroke()
     })
