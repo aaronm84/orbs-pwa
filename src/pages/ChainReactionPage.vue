@@ -466,6 +466,21 @@ function pointInAnyFilledRegion(px, py, regions) {
   return false
 }
 
+// Check if a point is too close to any structure segment
+function pointTooCloseToStructures(px, py, structureList, minDistance) {
+  for (const struct of structureList) {
+    const closest = closestPointOnSegment(px, py, struct.x1, struct.y1, struct.x2, struct.y2)
+    const dx = px - closest.x
+    const dy = py - closest.y
+    const distance = Math.sqrt(dx * dx + dy * dy)
+
+    if (distance < minDistance) {
+      return true
+    }
+  }
+  return false
+}
+
 // === STRUCTURE COLLISION UTILITIES ===
 
 // Get closest point on a line segment to a point
@@ -510,6 +525,58 @@ function reflectVelocity(vx, vy, normalX, normalY) {
     vx: vx - 2 * dot * normalX,
     vy: vy - 2 * dot * normalY,
   }
+}
+
+// Check and resolve collision between two orbs (elastic collision)
+function resolveOrbCollision(orb1, orb2) {
+  const dx = orb2.x - orb1.x
+  const dy = orb2.y - orb1.y
+  const distance = Math.sqrt(dx * dx + dy * dy)
+  const minDist = orb1.radius + orb2.radius
+
+  // Check if orbs are colliding
+  if (distance < minDist && distance > 0) {
+    // Normalize collision vector
+    const nx = dx / distance
+    const ny = dy / distance
+
+    // Relative velocity
+    const dvx = orb1.vx - orb2.vx
+    const dvy = orb1.vy - orb2.vy
+
+    // Relative velocity along collision normal
+    const dvn = dvx * nx + dvy * ny
+
+    // Only resolve if orbs are moving towards each other
+    if (dvn > 0) {
+      // For equal mass elastic collision, velocities are exchanged along normal
+      // Using coefficient of restitution of 1.0 (perfectly elastic)
+      const restitution = 0.95 // Slightly less than 1 for a more natural feel
+
+      // Impulse magnitude
+      const impulse = dvn * restitution
+
+      // Apply impulse to both orbs (equal and opposite)
+      orb1.vx -= impulse * nx
+      orb1.vy -= impulse * ny
+      orb2.vx += impulse * nx
+      orb2.vy += impulse * ny
+    }
+
+    // Separate overlapping orbs to prevent sticking
+    const overlap = minDist - distance
+    const separationX = (overlap / 2 + 0.5) * nx
+    const separationY = (overlap / 2 + 0.5) * ny
+
+    orb1.x -= separationX
+    orb1.y -= separationY
+    orb2.x += separationX
+    orb2.y += separationY
+
+    return true // Collision occurred
+  }
+
+  return false // No collision
 }
 
 // Check if a line segment intersects with a structure (for explosion blocking)
@@ -768,7 +835,10 @@ function createOrb(index, config) {
   // Add margin to keep orbs away from edges
   const margin = config.orbRadius * 3
 
-  // Find a valid spawn position (not inside any filled region)
+  // Minimum distance from structure edges (orb radius + buffer)
+  const structureBuffer = config.orbRadius * 2
+
+  // Find a valid spawn position (not inside filled regions and not too close to structures)
   let x, y
   let attempts = 0
   const maxAttempts = 100
@@ -777,7 +847,11 @@ function createOrb(index, config) {
     x = Math.random() * (canvas.width - margin * 2) + margin
     y = Math.random() * (canvas.height - margin * 2) + margin
     attempts++
-  } while (pointInAnyFilledRegion(x, y, filledRegions) && attempts < maxAttempts)
+  } while (
+    (pointInAnyFilledRegion(x, y, filledRegions) ||
+     pointTooCloseToStructures(x, y, structures, structureBuffer)) &&
+    attempts < maxAttempts
+  )
 
   return {
     id: `orb-${index}-${Date.now()}`,
@@ -1252,6 +1326,23 @@ function update() {
       })
     }
   })
+
+  // === ORB-TO-ORB COLLISION DETECTION ===
+  // Check all pairs of orbs for collisions and resolve them
+  for (let i = 0; i < orbs.length; i++) {
+    const orb1 = orbs[i]
+    if (orb1.captured) continue
+
+    for (let j = i + 1; j < orbs.length; j++) {
+      const orb2 = orbs[j]
+      if (orb2.captured) continue
+
+      // Skip mini orb vs mini orb collisions (they pass through each other)
+      if (orb1.isMiniOrb && orb2.isMiniOrb) continue
+
+      resolveOrbCollision(orb1, orb2)
+    }
+  }
 
   // Update explosions
   explosions.forEach((explosion) => {
