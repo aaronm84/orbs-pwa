@@ -139,14 +139,29 @@ export default defineConfig((ctx) => {
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
       workboxMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
-      // swFilename: 'sw.js',
-      // manifestFilename: 'manifest.json',
-      // extendManifestJson (json) {},
-      // useCredentialsForManifestTag: true,
-      // injectPwaMetaTags: false,
-      // extendPWACustomSWConf (esbuildConf) {},
-      // extendGenerateSWOptions (cfg) {},
-      // extendInjectManifestOptions (cfg) {}
+      injectPwaMetaTags: true,
+
+      extendGenerateSWOptions(cfg) {
+        // The app shell + small assets (incl. bell sound effects) are
+        // precached. The large background-music mp3s (~24MB total) are left
+        // out of the precache and instead cached at runtime on first play,
+        // so the install stays small and fast.
+        cfg.runtimeCaching = [
+          {
+            urlPattern: ({ url }) => url.pathname.includes('/audio/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'orbs-audio',
+              rangeRequests: true,
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ]
+      },
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova
