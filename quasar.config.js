@@ -45,6 +45,10 @@ export default defineConfig((ctx) => {
       // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
 
       // publicPath: '/',
+      // For GitHub Pages project sites the app is served from a subpath
+      // (e.g. /orbs-pwa/). The deploy workflow sets PUBLIC_PATH; local
+      // dev/build default to '/'.
+      publicPath: process.env.PUBLIC_PATH || '/',
       // analyze: true,
       // env: {},
       // rawDefine: {}
