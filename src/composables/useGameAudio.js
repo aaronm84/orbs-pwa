@@ -14,17 +14,23 @@ export function useGameAudio() {
   let capacitorApp = null
   let capacitorCore = null
 
+  // Base path the app is served from ('/' locally, '/orbs-pwa/' on GitHub
+  // Pages). Public assets must be prefixed with this or they 404 when the app
+  // is hosted under a subpath — which silently drops the bells back to the
+  // synthesized fallback tone.
+  const base = import.meta.env.BASE_URL
+
   // Bell sound paths in musical order (C major scale)
   // Using public folder paths (served directly, not processed by Vite)
   const bellPaths = [
-    '/audio/bells/144495__wuola__medieval-bell-c4.m4a', // C4
-    '/audio/bells/144494__wuola__medieval-bell-d4.m4a', // D4
-    '/audio/bells/144492__wuola__medieval-bell-e3.m4a', // E3
-    '/audio/bells/144491__wuola__medieval-bell-f3.m4a', // F3
-    '/audio/bells/144490__wuola__medieval-bell-g3.m4a', // G3
-    '/audio/bells/144497__wuola__medieval-bell-a3.m4a', // A3
-    '/audio/bells/144496__wuola__medieval-bell-bb3.m4a', // Bb3
-    '/audio/bells/144493__wuola__medieval-bell-d3.m4a', // D3
+    `${base}audio/bells/144495__wuola__medieval-bell-c4.m4a`, // C4
+    `${base}audio/bells/144494__wuola__medieval-bell-d4.m4a`, // D4
+    `${base}audio/bells/144492__wuola__medieval-bell-e3.m4a`, // E3
+    `${base}audio/bells/144491__wuola__medieval-bell-f3.m4a`, // F3
+    `${base}audio/bells/144490__wuola__medieval-bell-g3.m4a`, // G3
+    `${base}audio/bells/144497__wuola__medieval-bell-a3.m4a`, // A3
+    `${base}audio/bells/144496__wuola__medieval-bell-bb3.m4a`, // Bb3
+    `${base}audio/bells/144493__wuola__medieval-bell-d3.m4a`, // D3
   ]
 
   // Current bell index for cycling through sounds
@@ -368,12 +374,12 @@ export function useGameAudio() {
 
   // Space ambient music tracks
   const musicTracks = [
-    '/audio/space - music/calm-space-music-312291.mp3',
-    '/audio/space - music/ambient-background-music-312295.mp3',
-    '/audio/space - music/cinematic-304561.mp3',
-    '/audio/space - music/doomed-calm-dark-ambient-music-318236.mp3',
-    '/audio/space - music/nwhere-calm-ambient-music-by-vvk-305850.mp3',
-    '/audio/space - music/solas-x-interstellar-piano-223676.mp3',
+    `${base}audio/space - music/calm-space-music-312291.mp3`,
+    `${base}audio/space - music/ambient-background-music-312295.mp3`,
+    `${base}audio/space - music/cinematic-304561.mp3`,
+    `${base}audio/space - music/doomed-calm-dark-ambient-music-318236.mp3`,
+    `${base}audio/space - music/nwhere-calm-ambient-music-by-vvk-305850.mp3`,
+    `${base}audio/space - music/solas-x-interstellar-piano-223676.mp3`,
   ]
 
   // Play background music (randomly select a track)

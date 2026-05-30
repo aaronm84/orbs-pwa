@@ -143,7 +143,31 @@ export default defineConfig((ctx) => {
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
       workboxMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
-      injectPwaMetaTags: true,
+
+      // Same tags Quasar injects by default, but with a black-translucent
+      // status bar so the game draws under the iOS status bar (no black bar
+      // at the top) — matching the original native app. Safe-area insets are
+      // already handled in the layout/page CSS so UI isn't obscured.
+      injectPwaMetaTags: ({ publicPath, pwaManifest }) => {
+        return (
+          (pwaManifest.theme_color !== undefined
+            ? `<meta name="theme-color" content="${pwaManifest.theme_color}">` +
+              `<link rel="mask-icon" href="${publicPath}icons/safari-pinned-tab.svg" color="${pwaManifest.theme_color}">`
+            : '') +
+          '<meta name="mobile-web-app-capable" content="yes">' +
+          '<meta name="apple-mobile-web-app-capable" content="yes">' +
+          '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">' +
+          (pwaManifest.name !== undefined
+            ? `<meta name="apple-mobile-web-app-title" content="${pwaManifest.name}">`
+            : '') +
+          `<meta name="msapplication-TileImage" content="${publicPath}icons/ms-icon-144x144.png">` +
+          '<meta name="msapplication-TileColor" content="#000000">' +
+          `<link rel="apple-touch-icon" href="${publicPath}icons/apple-icon-120x120.png">` +
+          `<link rel="apple-touch-icon" sizes="152x152" href="${publicPath}icons/apple-icon-152x152.png">` +
+          `<link rel="apple-touch-icon" sizes="167x167" href="${publicPath}icons/apple-icon-167x167.png">` +
+          `<link rel="apple-touch-icon" sizes="180x180" href="${publicPath}icons/apple-icon-180x180.png">`
+        )
+      },
 
       extendGenerateSWOptions(cfg) {
         // The app shell + small assets (incl. bell sound effects) are
